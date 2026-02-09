@@ -12,17 +12,29 @@
     <!-- Animated Gradient Background -->
     <div class="hero-gradient-layer" data-hero-gradient></div>
     
-    <!-- YouTube Video Background -->
+    <!-- Self-hosted Video Background -->
     <div class="hero-video-wrapper" data-hero-bg-wrapper>
-      <iframe
+      <!-- Mobile fallback image -->
+      <img
+        class="hero-video-fallback"
+        src="/videos/hero-poster.jpg"
+        alt=""
+        loading="eager"
+        decoding="async"
+      />
+      <!-- Desktop video -->
+      <video
         class="hero-video"
-        src="https://www.youtube.com/embed/gYO1uk7vIcc?autoplay=1&mute=1&loop=1&playlist=gYO1uk7vIcc&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
-        title="Background Video"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        poster="/videos/hero-poster.jpg"
         data-hero-video
-      ></iframe>
+      >
+        <source src="/videos/hero-bg-tokyo.mp4" type="video/mp4" />
+      </video>
     </div>
     
     <!-- Overlay -->
@@ -301,7 +313,7 @@
     will-change: transform;
   }
   
-  /* YouTube Video Wrapper */
+  /* Video Background */
   .hero-video-wrapper {
     position: absolute;
     inset: 0;
@@ -313,9 +325,21 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: cover;
     pointer-events: none;
-    width: max(100%, calc(100vh * 16 / 9));
-    height: max(100%, calc(100vw * 9 / 16));
+  }
+
+  .hero-video-fallback {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .hero-overlay {
@@ -954,6 +978,14 @@
       width: 36px;
     }
 
+    .hero-video {
+      display: none;
+    }
+
+    .hero-video-fallback {
+      display: block;
+    }
+
     .hero-geometrics,
     .hero-mouse-light,
     .brand-line {
@@ -1005,7 +1037,15 @@
     .hero-mouse-light {
       display: none;
     }
-    
+
+    .hero-video {
+      display: none;
+    }
+
+    .hero-video-fallback {
+      display: block;
+    }
+
     .btn-shine {
       display: none;
     }
