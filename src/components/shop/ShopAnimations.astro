@@ -42,40 +42,417 @@
   }
 
   // ═══════════════════════════════════════════
-  // 1. Shop Hero
+  // 1. Shop Hero — Premium Orchestrated Animation
   // ═══════════════════════════════════════════
   function animateShopHero() {
-    const hero = document.querySelector('[data-shop-hero]');
+    const hero = document.querySelector('[data-shop-hero]') as HTMLElement;
     if (!hero) return;
 
-    const title = hero.querySelector('[data-hero-title]');
-    const stats = hero.querySelector('[data-hero-stats]');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (title) {
-      gsap.set(title, { opacity: 0, y: 30 });
-      gsap.to(title, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power2.out',
-        delay: 0.2,
+    // Element references
+    const bgWrapper = hero.querySelector('[data-shop-hero-bg-wrapper]') as HTMLElement;
+    const noise = hero.querySelector('.shop-hero-noise') as HTMLElement;
+    const geoShapes = hero.querySelectorAll('[data-shop-geo]');
+    const particles = hero.querySelectorAll('[data-shop-particle]');
+    const badge = hero.querySelector('[data-shop-hero-badge]') as HTMLElement;
+    const splitTextEls = hero.querySelectorAll('[data-split-text]');
+    const accentEl = hero.querySelector('[data-accent]') as HTMLElement;
+    const subtitleWords = hero.querySelectorAll('.shop-hero-word');
+    const ctaContainer = hero.querySelector('[data-shop-hero-cta]') as HTMLElement;
+    const stats = hero.querySelector('[data-hero-stats]') as HTMLElement;
+    const counterEls = hero.querySelectorAll('[data-counter-target]');
+    const scrollIndicator = hero.querySelector('[data-shop-hero-scroll]') as HTMLElement;
+    const mouseLight = hero.querySelector('[data-shop-hero-mouse-light]') as HTMLElement;
+    const content = hero.querySelector('[data-shop-hero-content]') as HTMLElement;
+
+    // Store event listener references for cleanup
+    const cleanupFns: Array<() => void> = [];
+
+    // ─── Video Auto-Rotation ───
+    const shopVideos = hero.querySelectorAll('[data-shop-hero-video]') as NodeListOf<HTMLVideoElement>;
+    const shopFallback = hero.querySelector('[data-shop-hero-fallback]') as HTMLImageElement;
+    const VIDEO_COUNT = shopVideos.length;
+    const VIDEO_ROTATION_INTERVAL = 8000; // 8 seconds per video
+    let currentVideoIndex = 0;
+    let videoRotationTimer: ReturnType<typeof setInterval> | null = null;
+
+    const shopPosterImages = [
+      '/videos/hero-poster.jpg',
+      '/videos/hero-poster-1.jpg',
+      '/videos/hero-poster-2.jpg',
+      '/videos/hero-poster-3.jpg',
+    ];
+
+    function switchShopVideo() {
+      const nextIndex = (currentVideoIndex + 1) % VIDEO_COUNT;
+      shopVideos.forEach((video, i) => {
+        if (i === nextIndex) {
+          video.classList.add('is-active');
+          video.play().catch(() => {});
+        } else {
+          video.classList.remove('is-active');
+          setTimeout(() => {
+            if (!video.classList.contains('is-active')) {
+              video.pause();
+            }
+          }, 1100);
+        }
+      });
+      if (shopFallback) {
+        shopFallback.src = shopPosterImages[nextIndex] || shopPosterImages[0];
+      }
+      currentVideoIndex = nextIndex;
+    }
+
+    function startVideoRotation() {
+      if (VIDEO_COUNT > 1) {
+        videoRotationTimer = setInterval(switchShopVideo, VIDEO_ROTATION_INTERVAL);
+      }
+    }
+
+    function stopVideoRotation() {
+      if (videoRotationTimer) {
+        clearInterval(videoRotationTimer);
+        videoRotationTimer = null;
+      }
+    }
+
+    cleanupFns.push(stopVideoRotation);
+
+    // ─── Scroll Indicator Click Handler ───
+    if (scrollIndicator) {
+      const handleScrollClick = () => {
+        const nextSection = document.querySelector('.featured-bento') || hero.nextElementSibling;
+        nextSection?.scrollIntoView({ behavior: 'smooth' });
+      };
+      const handleScrollKeydown = (e: Event) => {
+        const key = (e as KeyboardEvent).key;
+        if (key === 'Enter' || key === ' ') {
+          e.preventDefault();
+          handleScrollClick();
+        }
+      };
+      scrollIndicator.addEventListener('click', handleScrollClick);
+      scrollIndicator.addEventListener('keydown', handleScrollKeydown);
+      cleanupFns.push(() => {
+        scrollIndicator.removeEventListener('click', handleScrollClick);
+        scrollIndicator.removeEventListener('keydown', handleScrollKeydown);
       });
     }
 
+    // ─── Reduced Motion: show everything immediately ───
+    if (prefersReducedMotion) {
+      if (bgWrapper) gsap.set(bgWrapper, { opacity: 0.35, scale: 1 });
+      if (noise) gsap.set(noise, { opacity: 0.03 });
+      gsap.set(geoShapes, { opacity: 1 });
+      gsap.set(particles, { opacity: 0.3 });
+      if (badge) gsap.set(badge, { opacity: 1 });
+      if (ctaContainer) gsap.set(ctaContainer, { opacity: 1 });
+      if (stats) gsap.set(stats, { opacity: 1, x: 0 });
+      if (scrollIndicator) gsap.set(scrollIndicator, { opacity: 1 });
+      gsap.set(subtitleWords, { opacity: 1, y: 0 });
+      // Don't split text, just show
+      splitTextEls.forEach(el => {
+        gsap.set(el, { opacity: 1 });
+      });
+      // Register cleanup for page transitions
+      document.addEventListener('astro:before-preparation', () => {
+        cleanupFns.forEach(fn => fn());
+      }, { once: true });
+      return;
+    }
+
+    // ─── Split Text into Characters ───
+    splitTextEls.forEach((el) => {
+      const text = el.textContent || '';
+      el.textContent = '';
+      text.split('').forEach((char) => {
+        const span = document.createElement('span');
+        span.classList.add('char');
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        el.appendChild(span);
+      });
+    });
+
+    // ─── Master Timeline ───
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // t=0.0: Video wrapper reveal
+    if (bgWrapper) {
+      gsap.set(bgWrapper, { scale: 1.05, opacity: 0 });
+      tl.to(bgWrapper, { scale: 1, opacity: 1, duration: 1.5, ease: 'power2.out' }, 0);
+    }
+
+    // t=0.2: Noise fade-in
+    if (noise) {
+      tl.to(noise, { opacity: 0.03, duration: 0.5 }, 0.2);
+    }
+
+    // t=0.3: Geometric shapes stagger
+    if (geoShapes.length) {
+      gsap.set(geoShapes, { opacity: 0, scale: 0.5 });
+      tl.to(geoShapes, {
+        opacity: 1,
+        scale: 1,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'back.out(1.5)',
+      }, 0.3);
+    }
+
+    // t=0.4: Particles stagger + floating
+    if (particles.length) {
+      gsap.set(particles, { opacity: 0 });
+      tl.to(particles, {
+        opacity: 0.4,
+        duration: 0.6,
+        stagger: 0.05,
+      }, 0.4);
+
+      // Individual floating loops
+      particles.forEach((p) => {
+        const randomX = (Math.random() - 0.5) * 40;
+        const randomY = (Math.random() - 0.5) * 40;
+        const dur = 3 + Math.random() * 4;
+        gsap.to(p, {
+          x: randomX,
+          y: randomY,
+          duration: dur,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true,
+          delay: Math.random() * 2,
+        });
+      });
+    }
+
+    // t=0.5: Badge slide-in
+    if (badge) {
+      gsap.set(badge, { opacity: 0, x: -20 });
+      tl.to(badge, { opacity: 1, x: 0, duration: 0.6 }, 0.5);
+    }
+
+    // t=0.6: Split-text title character reveal
+    const allChars = hero.querySelectorAll('.char');
+    if (allChars.length) {
+      gsap.set(allChars, { opacity: 0, y: 40 });
+      tl.to(allChars, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.03,
+        ease: 'power3.out',
+      }, 0.6);
+    }
+
+    // t≈1.0: Glitch effect on accent text (after split-text completes)
+    if (accentEl) {
+      tl.call(() => {
+        // Set data-text for pseudo-element content
+        const originalText = accentEl.textContent?.trim() || '';
+        accentEl.setAttribute('data-text', originalText);
+        accentEl.setAttribute('data-glitch', '');
+      }, [], 1.0);
+    }
+
+    // t=1.0: Subtitle word-by-word
+    if (subtitleWords.length) {
+      gsap.set(subtitleWords, { opacity: 0, y: 10 });
+      tl.to(subtitleWords, {
+        opacity: 1,
+        y: 0,
+        duration: 0.4,
+        stagger: 0.06,
+      }, 1.0);
+    }
+
+    // t=1.2: CTA button
+    if (ctaContainer) {
+      gsap.set(ctaContainer, { opacity: 0, y: 20 });
+      tl.to(ctaContainer, { opacity: 1, y: 0, duration: 0.5 }, 1.2);
+    }
+
+    // t=1.5: Stats right slide-in
     if (stats) {
-      const statChildren = stats.children;
-      if (statChildren.length) {
-        gsap.set(statChildren, { opacity: 0, y: 20 });
-        gsap.to(statChildren, {
-          opacity: 1,
+      gsap.set(stats, { opacity: 0, x: 30 });
+      tl.to(stats, { opacity: 1, x: 0, duration: 0.6, ease: 'power2.out' }, 1.5);
+    }
+
+    // t=1.8: Counter animations
+    if (counterEls.length) {
+      counterEls.forEach((el) => {
+        const targetStr = el.getAttribute('data-counter-target') || '0';
+        const targetNum = parseInt(targetStr.replace(/,/g, ''), 10);
+        if (isNaN(targetNum) || targetNum === 0) return;
+
+        // Use explicit data-counter-suffix attribute
+        const suffix = el.getAttribute('data-counter-suffix') || '';
+        const hasComma = targetNum >= 1000;
+
+        const counter = { value: 0 };
+        tl.to(counter, {
+          value: targetNum,
+          duration: 1.2,
+          ease: 'power2.out',
+          snap: { value: 1 },
+          onUpdate: () => {
+            const formatted = hasComma
+              ? Math.round(counter.value).toLocaleString()
+              : Math.round(counter.value).toString();
+            el.textContent = formatted + suffix;
+          },
+        }, 1.8);
+      });
+    }
+
+    // t=2.2: Scroll indicator
+    if (scrollIndicator) {
+      gsap.set(scrollIndicator, { opacity: 0 });
+      tl.to(scrollIndicator, { opacity: 1, duration: 0.5 }, 2.2);
+    }
+
+    // t=2.5: Start video auto-rotation after entrance animation
+    tl.call(() => {
+      startVideoRotation();
+    }, [], 2.5);
+
+    // ─── Mouse Tracking Light ───
+    if (mouseLight) {
+      let mouseX = 0;
+      let mouseY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let rafId: number;
+
+      const onMouseMove = (e: MouseEvent) => {
+        const rect = hero.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+      };
+
+      const onMouseEnter = () => {
+        gsap.to(mouseLight, { opacity: 1, duration: 0.4 });
+        rafId = requestAnimationFrame(updatePosition);
+      };
+
+      const onMouseLeave = () => {
+        gsap.to(mouseLight, { opacity: 0, duration: 0.4 });
+        cancelAnimationFrame(rafId);
+      };
+
+      const updatePosition = () => {
+        currentX += (mouseX - currentX) * 0.08;
+        currentY += (mouseY - currentY) * 0.08;
+        mouseLight.style.left = currentX + 'px';
+        mouseLight.style.top = currentY + 'px';
+        rafId = requestAnimationFrame(updatePosition);
+      };
+
+      hero.addEventListener('mouseenter', onMouseEnter);
+      hero.addEventListener('mouseleave', onMouseLeave);
+      hero.addEventListener('mousemove', onMouseMove);
+
+      cleanupFns.push(() => {
+        hero.removeEventListener('mouseenter', onMouseEnter);
+        hero.removeEventListener('mouseleave', onMouseLeave);
+        hero.removeEventListener('mousemove', onMouseMove);
+        cancelAnimationFrame(rafId);
+      });
+    }
+
+    // ─── Magnetic Buttons ───
+    const magneticBtns = hero.querySelectorAll('[data-magnetic]');
+    magneticBtns.forEach((btn) => {
+      const onBtnMove = (e: Event) => {
+        const mouseEvt = e as MouseEvent;
+        const rect = (btn as HTMLElement).getBoundingClientRect();
+        const x = mouseEvt.clientX - rect.left - rect.width / 2;
+        const y = mouseEvt.clientY - rect.top - rect.height / 2;
+        gsap.to(btn, {
+          x: x * 0.25,
+          y: y * 0.25,
+          duration: 0.3,
+          ease: 'power2.out',
+        });
+      };
+      const onBtnLeave = () => {
+        gsap.to(btn, {
+          x: 0,
           y: 0,
           duration: 0.6,
-          ease: 'power2.out',
-          stagger: 0.1,
-          delay: 0.6,
+          ease: 'elastic.out(1, 0.5)',
         });
-      }
+      };
+      btn.addEventListener('mousemove', onBtnMove);
+      btn.addEventListener('mouseleave', onBtnLeave);
+      cleanupFns.push(() => {
+        btn.removeEventListener('mousemove', onBtnMove);
+        btn.removeEventListener('mouseleave', onBtnLeave);
+      });
+    });
+
+    // ─── Parallax Scroll ───
+    if (bgWrapper) {
+      gsap.to(bgWrapper, {
+        yPercent: -15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
     }
+
+    // Geometric shapes parallax
+    if (geoShapes.length) {
+      geoShapes.forEach((shape, i) => {
+        gsap.to(shape, {
+          y: -(30 + i * 20),
+          ease: 'none',
+          scrollTrigger: {
+            trigger: hero,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      });
+    }
+
+    // Content fade on scroll
+    if (content) {
+      gsap.to(content, {
+        y: -50,
+        opacity: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top top',
+          end: '60% top',
+          scrub: true,
+        },
+      });
+    }
+
+    // Scroll indicator fade-out
+    if (scrollIndicator) {
+      ScrollTrigger.create({
+        trigger: hero,
+        start: 'top top',
+        end: '300px top',
+        onUpdate: (self) => {
+          gsap.set(scrollIndicator, { opacity: 1 - self.progress });
+        },
+      });
+    }
+
+    // ─── Cleanup for Astro Page Transitions ───
+    document.addEventListener('astro:before-preparation', () => {
+      cleanupFns.forEach(fn => fn());
+    }, { once: true });
   }
 
   // ═══════════════════════════════════════════
@@ -221,7 +598,7 @@
   // 6. Product Grid Cards
   // ═══════════════════════════════════════════
   function animateProductCards() {
-    const cards = document.querySelectorAll('.product-card');
+    const cards = document.querySelectorAll('[data-product-card]');
     if (!cards.length) return;
 
     gsap.set(cards, { opacity: 0, y: 30 });
