@@ -27,7 +27,7 @@ const { product } = Astro.props;
   data-product-price={product.priceRange}
 >
   <svg
-    class="add-to-quote-btn__icon"
+    class="add-to-quote-btn__icon add-to-quote-btn__icon--cart"
     width="20"
     height="20"
     viewBox="0 0 24 24"
@@ -41,35 +41,62 @@ const { product } = Astro.props;
     <circle cx="20" cy="21" r="1"></circle>
     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
   </svg>
+  <svg
+    class="add-to-quote-btn__icon add-to-quote-btn__icon--check"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    style="display: none;"
+  >
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
   <span class="add-to-quote-btn__text">견적함에 추가</span>
 </button>
 
 <style>
   .add-to-quote-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-sm, 8px);
     padding: var(--space-md, 12px) var(--space-xl, 24px);
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     color: #ffffff;
     border: none;
     border-radius: var(--radius-md, 8px);
     font-size: var(--font-size-base, 16px);
     font-weight: 600;
     cursor: pointer;
-    transition:
-      background-color 0.2s ease,
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
+    transition: all 0.3s ease;
     line-height: 1.4;
     white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .add-to-quote-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   .add-to-quote-btn:hover {
-    background-color: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+    box-shadow:
+      0 4px 12px rgba(26, 77, 46, 0.3),
+      0 0 20px rgba(26, 77, 46, 0.2);
+  }
+
+  .add-to-quote-btn:hover::before {
+    opacity: 1;
   }
 
   .add-to-quote-btn:active {
@@ -83,14 +110,27 @@ const { product } = Astro.props;
     outline-offset: 2px;
   }
 
+  /* Icon states */
   .add-to-quote-btn__icon {
     flex-shrink: 0;
     width: 20px;
     height: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .add-to-quote-btn__icon--check {
+    color: #48bb78;
   }
 
   .add-to-quote-btn__text {
     display: inline;
+    transition: all 0.3s ease;
+  }
+
+  /* Added state */
+  .add-to-quote-btn.is-added {
+    background: linear-gradient(135deg, #2d7a4f 0%, #48bb78 100%);
+    pointer-events: none;
   }
 
   @media (max-width: 719px) {
@@ -244,6 +284,25 @@ const { product } = Astro.props;
           quantity: 1,
           memo: '',
         });
+
+        // Checkmark micro-animation
+        const cartIcon = button.querySelector('.add-to-quote-btn__icon--cart') as HTMLElement;
+        const checkIcon = button.querySelector('.add-to-quote-btn__icon--check') as HTMLElement;
+        const textEl = button.querySelector('.add-to-quote-btn__text') as HTMLElement;
+
+        if (cartIcon && checkIcon && textEl) {
+          button.classList.add('is-added');
+          cartIcon.style.display = 'none';
+          checkIcon.style.display = 'block';
+          textEl.textContent = '추가됨';
+
+          setTimeout(() => {
+            button.classList.remove('is-added');
+            cartIcon.style.display = 'block';
+            checkIcon.style.display = 'none';
+            textEl.textContent = '견적함에 추가';
+          }, 2000);
+        }
 
         // Show toast notification
         if (typeof (window as any).showToast === 'function') {

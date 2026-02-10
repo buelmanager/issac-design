@@ -376,6 +376,20 @@ function generateSamplePng(type: 'star' | 'logo' | 'text'): string {
 
 // ─── Main Component ───
 
+// ─── Responsive Hook ───
+
+function useIsMobile(breakpoint: number = 768) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export default function PngTo3DExtruder() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [shapes, setShapes] = useState<THREE.Shape[]>([]);
@@ -383,6 +397,8 @@ export default function PngTo3DExtruder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Controls
   const [depth, setDepth] = useState(2);
@@ -502,6 +518,193 @@ export default function PngTo3DExtruder() {
     }
   }, [imageUrl, processImage]);
 
+  // Controls panel content (shared between mobile & desktop)
+  const controlsContent = (
+    <>
+      {/* 이미지 소스 */}
+      <Section title="이미지 소스">
+        <label
+          style={{
+            display: 'block', padding: '12px',
+            border: '2px dashed rgba(255,255,255,0.2)', borderRadius: '8px',
+            textAlign: 'center', cursor: 'pointer', fontSize: '14px',
+          }}
+        >
+          <input type="file" accept="image/png" onChange={handleFileUpload} style={{ display: 'none' }} />
+          PNG 파일 업로드
+        </label>
+        <div style={{ marginTop: '12px', fontSize: '13px', opacity: 0.5, textAlign: 'center' }}>
+          또는 샘플 선택:
+        </div>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+          <SampleButton onClick={() => handleSample('star')} label="별" />
+          <SampleButton onClick={() => handleSample('logo')} label="로고" />
+          <SampleButton onClick={() => handleSample('text')} label="텍스트" />
+        </div>
+      </Section>
+
+      {/* 형상 */}
+      <Section title="형상">
+        <Stepper label="두께" value={depth} min={1} max={3} step={0.1} onChange={setDepth} />
+        <div style={{ marginBottom: '10px' }}>
+          <div style={{ fontSize: '13px', marginBottom: '6px' }}>텍스처 품질</div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {(['low', 'mid', 'high'] as TextureQuality[]).map((q) => (
+              <button
+                key={q}
+                onClick={() => setTextureQuality(q)}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: '6px', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: textureQuality === q ? 600 : 400,
+                  border: textureQuality === q ? '2px solid #4a90d9' : '1px solid rgba(255,255,255,0.15)',
+                  background: textureQuality === q ? 'rgba(74,144,217,0.25)' : 'rgba(255,255,255,0.06)',
+                  color: textureQuality === q ? '#8ab8e8' : '#999',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {TEXTURE_PRESETS[q].label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Toggle label="와이어프레임" value={wireframe} onChange={setWireframe} />
+      </Section>
+
+      {/* 간판 설정 */}
+      <Section title="간판 설정">
+        <ColorPicker label="간판 색상" value={backboardColor} onChange={setBackboardColor} />
+        <Stepper label="간판 여백 (좌우)" value={boardPaddingX} min={-2} max={3} step={0.1} onChange={setBoardPaddingX} />
+        <Stepper label="간판 여백 (상하)" value={boardPaddingY} min={-2} max={3} step={0.1} onChange={setBoardPaddingY} />
+        <Stepper label="간판 두께" value={boardDepth} min={0.02} max={0.5} step={0.02} onChange={setBoardDepth} />
+      </Section>
+
+      {/* LED 설정 */}
+      <Section title="LED 설정">
+        <ColorPicker label="LED 색상" value={ledColor} onChange={setLedColor} />
+        <Stepper label="LED 밝기" value={ledIntensity} min={0} max={5} step={0.1} onChange={setLedIntensity} />
+        <Stepper label="LED 간격" value={ledSpacing} min={0.3} max={3} step={0.1} onChange={setLedSpacing} />
+        <Stepper label="이격 거리" value={standoffDistance} min={0.05} max={1.5} step={0.05} onChange={setStandoffDistance} />
+        <Stepper label="빛 퍼짐" value={ledSpread} min={0.02} max={0.5} step={0.02} onChange={setLedSpread} />
+      </Section>
+
+      {/* 조명 */}
+      <Section title="조명">
+        <ColorPicker label="조명 색상" value={lightColor} onChange={setLightColor} />
+        <Stepper label="조명 밝기" value={lightIntensity} min={0} max={3} step={0.1} onChange={setLightIntensity} />
+      </Section>
+
+      {/* 장면 */}
+      <Section title="장면">
+        <ColorPicker label="배경색" value={bgColor} onChange={setBgColor} />
+      </Section>
+
+      {/* 상태 표시 */}
+      {loading && (
+        <div style={{ padding: '12px', background: 'rgba(74,144,217,0.2)', borderRadius: '8px', fontSize: '13px', marginTop: '12px' }}>
+          이미지 처리 중...
+        </div>
+      )}
+      {error && (
+        <div style={{ padding: '12px', background: 'rgba(217,74,74,0.2)', borderRadius: '8px', fontSize: '13px', marginTop: '12px', color: '#ff6b6b' }}>
+          {error}
+        </div>
+      )}
+      {shapes.length > 0 && !loading && (
+        <div style={{ padding: '12px', background: 'rgba(74,217,100,0.15)', borderRadius: '8px', fontSize: '13px', marginTop: '12px', color: '#6bff8a' }}>
+          {shapes.length}개 도형 추출 완료
+        </div>
+      )}
+    </>
+  );
+
+  // 3D Viewport content
+  const viewportContent = (
+    <>
+      {shapes.length === 0 && !loading ? (
+        <div
+          style={{
+            position: 'absolute', inset: 0, display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            flexDirection: 'column', gap: '12px', opacity: 0.4,
+          }}
+        >
+          <svg width={isMobile ? '48' : '64'} height={isMobile ? '48' : '64'} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17,8 12,3 7,8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <p style={{ fontSize: isMobile ? '14px' : '16px', textAlign: 'center', padding: '0 20px' }}>
+            PNG 파일을 업로드하거나 샘플을 선택하세요
+          </p>
+        </div>
+      ) : (
+        <Canvas shadows camera={{ position: [0, 2, 6], fov: 50 }} style={{ background: bgColor }}>
+          <Scene
+            shapes={shapes} shapeResult={shapeResult}
+            depth={depth} color={color}
+            bevelEnabled={bevelEnabled} bevelThickness={bevelThickness} bevelSize={bevelSize}
+            metalness={metalness} roughness={roughness}
+            wireframe={wireframe} texture={texture} bgColor={bgColor}
+            showBackboard={showBackboard} backboardColor={backboardColor}
+            ledColor={ledColor} ledIntensity={ledIntensity}
+            standoffDistance={standoffDistance} ledSpread={ledSpread}
+            boardPaddingX={boardPaddingX} boardPaddingY={boardPaddingY} boardDepth={boardDepth}
+            lightColor={lightColor} lightIntensity={lightIntensity} ledSpacing={ledSpacing}
+          />
+        </Canvas>
+      )}
+    </>
+  );
+
+  // ─── MOBILE LAYOUT ───
+  if (isMobile) {
+    return (
+      <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: '#e0e0e0', fontFamily: 'system-ui, sans-serif' }}>
+        {/* Header */}
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>3D 간판 시뮬레이터</h1>
+            <p style={{ margin: '4px 0 0', opacity: 0.6, fontSize: '12px' }}>PNG 알파 채널 기반 3D 입체 간판</p>
+          </div>
+          <button
+            onClick={() => setPanelOpen(!panelOpen)}
+            style={{
+              padding: '8px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)',
+              background: panelOpen ? 'rgba(74,144,217,0.3)' : 'rgba(255,255,255,0.08)',
+              color: '#e0e0e0', cursor: 'pointer', fontSize: '13px', fontWeight: 500,
+              display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {panelOpen
+                ? <path d="M18 6L6 18M6 6l12 12" />
+                : <><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></>
+              }
+            </svg>
+            {panelOpen ? '닫기' : '설정'}
+          </button>
+        </div>
+
+        {/* 3D Viewport */}
+        <div style={{ width: '100%', height: panelOpen ? '40vh' : 'calc(100vh - 60px)', position: 'relative', transition: 'height 0.3s ease' }}>
+          {viewportContent}
+        </div>
+
+        {/* Controls Panel (slide up) */}
+        {panelOpen && (
+          <div style={{
+            padding: '16px', overflowY: 'auto', background: 'rgba(0,0,0,0.3)',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            maxHeight: 'calc(60vh - 60px)',
+          }}>
+            {controlsContent}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─── DESKTOP LAYOUT ───
   return (
     <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: '#e0e0e0', fontFamily: 'system-ui, sans-serif' }}>
       {/* Header */}
@@ -522,134 +725,12 @@ export default function PngTo3DExtruder() {
             borderRight: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)',
           }}
         >
-          {/* 이미지 소스 */}
-          <Section title="이미지 소스">
-            <label
-              style={{
-                display: 'block', padding: '12px',
-                border: '2px dashed rgba(255,255,255,0.2)', borderRadius: '8px',
-                textAlign: 'center', cursor: 'pointer', fontSize: '14px',
-              }}
-            >
-              <input type="file" accept="image/png" onChange={handleFileUpload} style={{ display: 'none' }} />
-              PNG 파일 업로드
-            </label>
-            <div style={{ marginTop: '12px', fontSize: '13px', opacity: 0.5, textAlign: 'center' }}>
-              또는 샘플 선택:
-            </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-              <SampleButton onClick={() => handleSample('star')} label="별" />
-              <SampleButton onClick={() => handleSample('logo')} label="로고" />
-              <SampleButton onClick={() => handleSample('text')} label="텍스트" />
-            </div>
-          </Section>
-
-          {/* 형상 */}
-          <Section title="형상">
-            <Stepper label="두께" value={depth} min={1} max={3} step={0.1} onChange={setDepth} />
-            <div style={{ marginBottom: '10px' }}>
-              <div style={{ fontSize: '13px', marginBottom: '6px' }}>텍스처 품질</div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {(['low', 'mid', 'high'] as TextureQuality[]).map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => setTextureQuality(q)}
-                    style={{
-                      flex: 1, padding: '8px 0', borderRadius: '6px', cursor: 'pointer',
-                      fontSize: '13px', fontWeight: textureQuality === q ? 600 : 400,
-                      border: textureQuality === q ? '2px solid #4a90d9' : '1px solid rgba(255,255,255,0.15)',
-                      background: textureQuality === q ? 'rgba(74,144,217,0.25)' : 'rgba(255,255,255,0.06)',
-                      color: textureQuality === q ? '#8ab8e8' : '#999',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {TEXTURE_PRESETS[q].label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <Toggle label="와이어프레임" value={wireframe} onChange={setWireframe} />
-          </Section>
-
-          {/* 간판 설정 */}
-          <Section title="간판 설정">
-            <ColorPicker label="간판 색상" value={backboardColor} onChange={setBackboardColor} />
-            <Stepper label="간판 여백 (좌우)" value={boardPaddingX} min={-2} max={3} step={0.1} onChange={setBoardPaddingX} />
-            <Stepper label="간판 여백 (상하)" value={boardPaddingY} min={-2} max={3} step={0.1} onChange={setBoardPaddingY} />
-            <Stepper label="간판 두께" value={boardDepth} min={0.02} max={0.5} step={0.02} onChange={setBoardDepth} />
-          </Section>
-
-          {/* LED 설정 */}
-          <Section title="LED 설정">
-            <ColorPicker label="LED 색상" value={ledColor} onChange={setLedColor} />
-            <Stepper label="LED 밝기" value={ledIntensity} min={0} max={5} step={0.1} onChange={setLedIntensity} />
-            <Stepper label="LED 간격" value={ledSpacing} min={0.3} max={3} step={0.1} onChange={setLedSpacing} />
-            <Stepper label="이격 거리" value={standoffDistance} min={0.05} max={1.5} step={0.05} onChange={setStandoffDistance} />
-            <Stepper label="빛 퍼짐" value={ledSpread} min={0.02} max={0.5} step={0.02} onChange={setLedSpread} />
-          </Section>
-
-          {/* 조명 */}
-          <Section title="조명">
-            <ColorPicker label="조명 색상" value={lightColor} onChange={setLightColor} />
-            <Stepper label="조명 밝기" value={lightIntensity} min={0} max={3} step={0.1} onChange={setLightIntensity} />
-          </Section>
-
-          {/* 장면 */}
-          <Section title="장면">
-            <ColorPicker label="배경색" value={bgColor} onChange={setBgColor} />
-          </Section>
-
-          {/* 상태 표시 */}
-          {loading && (
-            <div style={{ padding: '12px', background: 'rgba(74,144,217,0.2)', borderRadius: '8px', fontSize: '13px', marginTop: '12px' }}>
-              이미지 처리 중...
-            </div>
-          )}
-          {error && (
-            <div style={{ padding: '12px', background: 'rgba(217,74,74,0.2)', borderRadius: '8px', fontSize: '13px', marginTop: '12px', color: '#ff6b6b' }}>
-              {error}
-            </div>
-          )}
-          {shapes.length > 0 && !loading && (
-            <div style={{ padding: '12px', background: 'rgba(74,217,100,0.15)', borderRadius: '8px', fontSize: '13px', marginTop: '12px', color: '#6bff8a' }}>
-              {shapes.length}개 도형 추출 완료
-            </div>
-          )}
+          {controlsContent}
         </div>
 
         {/* Right Panel - 3D Viewport */}
         <div style={{ flex: 1, position: 'relative' }}>
-          {shapes.length === 0 && !loading ? (
-            <div
-              style={{
-                position: 'absolute', inset: 0, display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                flexDirection: 'column', gap: '12px', opacity: 0.4,
-              }}
-            >
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17,8 12,3 7,8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              <p style={{ fontSize: '16px' }}>PNG 파일을 업로드하거나 샘플을 선택하세요</p>
-            </div>
-          ) : (
-            <Canvas shadows camera={{ position: [0, 2, 6], fov: 50 }} style={{ background: bgColor }}>
-              <Scene
-                shapes={shapes} shapeResult={shapeResult}
-                depth={depth} color={color}
-                bevelEnabled={bevelEnabled} bevelThickness={bevelThickness} bevelSize={bevelSize}
-                metalness={metalness} roughness={roughness}
-                wireframe={wireframe} texture={texture} bgColor={bgColor}
-                showBackboard={showBackboard} backboardColor={backboardColor}
-                ledColor={ledColor} ledIntensity={ledIntensity}
-                standoffDistance={standoffDistance} ledSpread={ledSpread}
-                boardPaddingX={boardPaddingX} boardPaddingY={boardPaddingY} boardDepth={boardDepth}
-                lightColor={lightColor} lightIntensity={lightIntensity} ledSpacing={ledSpacing}
-              />
-            </Canvas>
-          )}
+          {viewportContent}
         </div>
       </div>
     </div>

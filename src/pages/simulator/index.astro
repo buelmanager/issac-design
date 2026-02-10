@@ -22,6 +22,12 @@ import PngTo3DExtruder from '../../components/simulator/PngTo3DExtruder';
         height: 100%;
         overflow: hidden;
       }
+      @media (max-width: 768px) {
+        html, body {
+          overflow: auto;
+          overflow-x: hidden;
+        }
+      }
     </style>
   </head>
   <body>

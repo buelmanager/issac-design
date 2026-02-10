@@ -113,6 +113,33 @@ const { productName = '' } = Astro.props;
         ></textarea>
       </div>
 
+      <!-- File Upload -->
+      <div class="quote-form__field">
+        <label class="quote-form__label">
+          참고 파일 첨부
+        </label>
+        <div class="quote-form__upload" data-upload-area>
+          <input
+            type="file"
+            id="quote-files"
+            name="files"
+            class="quote-form__upload-input"
+            accept=".jpg,.jpeg,.png,.pdf,.ai,.psd"
+            multiple
+            data-upload-input
+          />
+          <div class="quote-form__upload-content">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="quote-form__upload-icon">
+              <path d="M16 4v20M8 12l8-8 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 24v2a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="quote-form__upload-text">클릭하거나 파일을 드래그하세요</p>
+            <p class="quote-form__upload-hint">JPG, PNG, PDF, AI, PSD (최대 10MB)</p>
+          </div>
+        </div>
+        <div class="quote-form__upload-preview" data-upload-preview></div>
+      </div>
+
       <!-- Privacy Agreement -->
       <div class="quote-form__checkbox">
         <input
@@ -246,6 +273,105 @@ const { productName = '' } = Astro.props;
     min-height: 120px;
   }
 
+  /* File Upload */
+  .quote-form__upload {
+    position: relative;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background: var(--background);
+  }
+
+  .quote-form__upload:hover,
+  .quote-form__upload.is-dragover {
+    border-color: var(--primary);
+    background: rgba(26, 77, 46, 0.05);
+  }
+
+  .quote-form__upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .quote-form__upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    pointer-events: none;
+  }
+
+  .quote-form__upload-icon {
+    color: var(--text-muted);
+  }
+
+  .quote-form__upload-text {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .quote-form__upload-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  .quote-form__upload-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .quote-form__upload-preview:empty {
+    display: none;
+  }
+
+  .quote-form__file-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  .quote-form__file-item img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+  }
+
+  .quote-form__file-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: color var(--transition-base);
+  }
+
+  .quote-form__file-remove:hover {
+    color: var(--error);
+  }
+
   /* Checkbox */
   .quote-form__checkbox {
     display: flex;
@@ -340,6 +466,94 @@ const { productName = '' } = Astro.props;
     const successMessage = document.querySelector('[data-success-message]') as HTMLElement;
     const errorMessage = document.querySelector('[data-error-message]') as HTMLElement;
 
+    // File Upload Handling
+    const uploadArea = document.querySelector('[data-upload-area]') as HTMLElement;
+    const uploadInput = document.querySelector('[data-upload-input]') as HTMLInputElement;
+    const uploadPreview = document.querySelector('[data-upload-preview]') as HTMLElement;
+    let uploadedFiles: File[] = [];
+
+    if (uploadArea && uploadInput && uploadPreview) {
+      // Drag & drop events
+      ['dragenter', 'dragover'].forEach(evt => {
+        uploadArea.addEventListener(evt, (e) => {
+          e.preventDefault();
+          uploadArea.classList.add('is-dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evt => {
+        uploadArea.addEventListener(evt, (e) => {
+          e.preventDefault();
+          uploadArea.classList.remove('is-dragover');
+        });
+      });
+
+      uploadArea.addEventListener('drop', (e: DragEvent) => {
+        const files = e.dataTransfer?.files;
+        if (files) handleFiles(files);
+      });
+
+      uploadInput.addEventListener('change', () => {
+        if (uploadInput.files) handleFiles(uploadInput.files);
+      });
+
+      function handleFiles(files: FileList) {
+        const allowed = ['.jpg', '.jpeg', '.png', '.pdf', '.ai', '.psd'];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        Array.from(files).forEach(file => {
+          const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+          if (!allowed.includes(ext)) {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`지원하지 않는 파일 형식: ${ext}`, 'error');
+            }
+            return;
+          }
+          if (file.size > maxSize) {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`파일 크기 초과 (최대 10MB): ${file.name}`, 'error');
+            }
+            return;
+          }
+          uploadedFiles.push(file);
+        });
+
+        renderPreview();
+      }
+
+      function renderPreview() {
+        uploadPreview.innerHTML = '';
+        uploadedFiles.forEach((file, idx) => {
+          const item = document.createElement('div');
+          item.className = 'quote-form__file-item';
+
+          const isImage = file.type.startsWith('image/');
+          if (isImage) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = file.name;
+            item.appendChild(img);
+          }
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name;
+          item.appendChild(nameSpan);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'quote-form__file-remove';
+          removeBtn.textContent = '✕';
+          removeBtn.addEventListener('click', () => {
+            uploadedFiles.splice(idx, 1);
+            renderPreview();
+          });
+          item.appendChild(removeBtn);
+
+          uploadPreview.appendChild(item);
+        });
+      }
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -349,6 +563,10 @@ const { productName = '' } = Astro.props;
 
       // Get form data
       const formData = new FormData(form);
+      // Append uploaded files
+      uploadedFiles.forEach(file => {
+        formData.append('attachments', file);
+      });
       const data = Object.fromEntries(formData.entries());
 
       // Simulate form submission (replace with actual API call)

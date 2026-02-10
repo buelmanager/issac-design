@@ -10,6 +10,8 @@ import Breadcrumb from '../../components/shop/Breadcrumb.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 import SearchOverlay from '../../components/shop/SearchOverlay.astro';
+import QuickViewModal from '../../components/shop/QuickViewModal.astro';
+import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 import productsData from '../../data/products.json';
 
 const { products, categories } = productsData;
@@ -139,6 +141,8 @@ const searchProducts = products.map(p => ({
     </section>
   </main>
 
+  <QuickViewModal />
+  <KakaoFloat />
   <ShopFooter />
 </Layout>
 

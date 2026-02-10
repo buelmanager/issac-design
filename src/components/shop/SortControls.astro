@@ -1,0 +1,274 @@
+---
+/**
+ * SortControls Component
+ * Sort options and view toggle (grid/list) for the shop product listing
+ */
+---
+
+<div class="sort-controls" data-sort-controls>
+  <!-- Sort Buttons -->
+  <div class="sort-controls__sort-group">
+    <span class="sort-controls__label">정렬</span>
+    <div class="sort-controls__sort-buttons">
+      <button
+        class="sort-controls__sort-btn sort-controls__sort-btn--active"
+        data-sort="popularity"
+        type="button"
+      >
+        인기순
+      </button>
+      <button
+        class="sort-controls__sort-btn"
+        data-sort="newest"
+        type="button"
+      >
+        최신순
+      </button>
+      <button
+        class="sort-controls__sort-btn"
+        data-sort="name"
+        type="button"
+      >
+        이름순
+      </button>
+    </div>
+  </div>
+
+  <!-- View Toggle -->
+  <div class="sort-controls__view-group">
+    <button
+      class="sort-controls__view-btn sort-controls__view-btn--active"
+      data-view="grid"
+      type="button"
+      aria-label="그리드 보기"
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+        <rect x="11" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+        <rect x="1" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+        <rect x="11" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </button>
+    <button
+      class="sort-controls__view-btn"
+      data-view="list"
+      type="button"
+      aria-label="리스트 보기"
+    >
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1.5" width="16" height="3" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="1" y="7.5" width="16" height="3" rx="1" stroke="currentColor" stroke-width="1.5" />
+        <rect x="1" y="13.5" width="16" height="3" rx="1" stroke="currentColor" stroke-width="1.5" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .sort-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-xl);
+  }
+
+  /* Sort Group */
+  .sort-controls__sort-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .sort-controls__label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sort-controls__sort-buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .sort-controls__sort-btn {
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .sort-controls__sort-btn:hover {
+    color: var(--text-primary);
+    background: var(--surface-hover);
+    border-color: var(--border);
+  }
+
+  .sort-controls__sort-btn--active {
+    color: var(--text-primary);
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .sort-controls__sort-btn--active:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  /* View Group */
+  .sort-controls__view-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs);
+    background: var(--surface-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .sort-controls__view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .sort-controls__view-btn:hover {
+    color: var(--text-secondary);
+    background: var(--surface-hover);
+  }
+
+  .sort-controls__view-btn--active {
+    color: var(--text-primary);
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .sort-controls__view-btn--active:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+  }
+
+  .sort-controls__view-btn svg {
+    flex-shrink: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 719px) {
+    .sort-controls {
+      flex-wrap: wrap;
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .sort-controls__sort-group {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .sort-controls__label {
+      display: none;
+    }
+
+    .sort-controls__sort-buttons {
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+
+    .sort-controls__sort-btn {
+      font-size: var(--font-size-xs);
+      padding: var(--space-xs) var(--space-sm);
+    }
+
+    .sort-controls__view-group {
+      flex-shrink: 0;
+    }
+
+    .sort-controls__view-btn {
+      width: 32px;
+      height: 32px;
+    }
+
+    .sort-controls__view-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sortControls = document.querySelector('[data-sort-controls]');
+    if (!sortControls) return;
+
+    // Sort buttons
+    sortControls.querySelectorAll('[data-sort]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active from all
+        sortControls.querySelectorAll('[data-sort]').forEach(b =>
+          b.classList.remove('sort-controls__sort-btn--active')
+        );
+        btn.classList.add('sort-controls__sort-btn--active');
+
+        const sortBy = btn.dataset.sort;
+        const grid = document.querySelector('[data-product-grid]');
+        if (!grid) return;
+
+        const cards = [...grid.querySelectorAll('[data-product-card]')];
+        cards.sort((a, b) => {
+          if (sortBy === 'popularity') {
+            return (parseInt(b.dataset.popularity) || 0) - (parseInt(a.dataset.popularity) || 0);
+          }
+          if (sortBy === 'newest') {
+            return (b.dataset.isNew === 'true' ? 1 : 0) - (a.dataset.isNew === 'true' ? 1 : 0);
+          }
+          if (sortBy === 'name') {
+            return (a.dataset.productName || '').localeCompare(b.dataset.productName || '', 'ko');
+          }
+          return 0;
+        });
+
+        cards.forEach(card => grid.appendChild(card));
+      });
+    });
+
+    // View toggle
+    sortControls.querySelectorAll('[data-view]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sortControls.querySelectorAll('[data-view]').forEach(b =>
+          b.classList.remove('sort-controls__view-btn--active')
+        );
+        btn.classList.add('sort-controls__view-btn--active');
+
+        const grid = document.querySelector('[data-product-grid]');
+        if (!grid) return;
+
+        if (btn.dataset.view === 'list') {
+          grid.classList.add('product-grid--list');
+        } else {
+          grid.classList.remove('product-grid--list');
+        }
+      });
+    });
+  });
+</script>

@@ -12,6 +12,10 @@ import QuoteForm from '../../../components/shop/QuoteForm.astro';
 import ShopFooter from '../../../components/shop/ShopFooter.astro';
 import Toast from '../../../components/shop/Toast.astro';
 import SearchOverlay from '../../../components/shop/SearchOverlay.astro';
+import SortControls from '../../../components/shop/SortControls.astro';
+import QuickViewModal from '../../../components/shop/QuickViewModal.astro';
+import KakaoFloat from '../../../components/shop/KakaoFloat.astro';
+import QuoteCartBadge from '../../../components/shop/QuoteCartBadge.astro';
 import productsData from '../../../data/products.json';
 
 export async function getStaticPaths() {
@@ -83,6 +87,7 @@ const { category, categoryProducts } = Astro.props;
             총 <strong>{categoryProducts.length}</strong>개의 제품이 있습니다
           </p>
         </div>
+        <SortControls />
         <ProductGrid products={categoryProducts} />
       </div>
     </section>
@@ -101,6 +106,9 @@ const { category, categoryProducts } = Astro.props;
     </section>
   </main>
 
+  <QuickViewModal />
+  <KakaoFloat />
+  <QuoteCartBadge />
   <ShopFooter />
 </Layout>
 

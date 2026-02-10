@@ -1,0 +1,104 @@
+---
+/**
+ * QuoteCartBadge Component
+ * Floating quote cart badge with item count
+ */
+---
+
+<div class="quote-cart-badge" data-quote-cart-badge style="display: none;">
+  <a href="/shop/quote-cart" class="quote-cart-badge__link" aria-label="견적함">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+    <span class="quote-cart-badge__count" data-badge-count>0</span>
+  </a>
+</div>
+
+<style>
+  .quote-cart-badge {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 999;
+  }
+
+  .quote-cart-badge__link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .quote-cart-badge__link:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(26, 77, 46, 0.4);
+  }
+
+  .quote-cart-badge__count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    padding: 0 5px;
+    border: 2px solid var(--background);
+  }
+
+  @media (max-width: 719px) {
+    .quote-cart-badge {
+      bottom: 16px;
+      left: 16px;
+    }
+
+    .quote-cart-badge__link {
+      width: 44px;
+      height: 44px;
+    }
+
+    .quote-cart-badge__link svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const badge = document.querySelector('[data-quote-cart-badge]') as HTMLElement;
+    const countEl = document.querySelector('[data-badge-count]') as HTMLElement;
+    if (!badge || !countEl) return;
+
+    function updateBadge() {
+      const cart = JSON.parse(localStorage.getItem('quote-cart') || '[]');
+      const count = cart.length;
+      countEl.textContent = String(count);
+      badge.style.display = count > 0 ? 'block' : 'none';
+    }
+
+    updateBadge();
+    window.addEventListener('quote-cart-updated', updateBadge);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'quote-cart') updateBadge();
+    });
+  });
+</script>

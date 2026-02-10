@@ -17,6 +17,9 @@ import QuoteForm from '../../components/shop/QuoteForm.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 import SearchOverlay from '../../components/shop/SearchOverlay.astro';
+import InstallationGallery from '../../components/shop/InstallationGallery.astro';
+import KakaoFloat from '../../components/shop/KakaoFloat.astro';
+import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
 import productsData from '../../data/products.json';
 
@@ -85,6 +88,15 @@ const breadcrumbs = [
       </section>
     )}
 
+    <!-- Installation Gallery (Before/After) -->
+    {product.installationGallery && product.installationGallery.length > 0 && (
+      <section class="product-page__installation">
+        <div class="product-page__container">
+          <InstallationGallery gallery={product.installationGallery} />
+        </div>
+      </section>
+    )}
+
     <!-- Related Products -->
     {product.relatedProducts && (
       <RelatedProducts
@@ -102,6 +114,8 @@ const breadcrumbs = [
     </section>
   </main>
 
+  <KakaoFloat />
+  <QuoteCartBadge />
   <ShopFooter />
   <ShopAnimations />
 </Layout>
@@ -129,25 +143,25 @@ const breadcrumbs = [
 
   /* Main Product Section */
   .product-page__main {
-    padding: var(--space-2xl) 0 var(--space-4xl);
+    padding: var(--space-xl) 0 var(--space-3xl);
   }
 
   .product-page__grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-4xl);
+    gap: var(--space-3xl);
     align-items: start;
   }
 
   .product-page__gallery {
     position: sticky;
-    top: calc(var(--header-height) + var(--space-xl));
+    top: calc(var(--header-height) + var(--space-lg));
   }
 
   .product-page__info {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2xl);
+    gap: var(--space-lg);
   }
 
   .product-page__configurator {
@@ -159,6 +173,12 @@ const breadcrumbs = [
   .product-page__timeline {
     padding: var(--space-4xl) 0;
     background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  /* Installation Gallery Section */
+  .product-page__installation {
+    padding: var(--space-4xl) 0;
     border-top: 1px solid var(--border);
   }
 

@@ -6,7 +6,7 @@
 
 import Layout from '../../layouts/Layout.astro';
 import ShopNavbar from '../../components/shop/ShopNavbar.astro';
-import ShopHero from '../../components/shop/ShopHero.astro';
+import Hero from '../../components/sections/Hero.astro';
 import FeaturedBento from '../../components/shop/FeaturedBento.astro';
 import CategoryShowcase from '../../components/shop/CategoryShowcase.astro';
 import NewArrivals from '../../components/shop/NewArrivals.astro';
@@ -14,6 +14,11 @@ import CategoryFilter from '../../components/shop/CategoryFilter.astro';
 import ProductGrid from '../../components/shop/ProductGrid.astro';
 import ProcessTimeline from '../../components/shop/ProcessTimeline.astro';
 import TrustIndicators from '../../components/shop/TrustIndicators.astro';
+import SortControls from '../../components/shop/SortControls.astro';
+import QuickViewModal from '../../components/shop/QuickViewModal.astro';
+import ClientLogos from '../../components/shop/ClientLogos.astro';
+import KakaoFloat from '../../components/shop/KakaoFloat.astro';
+import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
 import QuoteForm from '../../components/shop/QuoteForm.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
@@ -34,8 +39,8 @@ const { products, categories } = productsData;
   <SearchOverlay />
 
   <main class="shop-page">
-    <!-- Hero Section -->
-    <ShopHero />
+    <!-- Hero Section (same as landing) -->
+    <Hero />
 
     <!-- Featured Products Bento Grid -->
     <FeaturedBento />
@@ -56,9 +61,12 @@ const { products, categories } = productsData;
           </p>
         </div>
 
-        <!-- Category Filter -->
-        <div class="shop-products__filter">
-          <CategoryFilter categories={categories} />
+        <!-- Category Filter + Sort Controls -->
+        <div class="shop-products__controls">
+          <div class="shop-products__filter">
+            <CategoryFilter categories={categories} />
+          </div>
+          <SortControls />
         </div>
 
         <!-- Product Grid -->
@@ -71,6 +79,9 @@ const { products, categories } = productsData;
 
     <!-- Trust Indicators -->
     <TrustIndicators />
+
+    <!-- Client Logos Marquee -->
+    <ClientLogos />
 
     <!-- Quote Section -->
     <section class="shop-quote" id="quote">
@@ -86,6 +97,9 @@ const { products, categories } = productsData;
     </section>
   </main>
 
+  <QuickViewModal />
+  <KakaoFloat />
+  <QuoteCartBadge />
   <ShopFooter />
   <ShopAnimations />
 </Layout>
@@ -128,8 +142,12 @@ const { products, categories } = productsData;
     color: var(--text-secondary);
   }
 
-  .shop-products__filter {
+  .shop-products__controls {
     margin-bottom: var(--space-2xl);
+  }
+
+  .shop-products__filter {
+    margin-bottom: var(--space-lg);
   }
 
   /* Quote Section */

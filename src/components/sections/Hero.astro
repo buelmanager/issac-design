@@ -17,7 +17,7 @@
       <!-- Mobile fallback image -->
       <img
         class="hero-video-fallback"
-        src="/videos/hero-poster.jpg"
+        src="/videos/poster-timessquare.jpg"
         alt=""
         loading="eager"
         decoding="async"
@@ -31,10 +31,10 @@
         loop
         playsinline
         preload="auto"
-        poster="/videos/hero-poster.jpg"
+        poster="/videos/poster-timessquare.jpg"
         data-hero-video="0"
       >
-        <source src="/videos/hero-bg-tokyo.mp4" type="video/mp4" />
+        <source src="/videos/new-timessquare.mp4" type="video/mp4" />
       </video>
       <video
         class="hero-video"
@@ -42,10 +42,10 @@
         loop
         playsinline
         preload="metadata"
-        poster="/videos/hero-poster-1.jpg"
+        poster="/videos/poster-manhattan.jpg"
         data-hero-video="1"
       >
-        <source src="/videos/hero-slide1-led.mp4" type="video/mp4" />
+        <source src="/videos/new-manhattan.mp4" type="video/mp4" />
       </video>
       <video
         class="hero-video"
@@ -53,10 +53,10 @@
         loop
         playsinline
         preload="metadata"
-        poster="/videos/hero-poster-2.jpg"
+        poster="/videos/poster-tokyo.jpg"
         data-hero-video="2"
       >
-        <source src="/videos/hero-slide2-neon.mp4" type="video/mp4" />
+        <source src="/videos/new-tokyo.mp4" type="video/mp4" />
       </video>
       <video
         class="hero-video"
@@ -64,10 +64,10 @@
         loop
         playsinline
         preload="metadata"
-        poster="/videos/hero-poster-3.jpg"
+        poster="/videos/poster-aerial.jpg"
         data-hero-video="3"
       >
-        <source src="/videos/hero-slide3-city.mp4" type="video/mp4" />
+        <source src="/videos/new-aerial.mp4" type="video/mp4" />
       </video>
     </div>
     
@@ -553,10 +553,18 @@
     margin: 0 auto;
     padding: 0 var(--container-padding);
     padding-top: var(--header-height);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .hero-content-inner {
     max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   /* Eyebrow */
@@ -588,12 +596,14 @@
   .hero-title {
     margin-bottom: var(--space-xl);
     overflow: hidden;
+    text-align: center;
   }
 
   .hero-title-line {
     display: block;
     overflow: hidden;
     position: relative;
+    text-align: center;
   }
 
   .hero-title-text {
@@ -686,6 +696,7 @@
   .hero-cta {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-md);
     opacity: 0;
     transform: translateY(20px);
@@ -732,12 +743,11 @@
 
   /* Stats Badge */
   .hero-stats {
-    position: absolute;
-    right: var(--container-padding);
-    bottom: 120px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-lg);
+    margin-top: var(--space-xl);
     padding: var(--space-lg) var(--space-xl);
     background: rgba(26, 54, 93, 0.15);
     backdrop-filter: blur(20px);
@@ -745,7 +755,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-lg);
     opacity: 0;
-    transform: translateX(30px);
+    transform: translateY(20px);
   }
 
   .hero-stat {
@@ -819,6 +829,7 @@
   .hero-indicators {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
     margin-top: var(--space-2xl);
     opacity: 0;
@@ -954,12 +965,6 @@
 
   /* Responsive */
   @media (max-width: 1023px) {
-    .hero-stats {
-      right: auto;
-      left: var(--container-padding);
-      bottom: 100px;
-    }
-    
     .geo-shape--1 { width: 200px; height: 200px; }
     .geo-shape--2 { width: 150px; height: 150px; }
     .geo-shape--3 { width: 100px; height: 100px; }
@@ -998,11 +1003,7 @@
     }
 
     .hero-stats {
-      position: relative;
-      left: auto;
-      right: auto;
-      bottom: auto;
-      margin-top: var(--space-3xl);
+      margin-top: var(--space-2xl);
       width: fit-content;
     }
 
@@ -1108,7 +1109,13 @@
   // Check for reduced motion preference
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Prevent duplicate initialization
+  let heroInitialized = false;
+
   function initHeroAnimation() {
+    if (heroInitialized) return;
+    heroInitialized = true;
+
     const hero = document.querySelector('[data-hero]') as HTMLElement;
     if (!hero || prefersReducedMotion) return;
 
@@ -1133,10 +1140,10 @@
 
     // Poster images per slide for mobile fallback
     const posterImages = [
-      '/videos/hero-poster.jpg',
-      '/videos/hero-poster-1.jpg',
-      '/videos/hero-poster-2.jpg',
-      '/videos/hero-poster-3.jpg',
+      '/videos/poster-timessquare.jpg',
+      '/videos/poster-manhattan.jpg',
+      '/videos/poster-tokyo.jpg',
+      '/videos/poster-aerial.jpg',
     ];
 
     const SLIDE_COUNT = slides.length;
@@ -1185,6 +1192,7 @@
     // =====================
 
     function animateSlideIn(slide: HTMLElement, isInitial = false) {
+      const contentInner = slide.querySelector('.hero-content-inner') as HTMLElement;
       const eyebrow = slide.querySelector('[data-hero-eyebrow]') as HTMLElement;
       const eyebrowLine = slide.querySelector('.hero-eyebrow-line') as HTMLElement;
       const eyebrowText = slide.querySelector('.hero-eyebrow-text') as HTMLElement;
@@ -1193,7 +1201,8 @@
       const subtitleText = slide.querySelector('.hero-subtitle-text') as HTMLElement;
       const cta = slide.querySelector('[data-hero-cta]') as HTMLElement;
 
-      // Reset elements
+      // Reset elements — content-inner starts offset and slides to center
+      if (contentInner) gsap.set(contentInner, { opacity: 0, y: 60, scale: 0.97 });
       gsap.set(eyebrow, { opacity: 0, y: 20 });
       gsap.set(eyebrowLine, { width: 0 });
       gsap.set(eyebrowText, { opacity: 0 });
@@ -1208,10 +1217,18 @@
         }
       });
 
+      // Content-inner slides up to center position
+      if (contentInner) {
+        tl.to(contentInner, {
+          opacity: 1, y: 0, scale: 1,
+          duration: 0.8, ease: 'power3.out',
+        }, 0);
+      }
+
       // Eyebrow
-      tl.to(eyebrow, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0)
-        .to(eyebrowLine, { width: 40, duration: 0.5, ease: 'power2.inOut' }, 0.1)
-        .to(eyebrowText, { opacity: 1, duration: 0.4 }, 0.3);
+      tl.to(eyebrow, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.15)
+        .to(eyebrowLine, { width: 40, duration: 0.5, ease: 'power2.inOut' }, 0.25)
+        .to(eyebrowText, { opacity: 1, duration: 0.4 }, 0.4);
 
       // Characters
       tl.to(chars, {
@@ -1240,12 +1257,21 @@
     }
 
     function animateSlideOut(slide: HTMLElement) {
+      const contentInner = slide.querySelector('.hero-content-inner') as HTMLElement;
       const eyebrow = slide.querySelector('[data-hero-eyebrow]') as HTMLElement;
       const chars = slide.querySelectorAll('.char');
       const subtitleText = slide.querySelector('.hero-subtitle-text') as HTMLElement;
       const cta = slide.querySelector('[data-hero-cta]') as HTMLElement;
 
       const tl = gsap.timeline();
+
+      // Content-inner slides up and fades
+      if (contentInner) {
+        tl.to(contentInner, {
+          opacity: 0, y: -40, scale: 0.98,
+          duration: 0.5, ease: 'power2.in',
+        }, 0);
+      }
 
       tl.to([cta, subtitleText], {
         opacity: 0,
@@ -1545,6 +1571,7 @@
 
     // Animate first slide content
     const firstSlide = slides[0];
+    const firstContentInner = firstSlide.querySelector('.hero-content-inner') as HTMLElement;
     const firstEyebrow = firstSlide.querySelector('[data-hero-eyebrow]') as HTMLElement;
     const firstEyebrowLine = firstSlide.querySelector('.hero-eyebrow-line') as HTMLElement;
     const firstEyebrowText = firstSlide.querySelector('.hero-eyebrow-text') as HTMLElement;
@@ -1552,6 +1579,15 @@
     const firstAccent = firstSlide.querySelector('[data-accent]') as HTMLElement;
     const firstSubtitle = firstSlide.querySelector('.hero-subtitle-text') as HTMLElement;
     const firstCta = firstSlide.querySelector('[data-hero-cta]') as HTMLElement;
+
+    // Content-inner slide up to center
+    if (firstContentInner) {
+      gsap.set(firstContentInner, { opacity: 0, y: 60, scale: 0.97 });
+      tl.to(firstContentInner, {
+        opacity: 1, y: 0, scale: 1,
+        duration: 1, ease: 'power3.out',
+      }, 0.4);
+    }
 
     // Eyebrow
     tl.to(firstEyebrow, { opacity: 1, y: 0, duration: 0.8 }, 0.5)
@@ -1579,8 +1615,8 @@
     // CTA
     tl.to(firstCta, { opacity: 1, y: 0, duration: 0.8 }, '-=0.4');
 
-    // Stats
-    tl.to(stats, { opacity: 1, x: 0, duration: 0.8 }, '-=0.4');
+    // Stats (centered, slide up)
+    tl.to(stats, { opacity: 1, y: 0, duration: 0.8 }, '-=0.4');
 
     // Counter animation
     counters.forEach((counter) => {
@@ -1638,10 +1674,26 @@
     });
   }
 
-  // Cleanup function
+  // Cleanup function — only kill Hero-scoped ScrollTriggers and tweens
   function cleanupHeroAnimation() {
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    gsap.killTweensOf('*');
+    heroInitialized = false;
+    const hero = document.querySelector('[data-hero]') as HTMLElement;
+    if (!hero) return;
+
+    // Kill only ScrollTriggers whose trigger is within the hero section
+    ScrollTrigger.getAll().forEach(trigger => {
+      const triggerEl = trigger.vars?.trigger;
+      if (triggerEl && hero.contains(triggerEl as Node)) {
+        trigger.kill();
+      } else if (triggerEl === hero) {
+        trigger.kill();
+      }
+    });
+
+    // Kill tweens on hero-specific elements only
+    const heroElements = hero.querySelectorAll('*');
+    heroElements.forEach(el => gsap.killTweensOf(el));
+    gsap.killTweensOf(hero);
   }
 
   document.addEventListener('DOMContentLoaded', initHeroAnimation);

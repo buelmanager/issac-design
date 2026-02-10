@@ -18,7 +18,7 @@ const { products } = productsData;
       <!-- Mobile fallback image -->
       <img
         class="shop-hero-video-fallback"
-        src="/videos/hero-poster.jpg"
+        src="/videos/poster-timessquare.jpg"
         alt=""
         loading="eager"
         decoding="async"
@@ -32,10 +32,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="auto"
-        poster="/videos/hero-poster.jpg"
+        poster="/videos/poster-timessquare.jpg"
         data-shop-hero-video="0"
       >
-        <source src="/videos/hero-bg-tokyo.mp4" type="video/mp4" />
+        <source src="/videos/new-timessquare.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero-video"
@@ -43,10 +43,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="metadata"
-        poster="/videos/hero-poster-1.jpg"
+        poster="/videos/poster-manhattan.jpg"
         data-shop-hero-video="1"
       >
-        <source src="/videos/hero-slide1-led.mp4" type="video/mp4" />
+        <source src="/videos/new-manhattan.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero-video"
@@ -54,10 +54,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="metadata"
-        poster="/videos/hero-poster-2.jpg"
+        poster="/videos/poster-tokyo.jpg"
         data-shop-hero-video="2"
       >
-        <source src="/videos/hero-slide2-neon.mp4" type="video/mp4" />
+        <source src="/videos/new-tokyo.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero-video"
@@ -65,10 +65,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="metadata"
-        poster="/videos/hero-poster-3.jpg"
+        poster="/videos/poster-aerial.jpg"
         data-shop-hero-video="3"
       >
-        <source src="/videos/hero-slide3-city.mp4" type="video/mp4" />
+        <source src="/videos/new-aerial.mp4" type="video/mp4" />
       </video>
     </div>
 
@@ -113,40 +113,147 @@ const { products } = productsData;
   <!-- Content -->
   <div class="shop-hero-container">
     <div class="shop-hero-content" data-shop-hero-content>
-      <!-- Label Badge -->
-      <span class="shop-hero-badge" data-shop-hero-badge>
-        <span class="shop-hero-badge-line"></span>
-        <span class="shop-hero-badge-text">issac.design Shop</span>
-      </span>
+      <!-- Slide Container -->
+      <div class="shop-hero-slides" data-shop-hero-slides>
+        <!-- Slide 0 -->
+        <div class="shop-hero-slide is-active" data-shop-hero-slide="0">
+          <div class="shop-hero-slide-inner">
+            <span class="shop-hero-badge" data-shop-hero-badge>
+              <span class="shop-hero-badge-line"></span>
+              <span class="shop-hero-badge-text">issac.design Shop</span>
+            </span>
+            <h2 class="shop-hero-title" data-hero-title>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text" data-split-text>빛으로 완성하는</span>
+              </span>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text shop-hero-title-accent" data-split-text>Brand Signage</span>
+              </span>
+            </h2>
+            <p class="shop-hero-subtitle" data-shop-hero-subtitle>
+              <span class="shop-hero-word">LED Signage</span>
+              <span class="shop-hero-word">&middot;</span>
+              <span class="shop-hero-word">Neon Sign</span>
+              <span class="shop-hero-word">&middot;</span>
+              <span class="shop-hero-word">Advertising Design</span>
+            </p>
+            <div class="shop-hero-cta" data-shop-hero-cta>
+              <a href="#products" class="button button--primary shop-hero-btn" data-magnetic>
+                <span class="btn-text">제품 둘러보기</span>
+                <span class="btn-shine"></span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
 
-      <!-- Main Title (split-text) -->
-      <h1 class="shop-hero-title" data-hero-title>
-        <span class="shop-hero-title-line">
-          <span class="shop-hero-title-text" data-split-text>빛으로 완성하는</span>
-        </span>
-        <span class="shop-hero-title-line">
-          <span class="shop-hero-title-text shop-hero-title-accent" data-split-text data-accent>Brand Signage</span>
-        </span>
-      </h1>
+        <!-- Slide 1 -->
+        <div class="shop-hero-slide" data-shop-hero-slide="1">
+          <div class="shop-hero-slide-inner">
+            <span class="shop-hero-badge" data-shop-hero-badge>
+              <span class="shop-hero-badge-line"></span>
+              <span class="shop-hero-badge-text">LED Signage</span>
+            </span>
+            <h2 class="shop-hero-title" data-hero-title>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text" data-split-text>최신 LED 기술의</span>
+              </span>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text shop-hero-title-accent" data-split-text>Premium Signage</span>
+              </span>
+            </h2>
+            <p class="shop-hero-subtitle" data-shop-hero-subtitle>
+              <span class="shop-hero-word">고휘도 LED로 브랜드의 가치를 높이는 Signage Solution</span>
+            </p>
+            <div class="shop-hero-cta" data-shop-hero-cta>
+              <a href="#products" class="button button--primary shop-hero-btn" data-magnetic>
+                <span class="btn-text">LED 간판 보기</span>
+                <span class="btn-shine"></span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
 
-      <!-- Subtitle (word-by-word) -->
-      <p class="shop-hero-subtitle" data-shop-hero-subtitle>
-        <span class="shop-hero-word">LED Signage</span>
-        <span class="shop-hero-word">&middot;</span>
-        <span class="shop-hero-word">Neon Sign</span>
-        <span class="shop-hero-word">&middot;</span>
-        <span class="shop-hero-word">Advertising Design</span>
-      </p>
+        <!-- Slide 2 -->
+        <div class="shop-hero-slide" data-shop-hero-slide="2">
+          <div class="shop-hero-slide-inner">
+            <span class="shop-hero-badge" data-shop-hero-badge>
+              <span class="shop-hero-badge-line"></span>
+              <span class="shop-hero-badge-text">Neon Sign</span>
+            </span>
+            <h2 class="shop-hero-title" data-hero-title>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text" data-split-text>감각적인</span>
+              </span>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text shop-hero-title-accent" data-split-text>Neon Art Collection</span>
+              </span>
+            </h2>
+            <p class="shop-hero-subtitle" data-shop-hero-subtitle>
+              <span class="shop-hero-word">공간에 특별한 분위기를 더하는 Custom Neon Sign</span>
+            </p>
+            <div class="shop-hero-cta" data-shop-hero-cta>
+              <a href="#products" class="button button--primary shop-hero-btn" data-magnetic>
+                <span class="btn-text">네온사인 컬렉션</span>
+                <span class="btn-shine"></span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
 
-      <!-- CTA Button (Single) -->
-      <div class="shop-hero-cta" data-shop-hero-cta>
-        <a href="#products" class="button button--primary shop-hero-btn" data-magnetic>
-          <span class="btn-text">제품 둘러보기</span>
-          <span class="btn-shine"></span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
+        <!-- Slide 3 -->
+        <div class="shop-hero-slide" data-shop-hero-slide="3">
+          <div class="shop-hero-slide-inner">
+            <span class="shop-hero-badge" data-shop-hero-badge>
+              <span class="shop-hero-badge-line"></span>
+              <span class="shop-hero-badge-text">Total Solution</span>
+            </span>
+            <h2 class="shop-hero-title" data-hero-title>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text" data-split-text>Design부터</span>
+              </span>
+              <span class="shop-hero-title-line">
+                <span class="shop-hero-title-text shop-hero-title-accent" data-split-text>시공까지 One-Stop</span>
+              </span>
+            </h2>
+            <p class="shop-hero-subtitle" data-shop-hero-subtitle>
+              <span class="shop-hero-word">기획 · 제작 · 시공 · A/S까지 All-in-One Service</span>
+            </p>
+            <div class="shop-hero-cta" data-shop-hero-cta>
+              <a href="#products" class="button button--primary shop-hero-btn" data-magnetic>
+                <span class="btn-text">견적 문의하기</span>
+                <span class="btn-shine"></span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide Indicators -->
+      <div class="shop-hero-indicators" data-shop-hero-indicators>
+        <button class="shop-hero-indicator is-active" data-shop-hero-indicator="0" aria-label="슬라이드 1">
+          <span class="shop-hero-indicator-progress"></span>
+        </button>
+        <button class="shop-hero-indicator" data-shop-hero-indicator="1" aria-label="슬라이드 2">
+          <span class="shop-hero-indicator-progress"></span>
+        </button>
+        <button class="shop-hero-indicator" data-shop-hero-indicator="2" aria-label="슬라이드 3">
+          <span class="shop-hero-indicator-progress"></span>
+        </button>
+        <button class="shop-hero-indicator" data-shop-hero-indicator="3" aria-label="슬라이드 4">
+          <span class="shop-hero-indicator-progress"></span>
+        </button>
       </div>
     </div>
 
@@ -407,7 +514,6 @@ const { products } = productsData;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--space-lg);
   }
 
   /* Badge with Line Deco */
@@ -461,64 +567,7 @@ const { products } = productsData;
   }
 
   .shop-hero-title-accent {
-    position: relative;
-    background: linear-gradient(135deg, var(--primary-light, #4caf50) 0%, var(--accent, #66bb6a) 50%, var(--primary-light, #4caf50) 100%);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shop-gradient-shift 4s ease infinite;
-  }
-
-  @keyframes shop-gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-
-  /* Glitch Effect on Accent */
-  .shop-hero-title-accent[data-glitch]::before,
-  .shop-hero-title-accent[data-glitch]::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--primary-light, #4caf50) 0%, var(--accent, #66bb6a) 50%, var(--primary-light, #4caf50) 100%);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .shop-hero-title-accent[data-glitch]::before {
-    left: 2px;
-    text-shadow: -2px 0 #ff0080;
-    clip-path: inset(0 0 0 0);
-    animation: shop-glitch-1 2s infinite linear alternate-reverse;
-  }
-
-  .shop-hero-title-accent[data-glitch]::after {
-    left: -2px;
-    text-shadow: 2px 0 #00ffff;
-    clip-path: inset(0 0 0 0);
-    animation: shop-glitch-2 2s infinite linear alternate-reverse;
-  }
-
-  @keyframes shop-glitch-1 {
-    0%, 100% { clip-path: inset(0 0 95% 0); }
-    20% { clip-path: inset(20% 0 60% 0); }
-    40% { clip-path: inset(40% 0 40% 0); }
-    60% { clip-path: inset(60% 0 20% 0); }
-    80% { clip-path: inset(80% 0 5% 0); }
-  }
-
-  @keyframes shop-glitch-2 {
-    0%, 100% { clip-path: inset(95% 0 0 0); }
-    20% { clip-path: inset(60% 0 20% 0); }
-    40% { clip-path: inset(40% 0 40% 0); }
-    60% { clip-path: inset(20% 0 60% 0); }
-    80% { clip-path: inset(5% 0 80% 0); }
+    color: var(--primary-light, #4caf50);
   }
 
   /* Split-text character spans (injected by GSAP) */
@@ -544,6 +593,87 @@ const { products } = productsData;
     display: inline-block;
     opacity: 0;
     transform: translateY(10px);
+  }
+
+  /* Hero Slides */
+  .shop-hero-slides {
+    position: relative;
+    width: 100%;
+  }
+
+  .shop-hero-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s linear 0.6s;
+  }
+
+  .shop-hero-slide.is-active {
+    position: relative;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: visibility 0s linear 0s;
+  }
+
+  .shop-hero-slide-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-lg);
+  }
+
+  /* Hero Indicators */
+  .shop-hero-indicators {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-2xl);
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .shop-hero-indicator {
+    position: relative;
+    width: 48px;
+    height: 3px;
+    background: rgba(76, 175, 80, 0.2);
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+    transition: background 0.3s ease;
+  }
+
+  .shop-hero-indicator:hover {
+    background: rgba(76, 175, 80, 0.35);
+  }
+
+  .shop-hero-indicator-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: var(--primary-light, #4caf50);
+    border-radius: var(--radius-full);
+    transition: width 0s;
+  }
+
+  .shop-hero-indicator.is-active .shop-hero-indicator-progress {
+    width: 0%;
+  }
+
+  .shop-hero-indicator.is-done .shop-hero-indicator-progress {
+    width: 100%;
+    transition: none;
   }
 
   /* CTA Button */
@@ -786,6 +916,14 @@ const { products } = productsData;
       );
     }
 
+    .shop-hero-indicators {
+      margin-top: var(--space-xl);
+    }
+
+    .shop-hero-indicator {
+      width: 36px;
+    }
+
     .shop-hero-particles,
     .shop-hero-geometrics {
       display: none;
@@ -816,15 +954,6 @@ const { products } = productsData;
 
     .shop-hero-scroll-dot {
       animation: none;
-    }
-
-    .shop-hero-title-accent {
-      animation: none;
-    }
-
-    .shop-hero-title-accent[data-glitch]::before,
-    .shop-hero-title-accent[data-glitch]::after {
-      display: none;
     }
 
     .shop-hero-video {

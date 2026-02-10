@@ -1,0 +1,405 @@
+---
+/**
+ * InstallationGallery Component
+ * Before/After image comparison slider for installation showcase
+ */
+
+interface Props {
+  gallery: Array<{
+    before: string;
+    after: string;
+    location: string;
+  }>;
+}
+
+const { gallery } = Astro.props;
+---
+
+<section class="installation-gallery" data-installation-gallery>
+  <div class="installation-gallery__container">
+    <div class="installation-gallery__header">
+      <span class="installation-gallery__label">Installation Gallery</span>
+      <h2 class="installation-gallery__title">시공 현장</h2>
+      <p class="installation-gallery__subtitle">
+        드래그하여 시공 전후를 비교해보세요
+      </p>
+    </div>
+
+    <div class="installation-gallery__grid">
+      {gallery.map((item, index) => (
+        <div
+          class="installation-gallery__item"
+          data-gallery-item
+          style={`--delay: ${index * 0.15}s`}
+        >
+          <div class="installation-gallery__comparison">
+            {/* Before image (full width, sits behind) */}
+            <img
+              src={item.before}
+              alt={`${item.location} - 시공 전`}
+              class="installation-gallery__before"
+              loading="lazy"
+              draggable="false"
+            />
+
+            {/* After image (clipped from the left) */}
+            <img
+              src={item.after}
+              alt={`${item.location} - 시공 후`}
+              class="installation-gallery__after"
+              loading="lazy"
+              draggable="false"
+              style="clip-path: inset(0 0 0 50%);"
+            />
+
+            {/* Labels */}
+            <span class="installation-gallery__badge installation-gallery__badge--before">
+              BEFORE
+            </span>
+            <span class="installation-gallery__badge installation-gallery__badge--after">
+              AFTER
+            </span>
+
+            {/* Drag handle */}
+            <div class="installation-gallery__handle" style="left: 50%;">
+              <div class="installation-gallery__handle-line"></div>
+              <div class="installation-gallery__handle-grip">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 4L2 10L6 16"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M14 4L18 10L14 16"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Location */}
+          <div class="installation-gallery__location">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span>{item.location}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('[data-installation-gallery] .installation-gallery__item').forEach((item) => {
+    const handle = item.querySelector<HTMLElement>('.installation-gallery__handle');
+    const afterImg = item.querySelector<HTMLElement>('.installation-gallery__after');
+    const comparison = item.querySelector<HTMLElement>('.installation-gallery__comparison');
+
+    if (!handle || !afterImg || !comparison) return;
+
+    let isDragging = false;
+
+    const updatePosition = (clientX: number) => {
+      const rect = comparison.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+      handle.style.left = `${percentage}%`;
+      afterImg.style.clipPath = `inset(0 0 0 ${percentage}%)`;
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      updatePosition(e.clientX);
+    };
+
+    const onUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      comparison.classList.remove('is-dragging');
+      document.body.style.userSelect = '';
+    };
+
+    handle.addEventListener('pointerdown', (e: PointerEvent) => {
+      isDragging = true;
+      e.preventDefault();
+      comparison.classList.add('is-dragging');
+      document.body.style.userSelect = 'none';
+    });
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+
+    // Allow clicking anywhere on the comparison to jump the handle
+    comparison.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (e.target === handle || handle.contains(e.target as Node)) return;
+      isDragging = true;
+      e.preventDefault();
+      comparison.classList.add('is-dragging');
+      document.body.style.userSelect = 'none';
+      updatePosition(e.clientX);
+    });
+  });
+</script>
+
+<style>
+  .installation-gallery {
+    padding: var(--space-4xl) 0;
+    background: var(--background);
+  }
+
+  .installation-gallery__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  /* Header */
+  .installation-gallery__header {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+  }
+
+  .installation-gallery__label {
+    display: inline-block;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    letter-spacing: var(--letter-spacing-wider);
+    text-transform: uppercase;
+    color: var(--primary-light);
+    margin-bottom: var(--space-sm);
+  }
+
+  .installation-gallery__title {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: var(--letter-spacing-tight);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--space-md);
+  }
+
+  .installation-gallery__subtitle {
+    font-size: var(--font-size-base);
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* Grid */
+  .installation-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+  }
+
+  /* Item */
+  .installation-gallery__item {
+    opacity: 0;
+    animation: galleryFadeIn 0.6s ease forwards;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes galleryFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Comparison container */
+  .installation-gallery__comparison {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 16 / 10;
+    cursor: ew-resize;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .installation-gallery__comparison.is-dragging {
+    cursor: grabbing;
+  }
+
+  /* Images */
+  .installation-gallery__before,
+  .installation-gallery__after {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .installation-gallery__before {
+    z-index: 1;
+  }
+
+  .installation-gallery__after {
+    z-index: 2;
+  }
+
+  /* Badges */
+  .installation-gallery__badge {
+    position: absolute;
+    top: var(--space-md);
+    z-index: 4;
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .installation-gallery__badge--before {
+    left: var(--space-md);
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--text-secondary);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .installation-gallery__badge--after {
+    right: var(--space-md);
+    background: rgba(26, 77, 46, 0.85);
+    color: var(--text-primary);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* Handle */
+  .installation-gallery__handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
+    width: 2px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+  }
+
+  .installation-gallery__handle-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    opacity: 0.8;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .installation-gallery__handle-grip {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--background);
+    border: 2px solid var(--primary);
+    color: var(--text-primary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    transition: transform var(--transition-fast),
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
+    cursor: ew-resize;
+  }
+
+  .installation-gallery__handle-grip:hover,
+  .installation-gallery__comparison.is-dragging .installation-gallery__handle-grip {
+    transform: scale(1.15);
+    border-color: var(--primary-hover);
+    box-shadow: 0 2px 20px rgba(26, 77, 46, 0.4);
+  }
+
+  /* Location */
+  .installation-gallery__location {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .installation-gallery__location svg {
+    flex-shrink: 0;
+    color: var(--primary-light);
+  }
+
+  /* Responsive */
+  @media (max-width: 719px) {
+    .installation-gallery {
+      padding: var(--space-3xl) 0;
+    }
+
+    .installation-gallery__title {
+      font-size: var(--font-size-3xl);
+    }
+
+    .installation-gallery__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    .installation-gallery__badge {
+      font-size: 0.625rem;
+      padding: 2px var(--space-xs);
+    }
+
+    .installation-gallery__handle-grip {
+      width: 36px;
+      height: 36px;
+    }
+
+    .installation-gallery__handle-grip svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+</style>

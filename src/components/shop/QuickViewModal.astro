@@ -1,0 +1,350 @@
+---
+/**
+ * QuickViewModal Component
+ * Singleton modal for quick product previews.
+ * Content is dynamically injected via client-side script
+ * from [data-product-card] attributes.
+ */
+---
+
+<div class="quick-view-modal" data-quick-view-modal>
+  <div class="quick-view-modal__backdrop" data-quick-view-close></div>
+  <div class="quick-view-modal__dialog">
+    <button class="quick-view-modal__close" data-quick-view-close aria-label="닫기">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="quick-view-modal__body">
+      <div class="quick-view-modal__image">
+        <img data-quick-view-image src="" alt="" />
+      </div>
+      <div class="quick-view-modal__info">
+        <span class="quick-view-modal__category" data-quick-view-category></span>
+        <h3 class="quick-view-modal__name" data-quick-view-name></h3>
+        <p class="quick-view-modal__desc" data-quick-view-desc></p>
+        <span class="quick-view-modal__price" data-quick-view-price></span>
+        <div class="quick-view-modal__actions">
+          <a class="button button--primary quick-view-modal__detail-btn" data-quick-view-link href="#">상세 보기</a>
+          <button class="button button--outline quick-view-modal__quote-btn" data-quick-view-quote>견적함 추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* ============================================
+     Quick View Modal
+     ============================================ */
+
+  .quick-view-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .quick-view-modal--open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Backdrop */
+  .quick-view-modal__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal-backdrop);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* Dialog */
+  .quick-view-modal__dialog {
+    position: relative;
+    z-index: var(--z-modal);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .quick-view-modal--open .quick-view-modal__dialog {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  /* Dialog scrollbar */
+  .quick-view-modal__dialog::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .quick-view-modal__dialog::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .quick-view-modal__dialog::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-full);
+  }
+
+  /* Close button */
+  .quick-view-modal__close {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .quick-view-modal__close:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+    transform: rotate(90deg);
+  }
+
+  /* Body – two-column grid */
+  .quick-view-modal__body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Image */
+  .quick-view-modal__image {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    background: var(--surface-light);
+  }
+
+  .quick-view-modal__image img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Info panel */
+  .quick-view-modal__info {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    gap: var(--space-md);
+  }
+
+  /* Category badge */
+  .quick-view-modal__category {
+    display: inline-block;
+    align-self: flex-start;
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(26, 77, 46, 0.1);
+    color: var(--primary);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Product name */
+  .quick-view-modal__name {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    color: var(--text-primary);
+  }
+
+  /* Description */
+  .quick-view-modal__desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Price */
+  .quick-view-modal__price {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  /* Action buttons */
+  .quick-view-modal__actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: auto;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+
+  .quick-view-modal__detail-btn,
+  .quick-view-modal__quote-btn {
+    flex: 1;
+    text-align: center;
+    font-size: var(--font-size-sm);
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  /* ============================================
+     Responsive – Mobile (<=719px)
+     ============================================ */
+
+  @media (max-width: 719px) {
+    .quick-view-modal__dialog {
+      width: 95%;
+      max-height: 85vh;
+    }
+
+    .quick-view-modal__body {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-view-modal__image {
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+
+    .quick-view-modal__image img {
+      aspect-ratio: 16 / 9;
+    }
+
+    .quick-view-modal__info {
+      padding: var(--space-lg);
+    }
+
+    .quick-view-modal__name {
+      font-size: var(--font-size-xl);
+    }
+
+    .quick-view-modal__actions {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.querySelector('[data-quick-view-modal]');
+    if (!modal) return;
+
+    const img = modal.querySelector('[data-quick-view-image]') as HTMLImageElement | null;
+    const category = modal.querySelector('[data-quick-view-category]');
+    const name = modal.querySelector('[data-quick-view-name]');
+    const desc = modal.querySelector('[data-quick-view-desc]');
+    const price = modal.querySelector('[data-quick-view-price]');
+    const link = modal.querySelector('[data-quick-view-link]') as HTMLAnchorElement | null;
+
+    if (!img || !category || !name || !desc || !price || !link) return;
+
+    // ---- Open ----
+    document.addEventListener('click', (e) => {
+      const trigger = (e.target as HTMLElement).closest('[data-quick-view]');
+      if (!trigger) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const card = trigger.closest('[data-product-card]') as HTMLElement | null;
+      if (!card) return;
+
+      img.src = card.dataset.thumbnail || '';
+      img.alt = card.dataset.productName || '';
+      category.textContent = card.dataset.categoryName || '';
+      name.textContent = card.dataset.productName || '';
+      desc.textContent = card.dataset.description || '';
+      price.textContent = card.dataset.priceRange || '';
+      link.href = '/shop/' + (card.dataset.slug || '');
+
+      modal.classList.add('quick-view-modal--open');
+      document.body.style.overflow = 'hidden';
+    });
+
+    // ---- Close ----
+    function closeModal() {
+      modal.classList.remove('quick-view-modal--open');
+      document.body.style.overflow = '';
+    }
+
+    modal.querySelectorAll('[data-quick-view-close]').forEach((el) => {
+      el.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('quick-view-modal--open')) {
+        closeModal();
+      }
+    });
+
+    // ---- Quote button ----
+    modal.querySelector('[data-quick-view-quote]')?.addEventListener('click', () => {
+      const productName = name.textContent || '';
+      const slug = link.href.split('/shop/')[1] || '';
+
+      const existingCart: Array<{
+        slug: string;
+        name: string;
+        category: string;
+        price: string;
+        thumbnail: string;
+        quantity: number;
+        addedAt: string;
+      }> = JSON.parse(localStorage.getItem('quote-cart') || '[]');
+
+      const newItem = {
+        slug,
+        name: productName,
+        category: category.textContent || '',
+        price: price.textContent || '',
+        thumbnail: img.src,
+        quantity: 1,
+        addedAt: new Date().toISOString(),
+      };
+
+      if (!existingCart.find((item) => item.slug === slug)) {
+        existingCart.push(newItem);
+        localStorage.setItem('quote-cart', JSON.stringify(existingCart));
+        window.dispatchEvent(new CustomEvent('quote-cart-updated'));
+
+        if (typeof (window as any).showToast === 'function') {
+          (window as any).showToast('견적함에 추가되었습니다', 'success');
+        }
+      } else {
+        if (typeof (window as any).showToast === 'function') {
+          (window as any).showToast('이미 견적함에 있는 제품입니다', 'info');
+        }
+      }
+
+      closeModal();
+    });
+  });
+</script>
