@@ -21,6 +21,9 @@ import InstallationGallery from '../../components/shop/InstallationGallery.astro
 import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
+import ScrollProgress from '../../components/ScrollProgress.astro';
+import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
+import ProductSimulatorSection from '../../components/shop/ProductSimulatorSection.astro';
 import productsData from '../../data/products.json';
 
 export async function getStaticPaths() {
@@ -45,11 +48,12 @@ const breadcrumbs = [
   description={`${product.description} ${product.priceRange} - issac.design에서 제공하는 ${product.categoryName} 제품입니다.`}
 >
   <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ScrollProgress />
   <ShopNavbar />
   <Toast />
   <SearchOverlay />
 
-  <main class="product-page">
+  <main class="product-page" id="main-content">
     <!-- Breadcrumb -->
     <div class="product-page__breadcrumb">
       <Breadcrumb items={breadcrumbs} />
@@ -61,7 +65,12 @@ const breadcrumbs = [
         <div class="product-page__grid">
           <!-- Left: Image Gallery -->
           <div class="product-page__gallery">
-            <ImageGallery images={product.images} productName={product.name} />
+            <ImageGallery
+              images={product.images}
+              productName={product.name}
+              materialImages={product.materialImages}
+              lightingImages={product.lightingImages}
+            />
           </div>
 
           <!-- Right: Product Info + Configurator -->
@@ -97,6 +106,9 @@ const breadcrumbs = [
       </section>
     )}
 
+    <!-- 3D Simulator -->
+    <ProductSimulatorSection />
+
     <!-- Related Products -->
     {product.relatedProducts && (
       <RelatedProducts
@@ -105,6 +117,9 @@ const breadcrumbs = [
         category={product.category}
       />
     )}
+
+    <!-- Warranty & Insurance Badges -->
+    <WarrantyBadge />
 
     <!-- Quote Form Section -->
     <section class="product-page__quote" id="quote-form">

@@ -1,0 +1,27 @@
+---
+/**
+ * Hero 3D Canvas - Full Simulator Integration
+ * Uses the same PngTo3DExtruder component from /simulator
+ */
+import PngTo3DExtruder from '../simulator/PngTo3DExtruder';
+---
+
+<div class="hero-3d-wrapper">
+  <!-- Full simulator with all features -->
+  <PngTo3DExtruder client:visible />
+</div>
+
+<style>
+  .hero-3d-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  /* Override simulator styles to fit Hero layout */
+  .hero-3d-wrapper :global(.simulator-container) {
+    border-radius: var(--radius-lg);
+  }
+</style>

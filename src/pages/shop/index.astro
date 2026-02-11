@@ -24,6 +24,8 @@ import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 import SearchOverlay from '../../components/shop/SearchOverlay.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
+import ScrollProgress from '../../components/ScrollProgress.astro';
+import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
 import productsData from '../../data/products.json';
 
 const { products, categories } = productsData;
@@ -34,11 +36,12 @@ const { products, categories } = productsData;
   description="LED Signage, Hanging Banner, X-Banner, Neon Sign 등 다양한 간판 제품을 만나보세요. 온라인 견적 문의 가능."
 >
   <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ScrollProgress />
   <ShopNavbar />
   <Toast />
   <SearchOverlay />
 
-  <main class="shop-page">
+  <main class="shop-page" id="main-content">
     <!-- Hero Section (same as landing) -->
     <Hero />
 
@@ -79,6 +82,9 @@ const { products, categories } = productsData;
 
     <!-- Trust Indicators -->
     <TrustIndicators />
+
+    <!-- Warranty & Insurance Badges -->
+    <WarrantyBadge />
 
     <!-- Client Logos Marquee -->
     <ClientLogos />
