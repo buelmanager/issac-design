@@ -36,6 +36,16 @@
         "1년 무상 A/S"
       ],
       "tags": ["LED", "고급", "레스토랑", "매장"],
+      "materialImages": {
+        "acrylic": "https://images.unsplash.com/photo-1763673263764-4d189ab2f03f?w=800&q=80",
+        "stainless": "https://images.unsplash.com/photo-1767488903403-3963f0d370db?w=800&q=80",
+        "aluminum": "https://images.unsplash.com/photo-1524237964353-f14cde1db034?w=800&q=80",
+        "copper": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80"
+      },
+      "lightingImages": {
+        "off": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
+        "on": "https://images.unsplash.com/photo-1763673263764-4d189ab2f03f?w=800&q=80"
+      },
       "options": {
         "sizes": [
           {"label": "소형 (1m 이하)", "priceModifier": "기본가"},

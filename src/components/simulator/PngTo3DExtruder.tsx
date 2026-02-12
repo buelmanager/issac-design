@@ -86,6 +86,80 @@ const TEXTURE_PRESETS: Record<TextureQuality, { downsample: number; simplify: nu
   high: { downsample: 1, simplify: 0.8, label: '상' },
 };
 
+// ─── Material presets ───
+type MaterialPreset = 'metal-channel' | 'neon-sign' | 'acrylic' | 'custom';
+interface MaterialPresetConfig {
+  label: string;
+  icon: string;
+  color: string;
+  depth: number;
+  backboardColor: string;
+  ledColor: string;
+  ledIntensity: number;
+  ledSpacing: number;
+  standoffDistance: number;
+  ledSpread: number;
+  boardPaddingX: number;
+  boardPaddingY: number;
+  boardDepth: number;
+  lightColor: string;
+  lightIntensity: number;
+}
+
+const MATERIAL_PRESETS: Record<Exclude<MaterialPreset, 'custom'>, MaterialPresetConfig> = {
+  'metal-channel': {
+    label: '금속 채널',
+    icon: '🔩',
+    color: '#c0c0c0',
+    depth: 2.5,
+    backboardColor: '#2a2a2a',
+    ledColor: '#ffffff',
+    ledIntensity: 2.5,
+    ledSpacing: 0.8,
+    standoffDistance: 0.3,
+    ledSpread: 0.15,
+    boardPaddingX: 0.6,
+    boardPaddingY: 0.5,
+    boardDepth: 0.2,
+    lightColor: '#ffffff',
+    lightIntensity: 2.0,
+  },
+  'neon-sign': {
+    label: '네온 사인',
+    icon: '✨',
+    color: '#ff3366',
+    depth: 1.0,
+    backboardColor: '#1a1a1a',
+    ledColor: '#ff0080',
+    ledIntensity: 4.0,
+    ledSpacing: 0.5,
+    standoffDistance: 0.2,
+    ledSpread: 0.25,
+    boardPaddingX: 0.4,
+    boardPaddingY: 0.4,
+    boardDepth: 0.15,
+    lightColor: '#ffccdd',
+    lightIntensity: 1.5,
+  },
+  'acrylic': {
+    label: '아크릴',
+    icon: '💎',
+    color: '#ffffff',
+    depth: 1.5,
+    backboardColor: '#222222',
+    ledColor: '#4CAF50',
+    ledIntensity: 3.0,
+    ledSpacing: 0.7,
+    standoffDistance: 0.25,
+    ledSpread: 0.18,
+    boardPaddingX: 0.5,
+    boardPaddingY: 0.45,
+    boardDepth: 0.18,
+    lightColor: '#ffffff',
+    lightIntensity: 2.5,
+  },
+};
+
 // ─── 3D Extruded Mesh Component with Backlit LED ───
 
 interface ExtrudedMeshProps {
@@ -398,6 +472,7 @@ export default function PngTo3DExtruder() {
   const [error, setError] = useState<string | null>(null);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [currentPreset, setCurrentPreset] = useState<MaterialPreset>('custom');
   const isMobile = useIsMobile();
 
   // Controls
@@ -429,6 +504,25 @@ export default function PngTo3DExtruder() {
 
   const downsample = TEXTURE_PRESETS[textureQuality].downsample;
   const simplify = TEXTURE_PRESETS[textureQuality].simplify;
+
+  // Apply material preset
+  const applyPreset = useCallback((preset: Exclude<MaterialPreset, 'custom'>) => {
+    const config = MATERIAL_PRESETS[preset];
+    setColor(config.color);
+    setDepth(config.depth);
+    setBackboardColor(config.backboardColor);
+    setLedColor(config.ledColor);
+    setLedIntensity(config.ledIntensity);
+    setLedSpacing(config.ledSpacing);
+    setStandoffDistance(config.standoffDistance);
+    setLedSpread(config.ledSpread);
+    setBoardPaddingX(config.boardPaddingX);
+    setBoardPaddingY(config.boardPaddingY);
+    setBoardDepth(config.boardDepth);
+    setLightColor(config.lightColor);
+    setLightIntensity(config.lightIntensity);
+    setCurrentPreset(preset);
+  }, []);
 
   const processImage = useCallback(
     (url: string) => {
@@ -511,6 +605,25 @@ export default function PngTo3DExtruder() {
     setImageUrl('/images/test.png');
   }, []);
 
+  // Track manual changes to mark as custom preset
+  useEffect(() => {
+    if (currentPreset !== 'custom') {
+      const preset = MATERIAL_PRESETS[currentPreset as Exclude<MaterialPreset, 'custom'>];
+      if (preset) {
+        const hasChanges =
+          color !== preset.color ||
+          depth !== preset.depth ||
+          backboardColor !== preset.backboardColor ||
+          ledColor !== preset.ledColor ||
+          ledIntensity !== preset.ledIntensity;
+
+        if (hasChanges) {
+          setCurrentPreset('custom');
+        }
+      }
+    }
+  }, [color, depth, backboardColor, ledColor, ledIntensity, currentPreset]);
+
   // Process image whenever imageUrl or params change
   useEffect(() => {
     if (imageUrl) {
@@ -540,6 +653,43 @@ export default function PngTo3DExtruder() {
           <SampleButton onClick={() => handleSample('star')} label="별" />
           <SampleButton onClick={() => handleSample('logo')} label="로고" />
           <SampleButton onClick={() => handleSample('text')} label="텍스트" />
+        </div>
+      </Section>
+
+      {/* 소재 프리셋 */}
+      <Section title="소재 프리셋">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          {(['metal-channel', 'neon-sign', 'acrylic'] as const).map((presetKey) => {
+            const preset = MATERIAL_PRESETS[presetKey];
+            const isActive = currentPreset === presetKey;
+            return (
+              <button
+                key={presetKey}
+                onClick={() => applyPreset(presetKey)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '12px 8px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 600 : 400,
+                  border: isActive ? '2px solid #4a90d9' : '1px solid rgba(255,255,255,0.15)',
+                  background: isActive ? 'rgba(74,144,217,0.25)' : 'rgba(255,255,255,0.06)',
+                  color: isActive ? '#8ab8e8' : '#999',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '24px' }}>{preset.icon}</span>
+                <span>{preset.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: '12px', opacity: 0.5, marginTop: '8px', textAlign: 'center' }}>
+          프리셋 선택 시 아래 설정이 자동 적용됩니다
         </div>
       </Section>
 

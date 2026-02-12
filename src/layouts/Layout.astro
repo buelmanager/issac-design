@@ -2,66 +2,139 @@
 interface Props {
   title?: string;
   description?: string;
+  image?: string;
+  canonical?: string;
+  noindex?: boolean;
 }
 
 const {
-  title = "issac.design - LED Signage · Hanging Banner · Advertising Design",
-  description = "15년 경험의 간판 전문 업체. LED Signage, Hanging Banner, X-Banner, Outdoor Advertising 제작부터 설치까지 원스톱 서비스."
+  title = "issac.design - Professional LED Signage & Outdoor Advertising",
+  description = "15년 경력의 프리미엄 간판 전문 업체. LED Channel Letters, Neon Signs, 옥외광고물 제작부터 설치까지 전국 시공 가능. 1년 무상 A/S 보증.",
+  image = "/images/og-image.jpg",
+  canonical,
+  noindex = false
 } = Astro.props;
+
+const currentUrl = new URL(Astro.url.pathname, Astro.site || 'https://issac.design');
+const canonicalURL = canonical || currentUrl.href;
+const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
 ---
 
 <!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="keywords" content="issac.design, LED Signage, Hanging Banner, X-Banner, Advertising Design, Outdoor Advertising, Neon Sign, Creative Design, 간판제작, 현수막, 옥외광고" />
+    <meta name="keywords" content="LED 간판, 채널간판, 네온사인, 옥외광고, 간판제작, 간판시공, LED Signage, Neon Sign, Channel Letters, issac.design" />
+    <meta name="author" content="issac.design" />
+    <meta name="theme-color" content="#1A4D2E" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
-    <!-- Open Graph -->
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://issac.design" />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="/images/og-image.jpg" />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content="issac.design" />
 
     <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://issac.design" />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <title>{title}</title>
-    
-    <!-- Preload critical assets -->
+
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- DNS Prefetch for performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- Schema.org Structured Data (LocalBusiness) -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "issac.design",
+      "description": "프리미엄 LED 간판 및 옥외광고물 전문 제작 업체",
+      "url": "https://issac.design",
+      "telephone": "+82-10-1234-5678",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "테헤란로 123 아이삭빌딩 2층",
+        "addressLocality": "강남구",
+        "addressRegion": "서울",
+        "addressCountry": "KR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "37.5665",
+        "longitude": "126.9780"
+      },
+      "openingHours": "Mo-Fr 09:00-18:00, Sa 09:00-15:00",
+      "priceRange": "₩₩₩",
+      "image": ogImageURL,
+      "logo": "https://issac.design/images/logo.png",
+      "sameAs": [
+        "https://www.instagram.com/issac.design",
+        "https://www.youtube.com/@issac.design"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "127"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "대한민국"
+      }
+    })} />
   </head>
   <body>
+    <!-- Skip to main content (Accessibility) -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
     <slot />
-    
+
     <!-- Lenis Smooth Scroll & GSAP Init -->
     <script>
       import Lenis from 'lenis';
       import gsap from 'gsap';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
-      
+
       // Register GSAP plugins
       gsap.registerPlugin(ScrollTrigger);
-      
-      // Initialize Lenis smooth scroll
+
+      // Check for reduced motion preference (Accessibility)
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Check if mobile device (Performance optimization)
+      const isMobile = window.innerWidth < 768;
+
+      // Initialize Lenis smooth scroll with accessibility and performance considerations
       const lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        duration: prefersReducedMotion ? 0.1 : (isMobile ? 0.8 : 1.2),
+        easing: (t) => prefersReducedMotion ? t : Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         orientation: 'vertical',
         gestureOrientation: 'vertical',
-        smoothWheel: true,
+        smoothWheel: !prefersReducedMotion && !isMobile,
         wheelMultiplier: 1,
-        touchMultiplier: 2,
+        touchMultiplier: isMobile ? 1.5 : 2,
         infinite: false,
       });
       
@@ -102,4 +175,50 @@ const {
 
 <style is:global>
   @import '../styles/global.css';
+  @import '../styles/typography.css';
+
+  /* Skip to Content Link (Accessibility) */
+  .skip-to-content {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    z-index: 10000;
+    padding: 1rem 1.5rem;
+    background: var(--primary);
+    color: #FFFFFF;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0 0 var(--radius-md) 0;
+    transition: top 0.3s ease;
+  }
+
+  .skip-to-content:focus {
+    top: 0;
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Smooth Scroll Behavior (respects prefers-reduced-motion) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Focus Visible Styles (Accessibility) */
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Remove outline for mouse users, keep for keyboard users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
 </style>

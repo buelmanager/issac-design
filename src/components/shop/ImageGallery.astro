@@ -1,18 +1,114 @@
 ---
 /**
  * ImageGallery Component
- * Product image gallery with thumbnails and lightbox modal
+ * Product image gallery with thumbnails, lightbox modal, material toggle, and lighting switch
  */
 
 interface Props {
   images: string[];
   productName: string;
+  materialImages?: {
+    acrylic?: string;
+    stainless?: string;
+    aluminum?: string;
+    copper?: string;
+  };
+  lightingImages?: {
+    off?: string;
+    on?: string;
+  };
 }
 
-const { images, productName } = Astro.props;
+const { images, productName, materialImages, lightingImages } = Astro.props;
 ---
 
 <div class="image-gallery" data-image-gallery>
+  <!-- Material Toggle (if materialImages available) -->
+  {materialImages && Object.keys(materialImages).length > 0 && (
+    <div class="image-gallery__controls">
+      <div class="image-gallery__control-group">
+        <span class="image-gallery__control-label">소재 선택</span>
+        <div class="image-gallery__material-toggle" data-material-toggle>
+          {materialImages.acrylic && (
+            <button
+              class="material-btn material-btn--active"
+              data-material="acrylic"
+              data-material-src={materialImages.acrylic}
+              aria-label="아크릴 소재"
+            >
+              아크릴
+            </button>
+          )}
+          {materialImages.stainless && (
+            <button
+              class="material-btn"
+              data-material="stainless"
+              data-material-src={materialImages.stainless}
+              aria-label="스테인리스 소재"
+            >
+              스테인리스
+            </button>
+          )}
+          {materialImages.aluminum && (
+            <button
+              class="material-btn"
+              data-material="aluminum"
+              data-material-src={materialImages.aluminum}
+              aria-label="알루미늄 소재"
+            >
+              알루미늄
+            </button>
+          )}
+          {materialImages.copper && (
+            <button
+              class="material-btn"
+              data-material="copper"
+              data-material-src={materialImages.copper}
+              aria-label="동판 소재"
+            >
+              동판
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Lighting Switch (if lightingImages available) -->
+  {lightingImages && lightingImages.off && lightingImages.on && (
+    <div class="image-gallery__controls">
+      <div class="image-gallery__control-group">
+        <span class="image-gallery__control-label">조명</span>
+        <div class="image-gallery__lighting-switch" data-lighting-switch>
+          <button
+            class="lighting-btn"
+            data-lighting="off"
+            data-lighting-src={lightingImages.off}
+            aria-label="조명 OFF"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 3v1M10 16v1M17 10h-1M4 10H3M15.657 4.343l-.707.707M5.05 14.95l-.707.707M15.657 15.657l-.707-.707M5.05 5.05l-.707-.707" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            OFF
+          </button>
+          <button
+            class="lighting-btn lighting-btn--active"
+            data-lighting="on"
+            data-lighting-src={lightingImages.on}
+            aria-label="조명 ON"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 3v1M10 16v1M17 10h-1M4 10H3M15.657 4.343l-.707.707M5.05 14.95l-.707.707M15.657 15.657l-.707-.707M5.05 5.05l-.707-.707" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="10" cy="10" r="3" fill="currentColor"/>
+            </svg>
+            ON
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+
   <!-- Main Image -->
   <div class="image-gallery__main" data-gallery-main>
     <img
@@ -71,6 +167,107 @@ const { images, productName } = Astro.props;
     flex-direction: column;
     gap: var(--space-md);
     width: 100%;
+  }
+
+  /* Controls */
+  .image-gallery__controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .image-gallery__control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .image-gallery__control-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+  }
+
+  /* Material Toggle */
+  .image-gallery__material-toggle {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .material-btn {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .material-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--primary);
+    background: rgba(26, 77, 46, 0.1);
+  }
+
+  .material-btn--active {
+    color: var(--text-primary);
+    border-color: var(--primary);
+    background: var(--primary);
+  }
+
+  .material-btn--active:hover {
+    background: var(--primary-hover);
+  }
+
+  /* Lighting Switch */
+  .image-gallery__lighting-switch {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  .lighting-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .lighting-btn svg {
+    flex-shrink: 0;
+  }
+
+  .lighting-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--primary);
+    background: rgba(26, 77, 46, 0.1);
+  }
+
+  .lighting-btn--active {
+    color: var(--text-primary);
+    border-color: var(--primary);
+    background: var(--primary);
+  }
+
+  .lighting-btn--active:hover {
+    background: var(--primary-hover);
   }
 
   /* Main Image */
@@ -236,6 +433,48 @@ const { images, productName } = Astro.props;
       if (!mainImg || !lightbox || !lightboxImg) return;
 
       let activeIndex = 0;
+
+      // Material Toggle
+      const materialButtons = gallery.querySelectorAll<HTMLButtonElement>('[data-material]');
+      materialButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const materialSrc = btn.dataset.materialSrc;
+          if (!materialSrc) return;
+
+          // Fade out
+          mainImg.classList.add('is-fading');
+
+          setTimeout(() => {
+            mainImg.src = materialSrc;
+            mainImg.classList.remove('is-fading');
+          }, 300);
+
+          // Update active material button
+          materialButtons.forEach((b) => b.classList.remove('material-btn--active'));
+          btn.classList.add('material-btn--active');
+        });
+      });
+
+      // Lighting Switch
+      const lightingButtons = gallery.querySelectorAll<HTMLButtonElement>('[data-lighting]');
+      lightingButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lightingSrc = btn.dataset.lightingSrc;
+          if (!lightingSrc) return;
+
+          // Fade out
+          mainImg.classList.add('is-fading');
+
+          setTimeout(() => {
+            mainImg.src = lightingSrc;
+            mainImg.classList.remove('is-fading');
+          }, 300);
+
+          // Update active lighting button
+          lightingButtons.forEach((b) => b.classList.remove('lighting-btn--active'));
+          btn.classList.add('lighting-btn--active');
+        });
+      });
 
       // Thumbnail click: swap main image with fade
       thumbs.forEach((thumb) => {

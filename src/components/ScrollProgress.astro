@@ -1,0 +1,152 @@
+---
+/**
+ * ScrollProgress Component
+ * Thin progress bar at the top of the page showing scroll progress
+ * Adds premium feel and improves UX
+ */
+---
+
+<div class="scroll-progress" data-scroll-progress>
+  <div class="scroll-progress__bar" data-scroll-progress-bar></div>
+</div>
+
+<style>
+  /* ============================================
+     Scroll Progress Indicator
+     ============================================ */
+
+  .scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .scroll-progress.is-visible {
+    opacity: 1;
+  }
+
+  /* Progress Bar */
+  .scroll-progress__bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      var(--primary-light) 50%,
+      var(--accent) 100%
+    );
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    transition: width 0.1s ease-out;
+    will-change: width;
+  }
+
+  /* Glow Effect */
+  .scroll-progress__bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+    opacity: 0.6;
+  }
+
+  /* ============================================
+     Responsive
+     ============================================ */
+
+  /* Mobile - Slightly thicker for better visibility */
+  @media (max-width: 719px) {
+    .scroll-progress {
+      height: 2px;
+    }
+  }
+
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-progress__bar {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * ScrollProgress Script
+   * Updates progress bar width based on scroll position
+   */
+
+  function initScrollProgress() {
+    const progress = document.querySelector('[data-scroll-progress]') as HTMLElement;
+    const bar = document.querySelector('[data-scroll-progress-bar]') as HTMLElement;
+
+    if (!progress || !bar) return;
+
+    let ticking = false;
+
+    const updateProgress = () => {
+      // Calculate scroll progress
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+      // Calculate percentage
+      const scrollableHeight = documentHeight - windowHeight;
+      const scrollPercentage = (scrollTop / scrollableHeight) * 100;
+
+      // Update bar width
+      bar.style.width = `${Math.min(scrollPercentage, 100)}%`;
+
+      // Show/hide progress bar
+      if (scrollTop > 100) {
+        progress.classList.add('is-visible');
+      } else {
+        progress.classList.remove('is-visible');
+      }
+
+      ticking = false;
+    };
+
+    const requestTick = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateProgress);
+        ticking = true;
+      }
+    };
+
+    // Listen to scroll events with throttling via RAF
+    window.addEventListener('scroll', requestTick, { passive: true });
+
+    // Initial update
+    updateProgress();
+
+    // Update on resize
+    window.addEventListener('resize', () => {
+      requestTick();
+    }, { passive: true });
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollProgress);
+  } else {
+    initScrollProgress();
+  }
+
+  // Re-initialize on Astro view transitions (if using)
+  document.addEventListener('astro:page-load', initScrollProgress);
+</script>

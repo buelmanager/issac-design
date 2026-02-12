@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Preloader from '../components/ui/Preloader.astro';
-import Navbar from '../components/ui/Navbar.astro';
-import MenuOverlay from '../components/ui/MenuOverlay.astro';
+import LandingNavbar from '../components/ui/LandingNavbar.astro';
+import SectionIndicator from '../components/ui/SectionIndicator.astro';
 import FloatingButton from '../components/ui/FloatingButton.astro';
 import Hero from '../components/sections/Hero.astro';
 import Services from '../components/sections/Services.astro';
@@ -12,6 +12,9 @@ import ClientShowcase from '../components/sections/ClientShowcase.astro';
 import FAQ from '../components/sections/FAQ.astro';
 import Contact from '../components/sections/Contact.astro';
 import Footer from '../components/sections/Footer.astro';
+import ScrollProgress from '../components/ScrollProgress.astro';
+import ClientLogos from '../components/shop/ClientLogos.astro';
+import KakaoFloat from '../components/shop/KakaoFloat.astro';
 ---
 
 <Layout
@@ -19,18 +22,36 @@ import Footer from '../components/sections/Footer.astro';
   description="issac.design - LED Signage, Hanging Banner, X-Banner, Outdoor Advertising 전문. 15년 경험, 1,000여 건의 제작 실적. Creative Design & Quality Service."
 >
   <Preloader />
-  <Navbar />
-  <MenuOverlay />
-  <FloatingButton />
-  
-  <main>
-    <Hero />
-    <Services />
-    <Portfolio />
-    <SignageTypes />
-    <ClientShowcase />
-    <FAQ />
-    <Contact />
+  <ScrollProgress />
+  <LandingNavbar />
+  <SectionIndicator />
+  <KakaoFloat />
+
+  <main id="main-content">
+    <div id="hero">
+      <Hero />
+    </div>
+    <div id="client-logos">
+      <ClientLogos />
+    </div>
+    <div id="services">
+      <Services />
+    </div>
+    <div id="portfolio">
+      <Portfolio />
+    </div>
+    <div id="signage-types">
+      <SignageTypes />
+    </div>
+    <div id="creative-works">
+      <ClientShowcase />
+    </div>
+    <div id="faq">
+      <FAQ />
+    </div>
+    <div id="contact">
+      <Contact />
+    </div>
   </main>
   
   <Footer />

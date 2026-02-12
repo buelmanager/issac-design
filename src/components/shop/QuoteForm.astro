@@ -98,6 +98,99 @@ const { productName = '' } = Astro.props;
         />
       </div>
 
+      <!-- Installation Address -->
+      <div class="quote-form__field">
+        <label for="quote-address" class="quote-form__label">
+          현장 주소 <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="quote-address"
+          name="address"
+          class="quote-form__input"
+          placeholder="서울시 강남구 테헤란로 123"
+          required
+        />
+      </div>
+
+      <!-- Installation Floor -->
+      <div class="quote-form__field">
+        <label for="quote-floor" class="quote-form__label">
+          설치 층수 <span class="required">*</span>
+        </label>
+        <select
+          id="quote-floor"
+          name="floor"
+          class="quote-form__input quote-form__select"
+          required
+        >
+          <option value="">층수를 선택하세요</option>
+          <option value="1층">1층</option>
+          <option value="2층">2층</option>
+          <option value="3층">3층</option>
+          <option value="4층 이상">4층 이상</option>
+          <option value="옥상">옥상</option>
+        </select>
+      </div>
+
+      <!-- Crane Needed -->
+      <div class="quote-form__checkbox-group">
+        <div class="quote-form__checkbox">
+          <input
+            type="checkbox"
+            id="quote-crane"
+            name="crane"
+            value="yes"
+          />
+          <label for="quote-crane">
+            크레인 사용 필요 (고층 설치)
+          </label>
+        </div>
+
+        <!-- Design File Available -->
+        <div class="quote-form__checkbox">
+          <input
+            type="checkbox"
+            id="quote-design-file"
+            name="designFile"
+            value="yes"
+          />
+          <label for="quote-design-file">
+            디자인 파일 보유 (AI, PDF, PSD 등)
+          </label>
+        </div>
+      </div>
+
+      <!-- Site Photos Upload (Required) -->
+      <div class="quote-form__field">
+        <label class="quote-form__label">
+          현장 사진 <span class="required">*</span>
+        </label>
+        <p class="quote-form__field-hint">정확한 견적을 위해 현장 사진을 첨부해주세요</p>
+        <div class="quote-form__upload quote-form__upload--site-photos" data-upload-area-site>
+          <input
+            type="file"
+            id="quote-site-photos"
+            name="sitePhotos"
+            class="quote-form__upload-input"
+            accept=".jpg,.jpeg,.png"
+            multiple
+            required
+            data-upload-input-site
+          />
+          <div class="quote-form__upload-content">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" class="quote-form__upload-icon">
+              <rect x="3" y="6" width="26" height="20" rx="2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="13" r="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M3 22l8-8 4 4 8-8 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="quote-form__upload-text">현장 사진을 업로드하세요 (필수)</p>
+            <p class="quote-form__upload-hint">JPG, PNG (최대 5MB, 여러 장 가능)</p>
+          </div>
+        </div>
+        <div class="quote-form__upload-preview" data-upload-preview-site></div>
+      </div>
+
       <!-- Message -->
       <div class="quote-form__field">
         <label for="quote-message" class="quote-form__label">
@@ -271,6 +364,32 @@ const { productName = '' } = Astro.props;
   .quote-form__textarea {
     resize: vertical;
     min-height: 120px;
+  }
+
+  .quote-form__select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23B0B0B0' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-md) center;
+    padding-right: 40px;
+  }
+
+  .quote-form__field-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    margin-top: calc(var(--space-xs) * -1);
+    margin-bottom: var(--space-xs);
+  }
+
+  .quote-form__checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
   }
 
   /* File Upload */
@@ -554,6 +673,91 @@ const { productName = '' } = Astro.props;
       }
     }
 
+    // Site Photos Upload Handling
+    const uploadAreaSite = document.querySelector('[data-upload-area-site]') as HTMLElement;
+    const uploadInputSite = document.querySelector('[data-upload-input-site]') as HTMLInputElement;
+    const uploadPreviewSite = document.querySelector('[data-upload-preview-site]') as HTMLElement;
+    let uploadedSitePhotos: File[] = [];
+
+    if (uploadAreaSite && uploadInputSite && uploadPreviewSite) {
+      // Drag & drop events
+      ['dragenter', 'dragover'].forEach(evt => {
+        uploadAreaSite.addEventListener(evt, (e) => {
+          e.preventDefault();
+          uploadAreaSite.classList.add('is-dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evt => {
+        uploadAreaSite.addEventListener(evt, (e) => {
+          e.preventDefault();
+          uploadAreaSite.classList.remove('is-dragover');
+        });
+      });
+
+      uploadAreaSite.addEventListener('drop', (e: DragEvent) => {
+        const files = e.dataTransfer?.files;
+        if (files) handleSitePhotos(files);
+      });
+
+      uploadInputSite.addEventListener('change', () => {
+        if (uploadInputSite.files) handleSitePhotos(uploadInputSite.files);
+      });
+
+      function handleSitePhotos(files: FileList) {
+        const allowed = ['.jpg', '.jpeg', '.png'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        Array.from(files).forEach(file => {
+          const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+          if (!allowed.includes(ext)) {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`지원하지 않는 파일 형식: ${ext}`, 'error');
+            }
+            return;
+          }
+          if (file.size > maxSize) {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`파일 크기 초과 (최대 5MB): ${file.name}`, 'error');
+            }
+            return;
+          }
+          uploadedSitePhotos.push(file);
+        });
+
+        renderSitePreview();
+      }
+
+      function renderSitePreview() {
+        uploadPreviewSite.innerHTML = '';
+        uploadedSitePhotos.forEach((file, idx) => {
+          const item = document.createElement('div');
+          item.className = 'quote-form__file-item';
+
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          img.alt = file.name;
+          item.appendChild(img);
+
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name;
+          item.appendChild(nameSpan);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'quote-form__file-remove';
+          removeBtn.textContent = '✕';
+          removeBtn.addEventListener('click', () => {
+            uploadedSitePhotos.splice(idx, 1);
+            renderSitePreview();
+          });
+          item.appendChild(removeBtn);
+
+          uploadPreviewSite.appendChild(item);
+        });
+      }
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -561,11 +765,28 @@ const { productName = '' } = Astro.props;
       if (successMessage) successMessage.style.display = 'none';
       if (errorMessage) errorMessage.style.display = 'none';
 
+      // Validate site photos
+      if (uploadedSitePhotos.length === 0) {
+        if (typeof window.showToast === 'function') {
+          window.showToast('현장 사진을 최소 1장 이상 업로드해주세요', 'error');
+        }
+        if (errorMessage) {
+          errorMessage.querySelector('p')!.textContent = '현장 사진을 최소 1장 이상 업로드해주세요.';
+          errorMessage.style.display = 'flex';
+          errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        return;
+      }
+
       // Get form data
       const formData = new FormData(form);
       // Append uploaded files
       uploadedFiles.forEach(file => {
         formData.append('attachments', file);
+      });
+      // Append site photos
+      uploadedSitePhotos.forEach(file => {
+        formData.append('sitePhotos', file);
       });
       const data = Object.fromEntries(formData.entries());
 
@@ -578,6 +799,10 @@ const { productName = '' } = Astro.props;
         if (successMessage) {
           successMessage.style.display = 'flex';
           form.reset();
+          uploadedFiles = [];
+          uploadedSitePhotos = [];
+          if (uploadPreview) uploadPreview.innerHTML = '';
+          if (uploadPreviewSite) uploadPreviewSite.innerHTML = '';
 
           // Scroll to success message
           successMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

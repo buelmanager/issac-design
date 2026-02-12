@@ -1,0 +1,185 @@
+---
+/**
+ * LandingNavbar Component
+ * Simplified navbar for landing page with logo and shop CTA
+ */
+---
+
+<nav class="landing-navbar" id="landing-navbar">
+  <div class="landing-navbar__blur">
+    <div class="landing-navbar__blur-layer"></div>
+  </div>
+
+  <div class="landing-navbar__container">
+    <!-- Logo -->
+    <a href="/" class="landing-navbar__logo" aria-label="issac.design 홈">
+      <span class="landing-navbar__logo-text">issac.design</span>
+    </a>
+
+    <!-- Shop CTA -->
+    <a href="/shop" class="landing-navbar__cta">
+      <span>쇼핑몰</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14"/>
+        <path d="M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+</nav>
+
+<style>
+  .landing-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-fixed);
+    height: var(--header-height);
+    transition: background-color var(--transition-base);
+  }
+
+  /* Blur Background */
+  .landing-navbar__blur {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  .landing-navbar.scrolled .landing-navbar__blur {
+    opacity: 1;
+  }
+
+  .landing-navbar__blur-layer {
+    position: absolute;
+    inset: 0;
+    background: rgba(26, 26, 26, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Container */
+  .landing-navbar__container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+    gap: var(--space-md);
+  }
+
+  /* Logo */
+  .landing-navbar__logo {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+  }
+
+  .landing-navbar__logo-text {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--text-primary);
+    transition: opacity var(--transition-base);
+  }
+
+  .landing-navbar__logo:hover .landing-navbar__logo-text {
+    opacity: 0.8;
+  }
+
+  /* CTA Button */
+  .landing-navbar__cta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--primary);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: var(--letter-spacing-tight);
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+  }
+
+  .landing-navbar__cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 77, 46, 0.4);
+  }
+
+  .landing-navbar__cta:active {
+    transform: translateY(0);
+  }
+
+  .landing-navbar__cta svg {
+    width: 16px;
+    height: 16px;
+    transition: transform var(--transition-base);
+  }
+
+  .landing-navbar__cta:hover svg {
+    transform: translateX(2px);
+  }
+
+  /* Responsive */
+  @media (max-width: 719px) {
+    .landing-navbar {
+      height: var(--header-height-mobile);
+    }
+
+    .landing-navbar__logo-text {
+      font-size: var(--font-size-lg);
+    }
+
+    .landing-navbar__cta {
+      padding: var(--space-xs) var(--space-md);
+      font-size: var(--font-size-xs);
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Scroll effect for navbar
+   */
+  function initLandingNavbar() {
+    const navbar = document.getElementById('landing-navbar');
+    if (!navbar) return;
+
+    let lastScroll = 0;
+
+    const handleScroll = () => {
+      const currentScroll = window.scrollY;
+
+      if (currentScroll > 100) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+
+      lastScroll = currentScroll;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+  }
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLandingNavbar);
+  } else {
+    initLandingNavbar();
+  }
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', initLandingNavbar);
+</script>

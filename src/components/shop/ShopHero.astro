@@ -18,7 +18,7 @@ const { products } = productsData;
       <!-- Mobile fallback image -->
       <img
         class="shop-hero-video-fallback"
-        src="/videos/poster-timessquare.jpg"
+        src="/videos/hero1-poster.jpg"
         alt=""
         loading="eager"
         decoding="async"
@@ -32,10 +32,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="auto"
-        poster="/videos/poster-timessquare.jpg"
+        poster="/videos/hero1-poster.jpg"
         data-shop-hero-video="0"
       >
-        <source src="/videos/new-timessquare.mp4" type="video/mp4" />
+        <source src="/videos/hero1.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero-video"
@@ -43,10 +43,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="metadata"
-        poster="/videos/poster-manhattan.jpg"
+        poster="/videos/hero2-poster.jpg"
         data-shop-hero-video="1"
       >
-        <source src="/videos/new-manhattan.mp4" type="video/mp4" />
+        <source src="/videos/hero2.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero-video"
@@ -54,10 +54,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="metadata"
-        poster="/videos/poster-tokyo.jpg"
+        poster="/videos/hero3-poster.jpg"
         data-shop-hero-video="2"
       >
-        <source src="/videos/new-tokyo.mp4" type="video/mp4" />
+        <source src="/videos/hero3.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero-video"
@@ -65,10 +65,10 @@ const { products } = productsData;
         loop
         playsinline
         preload="metadata"
-        poster="/videos/poster-aerial.jpg"
+        poster="/videos/hero4-poster.jpg"
         data-shop-hero-video="3"
       >
-        <source src="/videos/new-aerial.mp4" type="video/mp4" />
+        <source src="/videos/hero4.mp4" type="video/mp4" />
       </video>
     </div>
 
@@ -331,7 +331,7 @@ const { products } = productsData;
     height: auto;
     object-fit: cover;
     pointer-events: none;
-    filter: brightness(0.7) saturate(1.2);
+    filter: brightness(0.5) saturate(1.1);
     opacity: 0;
     transition: opacity 1s ease;
   }
@@ -387,7 +387,7 @@ const { products } = productsData;
   .shop-hero-noise {
     position: absolute;
     inset: 0;
-    opacity: 0;
+    opacity: 0.08;
     mix-blend-mode: overlay;
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E");

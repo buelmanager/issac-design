@@ -27,18 +27,29 @@
   --secondary: #388e3c;
   --accent: #66bb6a;
   --accent-light: #81c784;
-  
-  /* Background Colors */
-  --background: #000000;
-  --background-alt: #0a0a0a;
-  --surface: #111111;
-  --surface-light: #1a1a1a;
-  --surface-hover: #222222;
-  
+
+  /* Background Colors - Deep Charcoal Theme */
+  --background: #1A1A1A;
+  --background-alt: #151515;
+  --background-elevated: #2A2A2A;
+  --surface: #252525;
+  --surface-light: #2F2F2F;
+  --surface-hover: #353535;
+
+  /* Warm Grey Scale */
+  --grey-100: #F5F5F5;
+  --grey-200: #E0E0E0;
+  --grey-300: #B0B0B0;
+  --grey-400: #8A8A8A;
+  --grey-500: #6B6B6B;
+  --grey-600: #4A4A4A;
+  --grey-700: #2F2F2F;
+  --grey-800: #1F1F1F;
+
   /* Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: #a0aec0;
-  --text-muted: #718096;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --text-muted: #6B6B6B;
   --text-dark: #2d3748;
   
   /* Border Colors */
@@ -122,12 +133,13 @@
   --header-height-mobile: 60px;
 
   /* Glassmorphism */
-  --glass-bg: rgba(17, 17, 17, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 20px;
+  --glass-bg: rgba(37, 37, 37, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 24px;
 
   /* Shop-specific */
-  --shop-card-bg: rgba(17, 17, 17, 0.9);
+  --shop-card-bg: rgba(37, 37, 37, 0.85);
+  --shop-card-hover: rgba(47, 47, 47, 0.9);
   --shop-badge-new: #48bb78;
   --shop-badge-best: #ecc94b;
   --shop-badge-sale: #f56565;

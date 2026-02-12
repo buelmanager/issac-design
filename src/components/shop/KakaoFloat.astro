@@ -1,114 +1,220 @@
 ---
 /**
- * KakaoFloat.astro
- * Floating KakaoTalk chat button for customer consultation.
- * Pure CSS component - no JavaScript required.
+ * Floating Contact Buttons
+ * KakaoTalk and Phone buttons with perfect alignment
  */
 ---
 
-<a
-  href="https://pf.kakao.com/_issacdesign"
-  target="_blank"
-  rel="noopener noreferrer"
-  class="kakao-float"
-  data-kakao-float
-  aria-label="카카오톡 상담"
->
-  <svg
-    viewBox="0 0 24 24"
-    width="28"
-    height="28"
-    fill="#3C1E1E"
-    aria-hidden="true"
+<div class="floating-contacts">
+  <!-- Kakao Button -->
+  <a
+    href="https://pf.kakao.com/_issacdesign"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="floating-btn floating-btn--kakao"
+    aria-label="카카오톡 상담"
   >
-    <path d="M12 3C6.48 3 2 6.58 2 10.94c0 2.8 1.86 5.27 4.66 6.67-.15.53-.54 1.91-.62 2.21-.1.37.14.37.29.27.12-.08 1.84-1.22 2.59-1.72.7.1 1.41.16 2.08.16 5.52 0 10-3.58 10-7.94S17.52 3 12 3z" />
-  </svg>
-  <span class="kakao-float__tooltip">카카오톡 상담</span>
-</a>
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 3C6.48 3 2 6.58 2 10.94c0 2.8 1.86 5.27 4.66 6.67-.15.53-.54 1.91-.62 2.21-.1.37.14.37.29.27.12-.08 1.84-1.22 2.59-1.72.7.1 1.41.16 2.08.16 5.52 0 10-3.58 10-7.94S17.52 3 12 3z" />
+    </svg>
+    <span class="floating-btn__tooltip">카카오톡 상담</span>
+  </a>
+
+  <!-- Phone Button -->
+  <a
+    href="tel:070-8873-8472"
+    class="floating-btn floating-btn--phone"
+    aria-label="전화 문의"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+    <span class="floating-btn__tooltip">전화 문의<br/>070-8873-8472</span>
+  </a>
+</div>
 
 <style>
-  @keyframes kakao-pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(254, 229, 0, 0.5);
-    }
-    70% {
-      box-shadow: 0 0 0 15px rgba(254, 229, 0, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(254, 229, 0, 0);
-    }
-  }
-
-  .kakao-float {
+  /* Container */
+  .floating-contacts {
     position: fixed;
     bottom: 24px;
     right: 24px;
     z-index: 1000;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #fee500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-end;
+  }
+
+  /* Button Base */
+  .floating-btn {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    max-width: 56px;
+    max-height: 56px;
+    border-radius: 50%;
     text-decoration: none;
     cursor: pointer;
-    transition:
-      transform 0.3s ease,
-      box-shadow 0.3s ease;
-    animation: kakao-pulse 2s ease-out 1s 1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    overflow: hidden;
   }
 
-  .kakao-float:hover {
+  .floating-btn svg {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    max-width: 28px;
+    max-height: 28px;
+    flex-shrink: 0;
+  }
+
+  .floating-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
   }
 
-  .kakao-float:active {
+  .floating-btn:active {
     transform: scale(0.95);
   }
 
-  .kakao-float__tooltip {
+  /* Kakao Button */
+  .floating-btn--kakao {
+    background: #fee500;
+    color: #3c1e1e;
+  }
+
+  @keyframes kakao-pulse {
+    0% {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(254, 229, 0, 0.5);
+    }
+    70% {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(254, 229, 0, 0);
+    }
+    100% {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(254, 229, 0, 0);
+    }
+  }
+
+  .floating-btn--kakao {
+    animation: kakao-pulse 2s ease-out 1s 1;
+  }
+
+  /* Phone Button */
+  .floating-btn--phone {
+    background: linear-gradient(135deg, #1a4d2e 0%, #2d7a4e 100%);
+    color: #ffffff;
+  }
+
+  .floating-btn--phone svg {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    max-width: 24px;
+    max-height: 24px;
+  }
+
+  @keyframes phone-pulse {
+    0% {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(26, 77, 46, 0.5);
+    }
+    70% {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 15px rgba(26, 77, 46, 0);
+    }
+    100% {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(26, 77, 46, 0);
+    }
+  }
+
+  .floating-btn--phone {
+    animation: phone-pulse 2s ease-out 1.5s 1;
+  }
+
+  /* Tooltip */
+  .floating-btn__tooltip {
     position: absolute;
     right: calc(100% + 12px);
     top: 50%;
     transform: translateY(-50%) translateX(4px);
-    background: var(--surface, #1a1a1a);
-    border: 1px solid var(--border, #333);
-    border-radius: var(--radius-md, 8px);
-    padding: var(--space-xs, 6px) var(--space-sm, 12px);
-    font-family: 'Outfit', sans-serif;
-    font-size: var(--font-size-xs, 0.75rem);
-    color: var(--text-primary, #fff);
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #ffffff;
     white-space: nowrap;
     opacity: 0;
     pointer-events: none;
-    transition:
-      opacity 0.25s ease,
-      transform 0.25s ease;
+    transition: all 0.25s ease;
+    line-height: 1.4;
+    z-index: 1001;
   }
 
-  .kakao-float:hover .kakao-float__tooltip {
+  .floating-btn:hover .floating-btn__tooltip {
     opacity: 1;
     transform: translateY(-50%) translateX(0);
   }
 
+  /* Responsive - Mobile */
   @media (max-width: 768px) {
-    .kakao-float {
+    .floating-contacts {
       bottom: 16px;
       right: 16px;
-      width: 48px;
-      height: 48px;
+      gap: 12px;
     }
 
-    .kakao-float svg {
-      width: 24px;
-      height: 24px;
+    .floating-btn {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      min-height: 52px;
+      max-width: 52px;
+      max-height: 52px;
     }
 
-    .kakao-float__tooltip {
+    .floating-btn svg {
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
+      min-height: 26px;
+      max-width: 26px;
+      max-height: 26px;
+    }
+
+    .floating-btn--phone svg {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      min-height: 22px;
+      max-width: 22px;
+      max-height: 22px;
+    }
+
+    .floating-btn__tooltip {
       display: none;
+    }
+  }
+
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    .floating-btn--kakao,
+    .floating-btn--phone {
+      animation: none;
+    }
+
+    .floating-btn {
+      transition: transform 0.1s ease;
     }
   }
 </style>

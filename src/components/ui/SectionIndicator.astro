@@ -1,0 +1,235 @@
+---
+/**
+ * SectionIndicator Component
+ * Left-side navigation showing current section
+ */
+
+interface Section {
+  id: string;
+  label: string;
+}
+
+const sections: Section[] = [
+  { id: 'hero', label: 'Home' },
+  { id: 'client-logos', label: 'Clients' },
+  { id: 'services', label: 'Services' },
+  { id: 'portfolio', label: 'Portfolio' },
+  { id: 'signage-types', label: 'Products' },
+  { id: 'creative-works', label: 'Works' },
+  { id: 'faq', label: 'FAQ' },
+  { id: 'contact', label: 'Contact' },
+];
+---
+
+<nav class="section-indicator" aria-label="페이지 섹션 네비게이션">
+  <ul class="section-indicator__list">
+    {sections.map((section) => (
+      <li class="section-indicator__item">
+        <a
+          href={`#${section.id}`}
+          class="section-indicator__link"
+          data-section={section.id}
+          aria-label={`${section.label} 섹션으로 이동`}
+        >
+          <span class="section-indicator__dot"></span>
+          <span class="section-indicator__label">{section.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .section-indicator {
+    position: fixed;
+    left: var(--space-2xl);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: calc(var(--z-fixed) - 1);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  .section-indicator.visible {
+    opacity: 1;
+  }
+
+  .section-indicator__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    list-style: none;
+  }
+
+  .section-indicator__item {
+    position: relative;
+  }
+
+  .section-indicator__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs);
+    transition: all var(--transition-base);
+    cursor: pointer;
+  }
+
+  /* Dot */
+  .section-indicator__dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transition: all var(--transition-base);
+  }
+
+  .section-indicator__dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    transition: all var(--transition-base);
+  }
+
+  /* Label */
+  .section-indicator__label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: var(--letter-spacing-wide);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all var(--transition-base);
+    white-space: nowrap;
+  }
+
+  /* Hover State */
+  .section-indicator__link:hover .section-indicator__dot {
+    background: var(--primary-light);
+    transform: scale(1.2);
+  }
+
+  .section-indicator__link:hover .section-indicator__label {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Active State */
+  .section-indicator__link.active .section-indicator__dot {
+    background: var(--primary-light);
+    width: 12px;
+    height: 12px;
+  }
+
+  .section-indicator__link.active .section-indicator__dot::before {
+    border-color: var(--primary-light);
+  }
+
+  .section-indicator__link.active .section-indicator__label {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--primary-light);
+  }
+
+  /* Responsive - Hide on tablet and mobile */
+  @media (max-width: 1023px) {
+    .section-indicator {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Section Indicator Script
+   * Tracks scroll position and highlights current section
+   */
+
+  function initSectionIndicator() {
+    const indicator = document.querySelector('.section-indicator');
+    const links = document.querySelectorAll('.section-indicator__link');
+
+    if (!indicator || links.length === 0) return;
+
+    // Show indicator after scrolling past hero
+    const handleIndicatorVisibility = () => {
+      if (window.scrollY > window.innerHeight * 0.3) {
+        indicator.classList.add('visible');
+      } else {
+        indicator.classList.remove('visible');
+      }
+    };
+
+    // Find current section based on scroll position
+    const updateActiveSection = () => {
+      const sections = Array.from(links).map(link => {
+        const sectionId = link.getAttribute('data-section');
+        const element = document.getElementById(sectionId || '');
+        return { link, element };
+      }).filter(item => item.element);
+
+      let currentSection = sections[0];
+
+      for (const section of sections) {
+        const rect = section.element!.getBoundingClientRect();
+        const inView = rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2;
+
+        if (inView) {
+          currentSection = section;
+          break;
+        }
+      }
+
+      // Update active state
+      links.forEach(link => link.classList.remove('active'));
+      if (currentSection) {
+        currentSection.link.classList.add('active');
+      }
+    };
+
+    // Smooth scroll to section on click
+    links.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sectionId = link.getAttribute('data-section');
+        const element = document.getElementById(sectionId || '');
+
+        if (element) {
+          const offset = 80; // Account for navbar height
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - offset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+
+    // Listen to scroll events
+    const handleScroll = () => {
+      handleIndicatorVisibility();
+      updateActiveSection();
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+  }
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSectionIndicator);
+  } else {
+    initSectionIndicator();
+  }
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', initSectionIndicator);
+</script>

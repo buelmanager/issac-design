@@ -1,0 +1,233 @@
+---
+/**
+ * QuoteFloatingButton Component
+ * Floating Action Button (FAB) for quick quote consultation access
+ * Fixed position at bottom-right with pulse animation
+ */
+---
+
+<button
+  class="quote-fab"
+  data-quote-fab
+  aria-label="견적 문의하기"
+  title="견적 문의하기"
+>
+  <span class="quote-fab__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M8 10h8"/>
+      <path d="M8 14h4"/>
+    </svg>
+  </span>
+  <span class="quote-fab__text">견적 문의</span>
+</button>
+
+<style>
+  /* ============================================
+     Floating Action Button (FAB)
+     ============================================ */
+
+  .quote-fab {
+    position: fixed;
+    bottom: var(--space-2xl);
+    right: var(--space-2xl);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border: none;
+    border-radius: var(--radius-full);
+    box-shadow:
+      0 4px 16px rgba(26, 77, 46, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    animation: fabEnter 0.5s ease forwards 1s;
+  }
+
+  @keyframes fabEnter {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Pulse Animation */
+  .quote-fab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--radius-full);
+    background: inherit;
+    opacity: 0.6;
+    animation: fabPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes fabPulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+  }
+
+  /* Hover State */
+  .quote-fab:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow:
+      0 8px 24px rgba(26, 77, 46, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .quote-fab:hover::before {
+    animation-play-state: paused;
+  }
+
+  /* Active State */
+  .quote-fab:active {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  /* Icon */
+  .quote-fab__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #FFFFFF;
+    z-index: 1;
+  }
+
+  .quote-fab__icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Text */
+  .quote-fab__text {
+    position: relative;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: var(--letter-spacing-tight);
+    white-space: nowrap;
+    z-index: 1;
+  }
+
+  /* Hidden State (scrolled to bottom) */
+  .quote-fab.is-hidden {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    pointer-events: none;
+  }
+
+  /* ============================================
+     Responsive
+     ============================================ */
+
+  /* Tablet */
+  @media (max-width: 1023px) {
+    .quote-fab {
+      bottom: var(--space-xl);
+      right: var(--space-xl);
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 719px) {
+    .quote-fab {
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .quote-fab__text {
+      display: none;
+    }
+
+    .quote-fab__icon {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  /* Reduced Motion */
+  @media (prefers-reduced-motion: reduce) {
+    .quote-fab,
+    .quote-fab::before {
+      animation: none;
+    }
+
+    .quote-fab {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * QuoteFloatingButton Script
+   * Handles smooth scroll to quote form and visibility control
+   */
+
+  function initQuoteFloatingButton() {
+    const fab = document.querySelector('[data-quote-fab]') as HTMLButtonElement;
+    if (!fab) return;
+
+    // Smooth scroll to quote form
+    fab.addEventListener('click', () => {
+      const quoteForm = document.getElementById('quote-form');
+      if (quoteForm) {
+        quoteForm.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      } else {
+        // If no quote form on current page, redirect to shop with anchor
+        window.location.href = '/shop#quote-form';
+      }
+    });
+
+    // Hide FAB when near quote form (optional)
+    const handleScroll = () => {
+      const quoteForm = document.getElementById('quote-form');
+      if (!quoteForm) return;
+
+      const formRect = quoteForm.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Hide FAB when quote form is visible in viewport
+      if (formRect.top < windowHeight && formRect.bottom > 0) {
+        fab.classList.add('is-hidden');
+      } else {
+        fab.classList.remove('is-hidden');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initQuoteFloatingButton);
+  } else {
+    initQuoteFloatingButton();
+  }
+
+  // Re-initialize on Astro view transitions (if using)
+  document.addEventListener('astro:page-load', initQuoteFloatingButton);
+</script>
