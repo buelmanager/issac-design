@@ -6,7 +6,7 @@
 
 import Layout from '../../layouts/Layout.astro';
 import ShopNavbar from '../../components/shop/ShopNavbar.astro';
-import Hero from '../../components/sections/Hero.astro';
+import ShopHero from '../../components/shop/ShopHero.astro';
 import FeaturedBento from '../../components/shop/FeaturedBento.astro';
 import CategoryShowcase from '../../components/shop/CategoryShowcase.astro';
 import NewArrivals from '../../components/shop/NewArrivals.astro';
@@ -42,8 +42,8 @@ const { products, categories } = productsData;
   <SearchOverlay />
 
   <main class="shop-page" id="main-content">
-    <!-- Hero Section (same as landing) -->
-    <Hero />
+    <!-- Shop Hero Section -->
+    <ShopHero />
 
     <!-- Featured Products Bento Grid -->
     <FeaturedBento />
