@@ -748,6 +748,7 @@ import ProductSimulator from './ProductSimulator';
     }
 
     :global(.product-simulator__canvas) {
+      height: calc(100vh - 160px);
       height: calc(100dvh - 160px);
       min-height: 300px;
       max-height: none;
@@ -769,6 +770,7 @@ import ProductSimulator from './ProductSimulator';
   /* Small mobile */
   @media (max-width: 420px) {
     :global(.product-simulator__canvas) {
+      height: calc(100vh - 140px);
       height: calc(100dvh - 140px);
       min-height: 260px;
     }
