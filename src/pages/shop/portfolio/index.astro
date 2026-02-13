@@ -1,0 +1,740 @@
+---
+/**
+ * Portfolio Page
+ * Showcases completed signage projects with category filter,
+ * before/after comparison, and client testimonials
+ */
+
+import ShopLayout from '../../../components/shop/ShopLayout.astro';
+import portfolioData from '../../../data/portfolio.json';
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '포트폴리오' },
+];
+
+const items = portfolioData.portfolioItems;
+
+// Category map
+const categoryMap: Record<string, string> = {
+  'led-channel': 'LED 채널',
+  'neon': '네온 사인',
+  'acrylic': '아크릴',
+  'banner': '현수막/배너',
+  'protruding': '돌출간판',
+  'rooftop': '옥상간판',
+};
+
+// Unique categories from data
+const categories = [...new Set(items.map((i) => i.category))];
+---
+
+<ShopLayout
+  title="포트폴리오 - issac.design"
+  description="issac.design의 시공 사례를 확인하세요. LED 채널, 네온 사인, 아크릴 간판 등 다양한 프로젝트를 소개합니다."
+  breadcrumbs={breadcrumbs}
+>
+  <main class="portfolio-page">
+    <!-- Hero -->
+    <section class="pf-hero">
+      <div class="pf-hero__container">
+        <span class="pf-hero__label">Portfolio</span>
+        <h1 class="pf-hero__title">우리가 만든 공간들</h1>
+        <p class="pf-hero__subtitle">
+          각 브랜드의 이야기를 담아 완성한 사인 프로젝트
+        </p>
+      </div>
+    </section>
+
+    <!-- Filter -->
+    <section class="pf-filter">
+      <div class="pf-filter__container">
+        <div class="pf-filter__tabs" data-pf-tabs>
+          <button class="pf-filter__tab pf-filter__tab--active" data-pf-filter="all" type="button">전체</button>
+          {categories.map((cat) => (
+            <button class="pf-filter__tab" data-pf-filter={cat} type="button">{categoryMap[cat] || cat}</button>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid -->
+    <section class="pf-grid-section">
+      <div class="pf-grid__container">
+        <div class="pf-grid" data-pf-grid>
+          {items.map((item, idx) => (
+            <article class="pf-card" data-pf-card data-category={item.category}>
+              <!-- Before/After Slider -->
+              <div class="pf-card__compare" data-pf-compare>
+                <img
+                  src={`${item.images.after}&w=640&q=80`}
+                  alt={`${item.title} - 시공 후`}
+                  class="pf-card__img pf-card__img--after"
+                  loading={idx < 4 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  width="640"
+                  height="400"
+                />
+                <div class="pf-card__before-wrap" data-pf-before-wrap>
+                  <img
+                    src={`${item.images.before}&w=640&q=80`}
+                    alt={`${item.title} - 시공 전`}
+                    class="pf-card__img pf-card__img--before"
+                    loading={idx < 4 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    width="640"
+                    height="400"
+                  />
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="50"
+                  class="pf-card__slider"
+                  data-pf-slider
+                  aria-label="Before/After 비교 슬라이더"
+                />
+                <div class="pf-card__slider-line" data-pf-slider-line></div>
+                <span class="pf-card__badge pf-card__badge--before">Before</span>
+                <span class="pf-card__badge pf-card__badge--after">After</span>
+              </div>
+
+              <!-- Info -->
+              <div class="pf-card__body">
+                <div class="pf-card__meta">
+                  <span class="pf-card__category">{categoryMap[item.category]}</span>
+                  <span class="pf-card__date">{item.completedDate}</span>
+                </div>
+                <h3 class="pf-card__title">{item.title}</h3>
+                <p class="pf-card__desc">{item.description}</p>
+                <div class="pf-card__client">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span>{item.client}</span>
+                  <span class="pf-card__location">· {item.location}</span>
+                </div>
+
+                <!-- Detail Link -->
+                <a href={`/shop/portfolio/${item.id}`} class="pf-card__detail-link">
+                  <span>상세 보기</span>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <!-- Empty state -->
+        <div class="pf-empty" data-pf-empty style="display:none;">
+          <p>해당 카테고리의 프로젝트가 없습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="pf-cta">
+      <div class="pf-cta__container">
+        <h2 class="pf-cta__title">나의 브랜드도 이렇게 만들고 싶다면</h2>
+        <p class="pf-cta__desc">무료 상담을 통해 브랜드에 맞는 사인을 함께 설계합니다</p>
+        <div class="pf-cta__buttons">
+          <a href="/shop/quote" class="pf-cta__btn pf-cta__btn--primary">
+            <span>무료 견적 문의</span>
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="tel:070-8873-8472" class="pf-cta__btn pf-cta__btn--secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+            <span>전화 상담</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</ShopLayout>
+
+<style>
+  .portfolio-page {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: var(--background);
+  }
+
+  /* ===== Hero ===== */
+  .pf-hero {
+    padding: var(--space-3xl) 0 var(--space-xl);
+    text-align: center;
+  }
+
+  .pf-hero__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pf-hero__label {
+    display: inline-block;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .pf-hero__title {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--space-md);
+  }
+
+  .pf-hero__subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* ===== Filter ===== */
+  .pf-filter {
+    position: sticky;
+    top: var(--header-height);
+    z-index: 10;
+    padding: var(--space-md) 0;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    transition: top 0.3s ease;
+  }
+
+  :global(.navbar-hidden) .pf-filter {
+    top: 0;
+  }
+
+  .pf-filter__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pf-filter__tabs {
+    display: flex;
+    gap: var(--space-sm);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .pf-filter__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pf-filter__tab {
+    flex-shrink: 0;
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+  }
+
+  .pf-filter__tab:hover {
+    color: var(--text-primary);
+    border-color: var(--primary);
+  }
+
+  .pf-filter__tab--active {
+    color: #fff;
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* ===== Grid ===== */
+  .pf-grid-section {
+    padding: var(--space-2xl) 0 var(--space-4xl);
+  }
+
+  .pf-grid__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pf-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+  }
+
+  /* ===== Card ===== */
+  .pf-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform var(--transition-base), border-color var(--transition-base);
+  }
+
+  .pf-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+  }
+
+  .pf-card[data-hidden] {
+    display: none;
+  }
+
+  /* Before/After Compare */
+  .pf-card__compare {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    cursor: ew-resize;
+  }
+
+  .pf-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pf-card__img--after {
+    position: absolute;
+    inset: 0;
+  }
+
+  .pf-card__before-wrap {
+    position: absolute;
+    inset: 0;
+    width: 50%;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .pf-card__img--before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* match parent container size so image aligns */
+  }
+
+  .pf-card__slider {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    z-index: 3;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .pf-card__slider-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: #fff;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .pf-card__slider-line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .pf-card__slider-line::before {
+    content: '◀ ▶';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8px;
+    color: #333;
+    z-index: 1;
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  .pf-card__badge {
+    position: absolute;
+    top: var(--space-sm);
+    padding: 2px 8px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-sm);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .pf-card__badge--before {
+    left: var(--space-sm);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+  }
+
+  .pf-card__badge--after {
+    right: var(--space-sm);
+    background: rgba(76, 175, 80, 0.85);
+    color: #fff;
+  }
+
+  /* Card Body */
+  .pf-card__body {
+    padding: var(--space-lg);
+  }
+
+  .pf-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+  }
+
+  .pf-card__category {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-light);
+    letter-spacing: 0.03em;
+  }
+
+  .pf-card__date {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary, var(--text-secondary));
+  }
+
+  .pf-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--space-sm);
+  }
+
+  .pf-card__desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-md);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .pf-card__client {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+  }
+
+  .pf-card__client svg {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .pf-card__location {
+    color: var(--text-secondary);
+    opacity: 0.7;
+  }
+
+  /* Testimonial */
+  .pf-card__quote {
+    display: flex;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: rgba(76, 175, 80, 0.05);
+    border-radius: var(--radius-md);
+    border: none;
+    margin: 0;
+  }
+
+  .pf-card__quote svg {
+    flex-shrink: 0;
+    color: var(--primary-light);
+    margin-top: 2px;
+  }
+
+  .pf-card__quote p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    font-style: italic;
+  }
+
+  /* Detail Link */
+  .pf-card__detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--primary-light);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+    text-decoration: none;
+  }
+
+  .pf-card__detail-link:hover {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
+  .pf-card__detail-link svg {
+    transition: transform var(--transition-base);
+  }
+
+  .pf-card__detail-link:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* Empty */
+  .pf-empty {
+    text-align: center;
+    padding: var(--space-4xl) 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+  }
+
+  /* ===== CTA ===== */
+  .pf-cta {
+    padding: var(--space-4xl) 0;
+    text-align: center;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .pf-cta__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pf-cta__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .pf-cta__desc {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .pf-cta__buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .pf-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-2xl);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+    text-decoration: none;
+  }
+
+  .pf-cta__btn--primary {
+    background: var(--primary);
+    color: #fff;
+    border: 1px solid var(--primary);
+  }
+
+  .pf-cta__btn--primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+  }
+
+  .pf-cta__btn--secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .pf-cta__btn--secondary:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  /* ===== Responsive — Tablet ===== */
+  @media (max-width: 1023px) {
+    .pf-hero__title {
+      font-size: var(--font-size-3xl);
+    }
+
+    .pf-grid {
+      gap: var(--space-lg);
+    }
+  }
+
+  /* ===== Responsive — Mobile ===== */
+  @media (max-width: 719px) {
+    .pf-hero {
+      padding: var(--space-2xl) 0 var(--space-lg);
+    }
+
+    .pf-hero__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .pf-hero__subtitle {
+      font-size: var(--font-size-base);
+    }
+
+    .pf-filter {
+      top: var(--header-height-mobile);
+    }
+
+    :global(.navbar-hidden) .pf-filter {
+      top: 0;
+    }
+
+    .pf-filter__tabs {
+      gap: var(--space-xs);
+    }
+
+    .pf-filter__tab {
+      padding: var(--space-xs) var(--space-md);
+      font-size: var(--font-size-xs);
+    }
+
+    .pf-grid-section {
+      padding: var(--space-xl) 0 var(--space-3xl);
+    }
+
+    .pf-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    .pf-card__title {
+      font-size: var(--font-size-base);
+    }
+
+    .pf-cta {
+      padding: var(--space-3xl) 0;
+    }
+
+    .pf-cta__title {
+      font-size: var(--font-size-xl);
+    }
+
+    .pf-cta__buttons {
+      flex-direction: column;
+      padding: 0 var(--space-md);
+    }
+
+    .pf-cta__btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  function initPortfolio() {
+    // Category filter
+    const tabs = document.querySelectorAll<HTMLButtonElement>('[data-pf-filter]');
+    const cards = document.querySelectorAll<HTMLElement>('[data-pf-card]');
+    const empty = document.querySelector<HTMLElement>('[data-pf-empty]');
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const filter = tab.dataset.pfFilter!;
+
+        // Update active tab
+        tabs.forEach((t) => t.classList.remove('pf-filter__tab--active'));
+        tab.classList.add('pf-filter__tab--active');
+
+        // Filter cards
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          const cat = card.dataset.category;
+          const show = filter === 'all' || cat === filter;
+          if (show) {
+            card.removeAttribute('data-hidden');
+            visibleCount++;
+          } else {
+            card.setAttribute('data-hidden', '');
+          }
+        });
+
+        if (empty) {
+          empty.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+      });
+    });
+
+    // Before/After sliders
+    document.querySelectorAll<HTMLInputElement>('[data-pf-slider]').forEach((slider) => {
+      const compare = slider.closest('[data-pf-compare]') as HTMLElement;
+      if (!compare) return;
+      const beforeWrap = compare.querySelector<HTMLElement>('[data-pf-before-wrap]');
+      const line = compare.querySelector<HTMLElement>('[data-pf-slider-line]');
+
+      const update = () => {
+        const val = slider.value + '%';
+        if (beforeWrap) beforeWrap.style.width = val;
+        if (line) line.style.left = val;
+      };
+
+      // Fix before image width to match container
+      if (beforeWrap) {
+        const img = beforeWrap.querySelector<HTMLImageElement>('.pf-card__img--before');
+        if (img) {
+          const observer = new ResizeObserver(() => {
+            img.style.width = compare.offsetWidth + 'px';
+          });
+          observer.observe(compare);
+        }
+      }
+
+      slider.addEventListener('input', update);
+      update();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initPortfolio);
+  document.addEventListener('astro:page-load', initPortfolio);
+</script>

@@ -1,0 +1,1087 @@
+---
+/**
+ * Portfolio Detail Page
+ * Shows full project details with multiple photos, before/after comparison,
+ * process images, and client testimonial
+ */
+
+import ShopLayout from '../../../components/shop/ShopLayout.astro';
+import portfolioData from '../../../data/portfolio.json';
+
+const categoryMap: Record<string, string> = {
+  'led-channel': 'LED 채널',
+  'neon': '네온 사인',
+  'acrylic': '아크릴',
+  'banner': '현수막/배너',
+  'protruding': '돌출간판',
+  'rooftop': '옥상간판',
+};
+
+export function getStaticPaths() {
+  return portfolioData.portfolioItems.map((item) => ({
+    params: { id: item.id },
+  }));
+}
+
+const { id } = Astro.params;
+const item = portfolioData.portfolioItems.find((p) => p.id === id);
+
+if (!item) {
+  return Astro.redirect('/shop/portfolio');
+}
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '포트폴리오', href: '/shop/portfolio' },
+  { label: item.title },
+];
+
+// Build gallery images array — multiple views from the available images
+const galleryImages = [
+  { src: item.images.after, label: '완성 모습', type: 'after' as const },
+  { src: item.images.before, label: '시공 전', type: 'before' as const },
+  { src: item.images.process, label: '제작 과정', type: 'process' as const },
+  // Additional angles using different crop/sizing of the same images
+  { src: item.images.after.replace('w=800', 'w=900').replace('q=80', 'q=85'), label: '야간 연출', type: 'after' as const },
+  { src: item.images.process.replace('w=800', 'w=900').replace('q=80', 'q=85'), label: '소재 디테일', type: 'process' as const },
+  { src: item.images.after.replace('w=800', 'w=700').replace('q=80', 'q=75'), label: '설치 완료', type: 'after' as const },
+];
+
+// Other projects for recommendations
+const otherProjects = portfolioData.portfolioItems
+  .filter((p) => p.id !== id)
+  .slice(0, 3);
+---
+
+<ShopLayout
+  title={`${item.title} - issac.design 포트폴리오`}
+  description={item.description}
+  breadcrumbs={breadcrumbs}
+>
+  <main class="pd-page">
+    <!-- Hero: Main Image + Info Overlay -->
+    <section class="pd-hero">
+      <div class="pd-hero__img-wrap">
+        <img
+          src={`${item.images.after}&w=1400&q=85`}
+          alt={item.title}
+          class="pd-hero__img"
+          width="1400"
+          height="700"
+          loading="eager"
+        />
+        <div class="pd-hero__overlay"></div>
+      </div>
+      <div class="pd-hero__content">
+        <span class="pd-hero__category">{categoryMap[item.category]}</span>
+        <h1 class="pd-hero__title">{item.title}</h1>
+        <div class="pd-hero__meta">
+          <span>{item.client}</span>
+          <span class="pd-hero__dot">·</span>
+          <span>{item.location}</span>
+          <span class="pd-hero__dot">·</span>
+          <span>{item.completedDate}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Project Info -->
+    <section class="pd-info">
+      <div class="pd-info__container">
+        <div class="pd-info__grid">
+          <div class="pd-info__desc">
+            <h2 class="pd-info__heading">프로젝트 소개</h2>
+            <p class="pd-info__text">{item.description}</p>
+          </div>
+          <div class="pd-info__details">
+            <div class="pd-info__detail">
+              <span class="pd-info__detail-label">클라이언트</span>
+              <span class="pd-info__detail-value">{item.client}</span>
+            </div>
+            <div class="pd-info__detail">
+              <span class="pd-info__detail-label">위치</span>
+              <span class="pd-info__detail-value">{item.location}</span>
+            </div>
+            <div class="pd-info__detail">
+              <span class="pd-info__detail-label">카테고리</span>
+              <span class="pd-info__detail-value">{categoryMap[item.category]}</span>
+            </div>
+            <div class="pd-info__detail">
+              <span class="pd-info__detail-label">완료일</span>
+              <span class="pd-info__detail-value">{item.completedDate}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Before/After Compare -->
+    <section class="pd-compare">
+      <div class="pd-compare__container">
+        <h2 class="pd-compare__heading">Before & After</h2>
+        <div class="pd-compare__slider" data-pd-compare>
+          <img
+            src={`${item.images.after}&w=1200&q=85`}
+            alt="시공 후"
+            class="pd-compare__img pd-compare__img--after"
+            loading="lazy"
+            width="1200"
+            height="675"
+          />
+          <div class="pd-compare__before-wrap" data-pd-before-wrap>
+            <img
+              src={`${item.images.before}&w=1200&q=85`}
+              alt="시공 전"
+              class="pd-compare__img pd-compare__img--before"
+              loading="lazy"
+              width="1200"
+              height="675"
+            />
+          </div>
+          <input type="range" min="0" max="100" value="50" class="pd-compare__range" data-pd-range aria-label="Before/After 비교" />
+          <div class="pd-compare__line" data-pd-line></div>
+          <span class="pd-compare__badge pd-compare__badge--before">Before</span>
+          <span class="pd-compare__badge pd-compare__badge--after">After</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Photo Gallery -->
+    <section class="pd-gallery">
+      <div class="pd-gallery__container">
+        <h2 class="pd-gallery__heading">시공 사진</h2>
+        <div class="pd-gallery__grid">
+          {galleryImages.map((img, idx) => (
+            <figure class="pd-gallery__item" data-pd-gallery-item={idx}>
+              <div class="pd-gallery__img-wrap">
+                <img
+                  src={`${img.src}&w=640&q=80`}
+                  alt={`${item.title} - ${img.label}`}
+                  class="pd-gallery__img"
+                  loading="lazy"
+                  decoding="async"
+                  width="640"
+                  height="400"
+                />
+                <span class="pd-gallery__index">{String(idx + 1).padStart(2, '0')}</span>
+              </div>
+              <figcaption class="pd-gallery__caption">
+                <span class="pd-gallery__tag">{img.type === 'after' ? 'After' : img.type === 'before' ? 'Before' : 'Process'}</span>
+                <span class="pd-gallery__label">{img.label}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div class="pd-lightbox" data-pd-lightbox>
+      <button class="pd-lightbox__close" data-pd-lightbox-close type="button" aria-label="닫기">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <button class="pd-lightbox__nav pd-lightbox__nav--prev" data-pd-lightbox-prev type="button" aria-label="이전">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="pd-lightbox__nav pd-lightbox__nav--next" data-pd-lightbox-next type="button" aria-label="다음">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <img class="pd-lightbox__img" data-pd-lightbox-img src="" alt="" />
+      <span class="pd-lightbox__caption" data-pd-lightbox-caption></span>
+    </div>
+
+    <!-- Testimonial -->
+    {item.testimonial && (
+      <section class="pd-testimonial">
+        <div class="pd-testimonial__container">
+          <div class="pd-testimonial__quote-mark">&ldquo;</div>
+          <blockquote class="pd-testimonial__text">{item.testimonial}</blockquote>
+          <div class="pd-testimonial__author">
+            <span class="pd-testimonial__name">{item.client}</span>
+            <span class="pd-testimonial__location">{item.location}</span>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- Other Projects -->
+    <section class="pd-others">
+      <div class="pd-others__container">
+        <h2 class="pd-others__heading">다른 프로젝트</h2>
+        <div class="pd-others__grid">
+          {otherProjects.map((p) => (
+            <a href={`/shop/portfolio/${p.id}`} class="pd-others__card">
+              <div class="pd-others__img-wrap">
+                <img
+                  src={`${p.images.after}&w=480&q=80`}
+                  alt={p.title}
+                  class="pd-others__img"
+                  loading="lazy"
+                  decoding="async"
+                  width="480"
+                  height="300"
+                />
+              </div>
+              <div class="pd-others__info">
+                <span class="pd-others__category">{categoryMap[p.category]}</span>
+                <span class="pd-others__title">{p.title}</span>
+                <span class="pd-others__client">{p.client}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="pd-cta">
+      <div class="pd-cta__container">
+        <h2 class="pd-cta__title">비슷한 간판을 만들고 싶으신가요?</h2>
+        <div class="pd-cta__buttons">
+          <a href="/shop/quote" class="pd-cta__btn pd-cta__btn--primary">
+            <span>무료 견적 문의</span>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="/shop/portfolio" class="pd-cta__btn pd-cta__btn--secondary">
+            <span>목록으로 돌아가기</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</ShopLayout>
+
+<style>
+  .pd-page {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: var(--background);
+  }
+
+  /* ===== Hero ===== */
+  .pd-hero {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    max-height: 560px;
+    overflow: hidden;
+  }
+
+  .pd-hero__img-wrap {
+    position: absolute;
+    inset: 0;
+  }
+
+  .pd-hero__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .pd-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
+  }
+
+  .pd-hero__content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-2xl) var(--container-padding);
+    max-width: var(--container-max);
+    margin: 0 auto;
+    z-index: 1;
+  }
+
+  .pd-hero__category {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: #fff;
+    background: rgba(76, 175, 80, 0.85);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .pd-hero__title {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    color: #fff;
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--space-sm);
+  }
+
+  .pd-hero__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-sm);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .pd-hero__dot {
+    opacity: 0.4;
+  }
+
+  /* ===== Info ===== */
+  .pd-info {
+    padding: var(--space-3xl) 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pd-info__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pd-info__grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--space-3xl);
+  }
+
+  .pd-info__heading {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+  }
+
+  .pd-info__text {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .pd-info__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-xl);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    align-self: start;
+  }
+
+  .pd-info__detail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pd-info__detail-label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pd-info__detail-value {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+
+  /* ===== Before/After Compare ===== */
+  .pd-compare {
+    padding: var(--space-3xl) 0;
+  }
+
+  .pd-compare__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pd-compare__heading {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+  }
+
+  .pd-compare__slider {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: ew-resize;
+    border: 1px solid var(--border);
+  }
+
+  .pd-compare__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pd-compare__img--after {
+    position: absolute;
+    inset: 0;
+  }
+
+  .pd-compare__before-wrap {
+    position: absolute;
+    inset: 0;
+    width: 50%;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .pd-compare__img--before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pd-compare__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    z-index: 3;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .pd-compare__line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: #fff;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .pd-compare__line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .pd-compare__line::before {
+    content: '◀ ▶';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    color: #333;
+    z-index: 1;
+    letter-spacing: 3px;
+    white-space: nowrap;
+  }
+
+  .pd-compare__badge {
+    position: absolute;
+    top: var(--space-md);
+    padding: 4px 12px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-sm);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .pd-compare__badge--before {
+    left: var(--space-md);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+  }
+
+  .pd-compare__badge--after {
+    right: var(--space-md);
+    background: rgba(76, 175, 80, 0.85);
+    color: #fff;
+  }
+
+  /* ===== Gallery ===== */
+  .pd-gallery {
+    padding: var(--space-3xl) 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .pd-gallery__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pd-gallery__heading {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+  }
+
+  .pd-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+  }
+
+  .pd-gallery__item {
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .pd-gallery__img-wrap {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: border-color var(--transition-base);
+  }
+
+  .pd-gallery__item:hover .pd-gallery__img-wrap {
+    border-color: var(--primary);
+  }
+
+  .pd-gallery__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 16 / 10;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .pd-gallery__item:hover .pd-gallery__img {
+    transform: scale(1.05);
+  }
+
+  .pd-gallery__index {
+    position: absolute;
+    top: var(--space-sm);
+    right: var(--space-sm);
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pd-gallery__caption {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-xs);
+  }
+
+  .pd-gallery__tag {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary-light);
+    border: 1px solid rgba(76, 175, 80, 0.25);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+  }
+
+  .pd-gallery__label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  /* ===== Lightbox ===== */
+  .pd-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .pd-lightbox.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .pd-lightbox__img {
+    max-width: 90vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+  }
+
+  .pd-lightbox__close {
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .pd-lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .pd-lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .pd-lightbox__nav:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .pd-lightbox__nav--prev {
+    left: var(--space-lg);
+  }
+
+  .pd-lightbox__nav--next {
+    right: var(--space-lg);
+  }
+
+  .pd-lightbox__caption {
+    position: absolute;
+    bottom: var(--space-xl);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: var(--font-size-sm);
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.5);
+    padding: var(--space-xs) var(--space-lg);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+  }
+
+  /* ===== Testimonial ===== */
+  .pd-testimonial {
+    padding: var(--space-3xl) 0;
+    text-align: center;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pd-testimonial__container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pd-testimonial__quote-mark {
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--primary);
+    opacity: 0.3;
+    font-family: Georgia, serif;
+    margin-bottom: calc(-1 * var(--space-lg));
+  }
+
+  .pd-testimonial__text {
+    font-size: var(--font-size-xl);
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+    margin: 0 0 var(--space-xl);
+    border: none;
+    padding: 0;
+  }
+
+  .pd-testimonial__author {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pd-testimonial__name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .pd-testimonial__location {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  /* ===== Other Projects ===== */
+  .pd-others {
+    padding: var(--space-3xl) 0;
+  }
+
+  .pd-others__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pd-others__heading {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+  }
+
+  .pd-others__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .pd-others__card {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: transform var(--transition-base), border-color var(--transition-base);
+    text-decoration: none;
+  }
+
+  .pd-others__card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+  }
+
+  .pd-others__img-wrap {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+
+  .pd-others__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .pd-others__card:hover .pd-others__img {
+    transform: scale(1.05);
+  }
+
+  .pd-others__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  .pd-others__category {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-light);
+  }
+
+  .pd-others__title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pd-others__client {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  /* ===== CTA ===== */
+  .pd-cta {
+    padding: var(--space-3xl) 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .pd-cta__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .pd-cta__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+  }
+
+  .pd-cta__buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .pd-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-2xl);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+    text-decoration: none;
+  }
+
+  .pd-cta__btn--primary {
+    background: var(--primary);
+    color: #fff;
+    border: 1px solid var(--primary);
+  }
+
+  .pd-cta__btn--primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+  }
+
+  .pd-cta__btn--secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .pd-cta__btn--secondary:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1023px) {
+    .pd-hero__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .pd-info__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .pd-gallery__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pd-others__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+    }
+  }
+
+  @media (max-width: 719px) {
+    .pd-hero {
+      aspect-ratio: 4 / 3;
+      max-height: none;
+    }
+
+    .pd-hero__title {
+      font-size: var(--font-size-xl);
+    }
+
+    .pd-hero__meta {
+      flex-wrap: wrap;
+      font-size: var(--font-size-xs);
+    }
+
+    .pd-info {
+      padding: var(--space-2xl) 0;
+    }
+
+    .pd-compare {
+      padding: var(--space-2xl) 0;
+    }
+
+    .pd-gallery {
+      padding: var(--space-2xl) 0;
+    }
+
+    .pd-gallery__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm);
+    }
+
+    .pd-testimonial {
+      padding: var(--space-2xl) 0;
+    }
+
+    .pd-testimonial__text {
+      font-size: var(--font-size-lg);
+    }
+
+    .pd-others__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .pd-cta {
+      padding: var(--space-2xl) 0;
+    }
+
+    .pd-cta__title {
+      font-size: var(--font-size-xl);
+    }
+
+    .pd-cta__buttons {
+      flex-direction: column;
+      padding: 0 var(--space-md);
+    }
+
+    .pd-cta__btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .pd-lightbox__nav {
+      width: 36px;
+      height: 36px;
+    }
+
+    .pd-lightbox__nav--prev {
+      left: var(--space-sm);
+    }
+
+    .pd-lightbox__nav--next {
+      right: var(--space-sm);
+    }
+  }
+</style>
+
+<script define:vars={{ galleryImages }}>
+  function initDetail() {
+    // Before/After slider
+    const range = document.querySelector('[data-pd-range]');
+    const beforeWrap = document.querySelector('[data-pd-before-wrap]');
+    const line = document.querySelector('[data-pd-line]');
+    const compare = document.querySelector('[data-pd-compare]');
+
+    if (range && beforeWrap && line && compare) {
+      const beforeImg = beforeWrap.querySelector('.pd-compare__img--before');
+
+      const update = () => {
+        const val = range.value + '%';
+        beforeWrap.style.width = val;
+        line.style.left = val;
+      };
+
+      if (beforeImg) {
+        const observer = new ResizeObserver(() => {
+          beforeImg.style.width = compare.offsetWidth + 'px';
+        });
+        observer.observe(compare);
+      }
+
+      range.addEventListener('input', update);
+      update();
+    }
+
+    // Lightbox
+    const lightbox = document.querySelector('[data-pd-lightbox]');
+    const lightboxImg = document.querySelector('[data-pd-lightbox-img]');
+    const lightboxCaption = document.querySelector('[data-pd-lightbox-caption]');
+    const items = document.querySelectorAll('[data-pd-gallery-item]');
+    let currentIdx = 0;
+
+    const images = galleryImages;
+
+    function openLightbox(idx) {
+      currentIdx = idx;
+      if (lightboxImg && lightboxCaption && lightbox) {
+        lightboxImg.src = images[idx].src + '&w=1400&q=90';
+        lightboxImg.alt = images[idx].label;
+        lightboxCaption.textContent = images[idx].label;
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeLightbox() {
+      if (lightbox) {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function navigate(dir) {
+      currentIdx = (currentIdx + dir + images.length) % images.length;
+      if (lightboxImg && lightboxCaption) {
+        lightboxImg.src = images[currentIdx].src + '&w=1400&q=90';
+        lightboxImg.alt = images[currentIdx].label;
+        lightboxCaption.textContent = images[currentIdx].label;
+      }
+    }
+
+    items.forEach((item) => {
+      item.addEventListener('click', () => {
+        const idx = parseInt(item.getAttribute('data-pd-gallery-item') || '0');
+        openLightbox(idx);
+      });
+    });
+
+    document.querySelector('[data-pd-lightbox-close]')?.addEventListener('click', closeLightbox);
+    document.querySelector('[data-pd-lightbox-prev]')?.addEventListener('click', () => navigate(-1));
+    document.querySelector('[data-pd-lightbox-next]')?.addEventListener('click', () => navigate(1));
+
+    lightbox?.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox?.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigate(-1);
+      if (e.key === 'ArrowRight') navigate(1);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initDetail);
+  document.addEventListener('astro:page-load', initDetail);
+</script>

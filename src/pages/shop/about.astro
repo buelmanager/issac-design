@@ -1,163 +1,307 @@
 ---
 /**
  * About Page
- * Company introduction with values, story, stats, and CTA
+ * Brand-focused introduction with visual storytelling
+ * 8 sections: Hero, Mission, Values, Story+Image, Stats, Portfolio, Testimonials, CTA
  */
 
-import Layout from '../../layouts/Layout.astro';
-import ShopNavbar from '../../components/shop/ShopNavbar.astro';
-import Breadcrumb from '../../components/shop/Breadcrumb.astro';
-import ShopFooter from '../../components/shop/ShopFooter.astro';
-import Toast from '../../components/shop/Toast.astro';
-import KakaoFloat from '../../components/shop/KakaoFloat.astro';
+import ShopLayout from '../../components/shop/ShopLayout.astro';
+import portfolioData from '../../data/portfolio.json';
 
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },
   { label: '회사 소개' },
 ];
+
+// Testimonials: 3 selections
+const testimonials = [
+  {
+    text: portfolioData.portfolioItems[0].testimonial,
+    client: portfolioData.portfolioItems[0].client,
+    location: portfolioData.portfolioItems[0].location,
+  },
+  {
+    text: portfolioData.portfolioItems[6].testimonial,
+    client: portfolioData.portfolioItems[6].client,
+    location: portfolioData.portfolioItems[6].location,
+  },
+  {
+    text: portfolioData.portfolioItems[7].testimonial,
+    client: portfolioData.portfolioItems[7].client,
+    location: portfolioData.portfolioItems[7].location,
+  },
+];
+
+// Story section image
+const storyImage = portfolioData.portfolioItems[0].images.after;
 ---
 
-<Layout
-  title="회사 소개 - issac.design 쇼핑몰"
-  description="15년 전통의 간판 전문 기업 issac.design. 최고급 소재와 정밀 제작으로 고객 만족을 약속합니다."
+<ShopLayout
+  title="회사 소개 - issac.design"
+  description="공간에 감성을 더하는 사인 디자인. issac.design은 브랜드의 고유한 이야기를 빛과 형태로 표현합니다."
+  breadcrumbs={breadcrumbs}
+  showBreadcrumb={false}
 >
-  <script is:inline>document.body.classList.add('preloader-ready');</script>
-  <ShopNavbar />
-  <Toast />
-
   <main class="about-page">
-    <!-- Breadcrumb -->
-    <div class="about-page__breadcrumb">
-      <Breadcrumb items={breadcrumbs} />
-    </div>
-
-    <!-- Hero Section -->
+    <!-- 1. Hero — Video Background -->
     <section class="about-hero">
-      <div class="about-hero__bg"></div>
+      <div class="about-hero__video-wrap">
+        <video
+          class="about-hero__video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          poster="/videos/hero1-poster.jpg"
+        >
+          <source src="/videos/hero1-opt.webm" type="video/webm" />
+          <source src="/videos/hero1-opt.mp4" type="video/mp4" />
+        </video>
+        <div class="about-hero__overlay"></div>
+      </div>
       <div class="about-hero__container">
-        <span class="about-hero__label">About Us</span>
-        <h1 class="about-hero__title">issac.design</h1>
-        <p class="about-hero__subtitle">15년 전통의 간판 전문 기업</p>
+        <span class="about-hero__label">About issac.design</span>
+        <h1 class="about-hero__title">공간에 감성을 더하다</h1>
+        <p class="about-hero__subtitle">
+          당신의 브랜드가 가진 고유한 이야기를,<br class="hide-mobile" />
+          빛과 형태로 표현합니다
+        </p>
       </div>
     </section>
 
-    <!-- Values Grid -->
+    <!-- 2. Mission — Brand Philosophy -->
+    <section class="about-mission">
+      <div class="about-mission__container">
+        <div class="about-mission__quote-mark">&ldquo;</div>
+        <blockquote class="about-mission__text">
+          좋은 간판은 단순한 표시가 아닙니다.<br />
+          공간의 첫인상이자, 브랜드의 얼굴입니다.
+        </blockquote>
+        <p class="about-mission__sub">
+          issac.design은 각 브랜드가 가진 고유한 감성을 읽고,<br class="hide-mobile" />
+          그에 어울리는 사인을 디자인합니다
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Values — Core Values (3 Cards) -->
     <section class="about-values">
       <div class="about-values__container">
         <div class="about-values__grid">
-          <!-- Quality -->
+          <!-- Design -->
           <div class="about-values__card">
             <div class="about-values__icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                <path d="M2 2l7.586 7.586"/>
+                <circle cx="11" cy="11" r="2"/>
               </svg>
             </div>
-            <h3 class="about-values__card-title">품질</h3>
-            <p class="about-values__card-desc">최고급 소재와 정밀 제작</p>
+            <h3 class="about-values__card-title">디자인</h3>
+            <p class="about-values__card-desc">
+              트렌드를 읽고, 브랜드에 맞는 스타일을 제안합니다.
+              매장의 분위기와 조화를 이루는 감각적인 디자인을 추구합니다.
+            </p>
           </div>
 
-          <!-- Trust -->
+          <!-- Detail -->
           <div class="about-values__card">
             <div class="about-values__icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
               </svg>
             </div>
-            <h3 class="about-values__card-title">신뢰</h3>
-            <p class="about-values__card-desc">15년간 1,000건 이상의 시공 실적</p>
+            <h3 class="about-values__card-title">디테일</h3>
+            <p class="about-values__card-desc">
+              소재 선택부터 조명 색온도까지, 작은 차이가 만드는 큰 인상.
+              세심한 디테일로 완성도를 높입니다.
+            </p>
           </div>
 
-          <!-- Service -->
+          <!-- Communication -->
           <div class="about-values__card">
             <div class="about-values__icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                <path d="M8 10h.01M12 10h.01M16 10h.01"/>
               </svg>
             </div>
-            <h3 class="about-values__card-title">서비스</h3>
-            <p class="about-values__card-desc">24시간 A/S 및 무료 견적 상담</p>
+            <h3 class="about-values__card-title">소통</h3>
+            <p class="about-values__card-desc">
+              고객의 비전을 정확히 이해하고, 디자인 과정을 함께합니다.
+              시안부터 설치까지 긴밀하게 소통합니다.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Company Story -->
+    <!-- 4. Story + Image — 2-Column Layout -->
     <section class="about-story">
       <div class="about-story__container">
-        <div class="about-story__header">
-          <span class="about-story__label">Our Story</span>
-          <h2 class="about-story__title">우리의 이야기</h2>
-        </div>
-        <div class="about-story__content">
-          <p class="about-story__text">
-            issac.design은 2009년 서울에서 시작된 간판 전문 기업입니다.
-            설립 이래 '고객의 브랜드를 빛나게 한다'는 철학 아래, LED 사인부터 대형 옥외광고까지
-            다양한 분야에서 1,000건 이상의 프로젝트를 성공적으로 수행해 왔습니다.
-            작은 카페 간판 하나에도 정성을 다하며, 모든 프로젝트에 최고 품질의 소재와
-            최신 기술을 적용합니다.
-          </p>
-          <p class="about-story__text">
-            우리의 강점은 디자인부터 제작, 설치, A/S까지 원스톱으로 제공하는 통합 서비스입니다.
-            전문 디자이너가 고객의 브랜드 아이덴티티를 분석하여 최적의 사인 솔루션을 제안하고,
-            숙련된 기술자들이 정밀하게 제작하며, 경험 풍부한 설치 팀이 안전하고 완벽하게
-            시공합니다. 설치 이후에도 24시간 A/S 체계를 통해 고객의 사인물이
-            항상 최상의 상태를 유지할 수 있도록 관리합니다.
-          </p>
-          <p class="about-story__text">
-            앞으로도 issac.design은 끊임없는 기술 혁신과 고객 중심의 서비스로,
-            대한민국을 대표하는 사인 전문 기업으로 성장해 나가겠습니다.
-            고객의 비전을 현실로 만드는 파트너, issac.design과 함께하세요.
-          </p>
+        <div class="about-story__grid">
+          <div class="about-story__content">
+            <span class="about-story__label">Our Story</span>
+            <h2 class="about-story__title">우리가 만드는 것</h2>
+            <p class="about-story__text">
+              issac.design은 '잘 보이는 간판'이 아니라 '잘 어울리는 간판'을 만듭니다.
+              매장의 분위기, 거리의 풍경, 브랜드가 지향하는 감성 — 이 모든 것을 고려한
+              디자인이 우리의 출발점입니다.
+            </p>
+            <p class="about-story__text">
+              디자인, 제작, 설치를 하나의 흐름으로 진행하면서
+              브랜드를 깊이 이해하는 과정을 가장 중요하게 생각합니다.
+              단순히 제품을 전달하는 것이 아니라, 고객의 이야기를 듣고
+              그에 맞는 형태와 빛을 찾아가는 과정입니다.
+            </p>
+            <p class="about-story__text">
+              우리는 공간과 사람을 잇는 사인을 만듭니다.
+              지나가는 이의 시선을 멈추게 하고, 브랜드에 대한 기대를 만들어내는 —
+              그런 간판을 목표로 합니다.
+            </p>
+          </div>
+          <div class="about-story__image-wrap">
+            <img
+              src={`${storyImage}&w=800&q=80`}
+              alt="issac.design 시공 사례"
+              class="about-story__image"
+              loading="lazy"
+              decoding="async"
+              width="800"
+              height="600"
+            />
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Stats Grid -->
+    <!-- 5. Office Space — Bento Grid with integrated text -->
+    <section class="about-office" data-about-office>
+      <div class="about-office__container">
+        <div class="about-office__bento">
+          <!-- Text Cell (spans 2×2) -->
+          <div class="about-office__text-cell" data-office-reveal>
+            <span class="about-office__label">Our Space</span>
+            <h2 class="about-office__title">우리가<br />일하는 공간</h2>
+            <p class="about-office__desc">
+              서울 성수동에 위치한 issac.design —<br />
+              디자인, 제작, 소재 쇼룸이<br />
+              하나로 연결된 공간입니다.
+            </p>
+            <p class="about-office__desc about-office__desc--sub">
+              방문 상담 환영합니다
+            </p>
+          </div>
+
+          <!-- Image Cells -->
+          <div class="about-office__cell about-office__cell--a" data-office-reveal>
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" alt="디자인 스튜디오" class="about-office__img" loading="lazy" decoding="async" />
+            <span class="about-office__cell-label">디자인 스튜디오</span>
+          </div>
+          <div class="about-office__cell about-office__cell--b" data-office-reveal>
+            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&q=80" alt="제작 공방" class="about-office__img" loading="lazy" decoding="async" />
+            <span class="about-office__cell-label">제작 공방</span>
+          </div>
+          <div class="about-office__cell about-office__cell--c" data-office-reveal>
+            <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="소재 쇼룸" class="about-office__img" loading="lazy" decoding="async" />
+            <span class="about-office__cell-label">소재 쇼룸</span>
+          </div>
+          <div class="about-office__cell about-office__cell--d" data-office-reveal>
+            <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="고객 미팅룸" class="about-office__img" loading="lazy" decoding="async" />
+            <span class="about-office__cell-label">고객 미팅룸</span>
+          </div>
+          <div class="about-office__cell about-office__cell--e" data-office-reveal>
+            <img src="https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=600&q=80" alt="품질 검수" class="about-office__img" loading="lazy" decoding="async" />
+            <span class="about-office__cell-label">품질 검수</span>
+          </div>
+          <div class="about-office__cell about-office__cell--f" data-office-reveal>
+            <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400&q=80" alt="완제품 보관" class="about-office__img" loading="lazy" decoding="async" />
+            <span class="about-office__cell-label">완제품 보관</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Stats — Numbers with Emotional Tone -->
     <section class="about-stats">
       <div class="about-stats__container">
         <div class="about-stats__grid">
           <div class="about-stats__card">
             <span class="about-stats__number">15+</span>
-            <span class="about-stats__label">Years Experience</span>
-            <p class="about-stats__desc">15년간 축적된 간판 제작 노하우</p>
+            <span class="about-stats__label">Years of Design</span>
+            <p class="about-stats__desc">디자인 감각을 다듬어온 시간</p>
           </div>
           <div class="about-stats__card">
             <span class="about-stats__number">1,000+</span>
-            <span class="about-stats__label">Projects</span>
-            <p class="about-stats__desc">전국 1,000건 이상의 시공 실적</p>
+            <span class="about-stats__label">Unique Signs</span>
+            <p class="about-stats__desc">각기 다른 이야기를 담은 간판</p>
           </div>
           <div class="about-stats__card">
-            <span class="about-stats__number">100%</span>
-            <span class="about-stats__label">Satisfaction</span>
-            <p class="about-stats__desc">고객 만족을 위한 완벽한 서비스</p>
+            <span class="about-stats__number">6</span>
+            <span class="about-stats__label">Product Lines</span>
+            <p class="about-stats__desc">다양한 스타일의 제품 라인업</p>
           </div>
           <div class="about-stats__card">
             <span class="about-stats__number">24h</span>
-            <span class="about-stats__label">After Service</span>
-            <p class="about-stats__desc">24시간 긴급 A/S 지원</p>
+            <span class="about-stats__label">Support</span>
+            <p class="about-stats__desc">설치 후에도 함께합니다</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- 7. Testimonials — Customer Stories -->
+    <section class="about-testimonials">
+      <div class="about-testimonials__container">
+        <div class="about-testimonials__header">
+          <span class="about-testimonials__label">Testimonials</span>
+          <h2 class="about-testimonials__title">고객의 이야기</h2>
+        </div>
+        <div class="about-testimonials__grid">
+          {testimonials.map((item) => (
+            <div class="about-testimonials__card">
+              <div class="about-testimonials__quote-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
+                  <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
+                </svg>
+              </div>
+              <p class="about-testimonials__text">{item.text}</p>
+              <div class="about-testimonials__author">
+                <span class="about-testimonials__name">{item.client}</span>
+                <span class="about-testimonials__location">{item.location}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CTA — Call to Action -->
     <section class="about-cta">
       <div class="about-cta__container">
-        <h2 class="about-cta__title">프로젝트를 시작할 준비가 되셨나요?</h2>
-        <p class="about-cta__desc">무료 견적 상담을 통해 최적의 솔루션을 제안해드립니다.</p>
-        <a href="/shop/contact" class="about-cta__button">
-          <span>견적 문의하기</span>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
+        <h2 class="about-cta__title">당신의 브랜드에 어울리는 간판,<br class="hide-mobile" /> 함께 만들어볼까요?</h2>
+        <div class="about-cta__buttons">
+          <a href="/shop/quote" class="about-cta__btn about-cta__btn--primary">
+            <span>무료 견적 문의</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="tel:070-8873-8472" class="about-cta__btn about-cta__btn--secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            <span>전화 상담</span>
+          </a>
+        </div>
       </div>
     </section>
   </main>
-
-  <KakaoFloat />
-  <ShopFooter />
-</Layout>
+</ShopLayout>
 
 <style>
   .about-page {
@@ -167,33 +311,64 @@ const breadcrumbs = [
     background: var(--background);
   }
 
-  /* Breadcrumb */
-  .about-page__breadcrumb {
-    padding-top: var(--header-height);
+  .hide-mobile {
+    display: inline;
   }
 
-  /* ===== Hero Section ===== */
+  /* ===== 1. Hero Section (Video) ===== */
   .about-hero {
     position: relative;
     width: 100%;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: var(--space-4xl) 0;
+    padding-top: calc(var(--header-height) + var(--space-4xl));
     text-align: center;
     overflow: hidden;
   }
 
-  .about-hero__bg {
+  .about-hero__video-wrap {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(26, 77, 46, 0.15) 0%, transparent 70%);
-    pointer-events: none;
+    z-index: 0;
+  }
+
+  .about-hero__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .about-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
   }
 
   .about-hero__container {
     position: relative;
+    z-index: 1;
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--container-padding);
-    z-index: 1;
+  }
+
+  @keyframes aboutHeroFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .about-hero__label {
@@ -202,30 +377,78 @@ const breadcrumbs = [
     font-weight: 500;
     color: var(--primary-light);
     text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wider);
+    letter-spacing: 0.15em;
     margin-bottom: var(--space-lg);
+    opacity: 0;
+    animation: aboutHeroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
   }
 
   .about-hero__title {
-    font-size: var(--font-size-6xl);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
     font-weight: 700;
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
     color: var(--text-primary);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
+    opacity: 0;
+    animation: aboutHeroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
   }
 
   .about-hero__subtitle {
     font-size: var(--font-size-xl);
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
+    opacity: 0;
+    animation: aboutHeroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
   }
 
-  /* ===== Values Grid ===== */
+  /* ===== 2. Mission Section ===== */
+  .about-mission {
+    position: relative;
+    width: 100%;
+    padding: var(--space-4xl) 0;
+    text-align: center;
+  }
+
+  .about-mission__container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .about-mission__quote-mark {
+    font-size: 6rem;
+    line-height: 1;
+    color: var(--primary);
+    opacity: 0.3;
+    margin-bottom: calc(-1 * var(--space-xl));
+    font-family: Georgia, serif;
+  }
+
+  .about-mission__text {
+    font-size: var(--font-size-2xl);
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+    margin: 0 0 var(--space-xl);
+    border: none;
+    padding: 0;
+  }
+
+  .about-mission__sub {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* ===== 3. Values Grid ===== */
   .about-values {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .about-values__container {
@@ -246,7 +469,7 @@ const breadcrumbs = [
     align-items: center;
     text-align: center;
     padding: var(--space-2xl) var(--space-xl);
-    background: var(--surface);
+    background: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     transition: transform var(--transition-base), border-color var(--transition-base);
@@ -263,7 +486,7 @@ const breadcrumbs = [
     justify-content: center;
     width: 64px;
     height: 64px;
-    background: rgba(26, 77, 46, 0.1);
+    background: rgba(76, 175, 80, 0.1);
     border-radius: var(--radius-lg);
     color: var(--primary-light);
     margin-bottom: var(--space-lg);
@@ -282,14 +505,11 @@ const breadcrumbs = [
     line-height: var(--line-height-relaxed);
   }
 
-  /* ===== Company Story ===== */
+  /* ===== 4. Story + Image ===== */
   .about-story {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
   }
 
   .about-story__container {
@@ -298,8 +518,15 @@ const breadcrumbs = [
     padding: 0 var(--container-padding);
   }
 
-  .about-story__header {
-    margin-bottom: var(--space-2xl);
+  .about-story__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3xl);
+    align-items: center;
+  }
+
+  .about-story__content {
+    order: 1;
   }
 
   .about-story__label {
@@ -318,28 +545,170 @@ const breadcrumbs = [
     color: var(--text-primary);
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
-  }
-
-  .about-story__content {
-    max-width: 800px;
+    margin-bottom: var(--space-xl);
   }
 
   .about-story__text {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-lg);
   }
 
   .about-story__text:last-child {
     margin-bottom: 0;
   }
 
-  /* ===== Stats Grid ===== */
+  .about-story__image-wrap {
+    order: 2;
+  }
+
+  .about-story__image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+  }
+
+  /* ===== 5. Office Space — Bento Grid ===== */
+  .about-office {
+    position: relative;
+    width: 100%;
+    padding: var(--space-4xl) 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .about-office__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  /* Bento Grid: 4col × 3row */
+  .about-office__bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 220px 220px 220px;
+    gap: 12px;
+    grid-template-areas:
+      "text text  a    b"
+      "text text  c    c"
+      "d    e     e    f";
+  }
+
+  /* Text Cell */
+  .about-office__text-cell {
+    grid-area: text;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-2xl) var(--space-xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .about-office__label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: var(--space-lg);
+  }
+
+  .about-office__title {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    letter-spacing: var(--letter-spacing-tight);
+    margin-bottom: var(--space-xl);
+  }
+
+  .about-office__desc {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-md);
+  }
+
+  .about-office__desc:last-child {
+    margin-bottom: 0;
+  }
+
+  .about-office__desc--sub {
+    margin-top: var(--space-sm);
+    font-size: var(--font-size-sm);
+    color: var(--primary-light);
+    font-weight: 500;
+  }
+
+  /* Image Cells */
+  .about-office__cell {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .about-office__cell--a { grid-area: a; }
+  .about-office__cell--b { grid-area: b; }
+  .about-office__cell--c { grid-area: c; }
+  .about-office__cell--d { grid-area: d; }
+  .about-office__cell--e { grid-area: e; }
+  .about-office__cell--f { grid-area: f; }
+
+  .about-office__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .about-office__cell:hover .about-office__img {
+    transform: scale(1.06);
+  }
+
+  .about-office__cell-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .about-office__cell:hover .about-office__cell-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Scroll reveal base state */
+  [data-office-reveal] {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  /* ===== 6. Stats Grid ===== */
   .about-stats {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .about-stats__container {
@@ -360,7 +729,7 @@ const breadcrumbs = [
     align-items: center;
     text-align: center;
     padding: var(--space-2xl) var(--space-lg);
-    background: var(--surface-light);
+    background: var(--background);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     transition: transform var(--transition-base), border-color var(--transition-base);
@@ -396,13 +765,103 @@ const breadcrumbs = [
     line-height: var(--line-height-normal);
   }
 
-  /* ===== CTA Section ===== */
-  .about-cta {
+  /* ===== 7. Testimonials ===== */
+  .about-testimonials {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
     background: var(--surface);
     border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .about-testimonials__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .about-testimonials__header {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+  }
+
+  .about-testimonials__label {
+    display: inline-block;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    margin-bottom: var(--space-sm);
+  }
+
+  .about-testimonials__title {
+    font-size: var(--font-size-3xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  .about-testimonials__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .about-testimonials__card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-2xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: transform var(--transition-base), border-color var(--transition-base);
+  }
+
+  .about-testimonials__card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+  }
+
+  .about-testimonials__quote-icon {
+    color: var(--primary-light);
+    margin-bottom: var(--space-md);
+  }
+
+  .about-testimonials__text {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-xl);
+    flex: 1;
+  }
+
+  .about-testimonials__author {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+
+  .about-testimonials__name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .about-testimonials__location {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  /* ===== 8. CTA Section ===== */
+  .about-cta {
+    position: relative;
+    width: 100%;
+    padding: var(--space-4xl) 0;
     text-align: center;
   }
 
@@ -417,40 +876,69 @@ const breadcrumbs = [
     font-weight: 600;
     color: var(--text-primary);
     line-height: var(--line-height-tight);
-    margin-bottom: var(--space-md);
-  }
-
-  .about-cta__desc {
-    font-size: var(--font-size-lg);
-    color: var(--text-secondary);
-    line-height: var(--line-height-relaxed);
     margin-bottom: var(--space-2xl);
   }
 
-  .about-cta__button {
+  .about-cta__buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .about-cta__btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-sm);
     padding: var(--space-md) var(--space-2xl);
-    background: var(--primary);
-    color: var(--text-primary);
     font-size: var(--font-size-base);
     font-weight: 600;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-full);
     transition: all var(--transition-base);
+    text-decoration: none;
   }
 
-  .about-cta__button:hover {
+  .about-cta__btn--primary {
+    background: var(--primary);
+    color: #fff;
+    border: 1px solid var(--primary);
+  }
+
+  .about-cta__btn--primary:hover {
     background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(26, 77, 46, 0.3);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
   }
 
-  /* ===== Responsive - Tablet ===== */
+  .about-cta__btn--secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .about-cta__btn--secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  .about-cta__btn svg {
+    transition: transform var(--transition-base);
+  }
+
+  .about-cta__btn:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* ===== Responsive — Tablet ===== */
   @media (max-width: 1023px) {
     .about-hero__title {
-      font-size: var(--font-size-5xl);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+    }
+
+    .about-mission__text {
+      font-size: var(--font-size-xl);
     }
 
     .about-values__grid {
@@ -458,12 +946,22 @@ const breadcrumbs = [
       gap: var(--space-lg);
     }
 
+    .about-story__grid {
+      gap: var(--space-2xl);
+    }
+
+    .about-office__bento {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: 180px 180px 180px;
+    }
+
     .about-stats__grid {
       grid-template-columns: repeat(2, 1fr);
     }
 
-    .about-story__title {
-      font-size: var(--font-size-2xl);
+    .about-testimonials__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-lg);
     }
 
     .about-cta__title {
@@ -471,24 +969,45 @@ const breadcrumbs = [
     }
   }
 
-  /* ===== Responsive - Mobile ===== */
+  /* ===== Responsive — Mobile ===== */
   @media (max-width: 719px) {
-    .about-page__breadcrumb {
-      padding-top: var(--header-height-mobile);
+    .hide-mobile {
+      display: none;
     }
 
+    /* Hero */
     .about-hero {
+      min-height: 50vh;
       padding: var(--space-3xl) 0;
+      padding-top: calc(var(--header-height-mobile) + var(--space-3xl));
     }
 
     .about-hero__title {
-      font-size: var(--font-size-4xl);
+      font-size: clamp(1.75rem, 7vw, 2.5rem);
     }
 
     .about-hero__subtitle {
       font-size: var(--font-size-base);
     }
 
+    /* Mission */
+    .about-mission {
+      padding: var(--space-3xl) 0;
+    }
+
+    .about-mission__quote-mark {
+      font-size: 4rem;
+    }
+
+    .about-mission__text {
+      font-size: var(--font-size-lg);
+    }
+
+    .about-mission__sub {
+      font-size: var(--font-size-base);
+    }
+
+    /* Values */
     .about-values {
       padding: var(--space-3xl) 0;
     }
@@ -502,14 +1021,67 @@ const breadcrumbs = [
       padding: var(--space-xl) var(--space-lg);
     }
 
+    /* Story */
     .about-story {
       padding: var(--space-3xl) 0;
     }
 
-    .about-story__text {
-      font-size: var(--font-size-base);
+    .about-story__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
     }
 
+    .about-story__image-wrap {
+      order: 1;
+    }
+
+    .about-story__content {
+      order: 2;
+    }
+
+    .about-story__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    /* Office */
+    .about-office {
+      padding: var(--space-3xl) 0;
+    }
+
+    .about-office__bento {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto repeat(3, 160px);
+      gap: 8px;
+      grid-template-areas:
+        "text text"
+        "a    b"
+        "c    c"
+        "d    e";
+    }
+
+    .about-office__text-cell {
+      padding: var(--space-xl) var(--space-lg);
+    }
+
+    .about-office__title {
+      font-size: var(--font-size-2xl);
+      margin-bottom: var(--space-lg);
+    }
+
+    .about-office__desc {
+      font-size: var(--font-size-sm);
+    }
+
+    .about-office__cell--e,
+    .about-office__cell--f {
+      grid-area: auto;
+    }
+
+    .about-office__cell--f {
+      display: none;
+    }
+
+    /* Stats */
     .about-stats {
       padding: var(--space-3xl) 0;
     }
@@ -527,6 +1099,25 @@ const breadcrumbs = [
       font-size: var(--font-size-3xl);
     }
 
+    /* Testimonials */
+    .about-testimonials {
+      padding: var(--space-3xl) 0;
+    }
+
+    .about-testimonials__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .about-testimonials__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .about-testimonials__card {
+      padding: var(--space-xl);
+    }
+
+    /* CTA */
     .about-cta {
       padding: var(--space-3xl) 0;
     }
@@ -535,8 +1126,80 @@ const breadcrumbs = [
       font-size: var(--font-size-xl);
     }
 
-    .about-cta__desc {
-      font-size: var(--font-size-base);
+    .about-cta__buttons {
+      flex-direction: column;
+      padding: 0 var(--space-md);
+    }
+
+    .about-cta__btn {
+      width: 100%;
     }
   }
+
 </style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initAboutAnimations() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      document.querySelectorAll('[data-office-reveal]').forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.transform = 'none';
+      });
+      return;
+    }
+
+    // Office section — staggered reveal
+    const officeSection = document.querySelector('[data-about-office]');
+    if (officeSection) {
+      const items = officeSection.querySelectorAll('[data-office-reveal]');
+      gsap.to(items, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: officeSection,
+          start: 'top 75%',
+          once: true,
+        },
+      });
+    }
+
+    // Generic fade-up for other sections
+    const sections = document.querySelectorAll(
+      '.about-mission, .about-values, .about-story, .about-stats, .about-testimonials, .about-cta'
+    );
+    sections.forEach((section) => {
+      const children = section.querySelectorAll(
+        '.about-mission__container, .about-values__card, .about-story__content, .about-story__image-wrap, .about-stats__card, .about-testimonials__card, .about-cta__container'
+      );
+      if (children.length) {
+        gsap.fromTo(children,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 80%',
+              once: true,
+            },
+          }
+        );
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initAboutAnimations);
+  document.addEventListener('astro:page-load', initAboutAnimations);
+</script>

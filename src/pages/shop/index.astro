@@ -8,7 +8,6 @@ import Layout from '../../layouts/Layout.astro';
 import ShopNavbar from '../../components/shop/ShopNavbar.astro';
 import ShopHero from '../../components/shop/ShopHero.astro';
 import FeaturedBento from '../../components/shop/FeaturedBento.astro';
-import CategoryShowcase from '../../components/shop/CategoryShowcase.astro';
 import NewArrivals from '../../components/shop/NewArrivals.astro';
 import CategoryFilter from '../../components/shop/CategoryFilter.astro';
 import ProductGrid from '../../components/shop/ProductGrid.astro';
@@ -20,7 +19,6 @@ import ClientLogos from '../../components/shop/ClientLogos.astro';
 import ChatBot from '../../components/shop/ChatBot';
 import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
-import QuoteForm from '../../components/shop/QuoteForm.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 import SearchOverlay from '../../components/shop/SearchOverlay.astro';
@@ -49,22 +47,12 @@ const { products, categories } = productsData;
     <!-- Featured Products Bento Grid -->
     <FeaturedBento />
 
-    <!-- Category Showcase -->
-    <CategoryShowcase />
-
     <!-- New Arrivals -->
     <NewArrivals />
 
     <!-- All Products -->
     <section class="shop-products" id="products">
       <div class="shop-products__container">
-        <div class="shop-products__header">
-          <h2 class="shop-products__title">전체 제품</h2>
-          <p class="shop-products__description">
-            모든 간판 제품을 둘러보고 원하는 제품을 선택하세요
-          </p>
-        </div>
-
         <!-- Category Filter + Sort Controls -->
         <div class="shop-products__controls">
           <div class="shop-products__filter">
@@ -90,16 +78,14 @@ const { products, categories } = productsData;
     <!-- Client Logos Marquee -->
     <ClientLogos />
 
-    <!-- Quote Section -->
-    <section class="shop-quote" id="quote">
-      <div class="shop-quote__container">
-        <div class="shop-quote__header">
-          <h2 class="shop-quote__title">원하는 제품을 찾지 못하셨나요?</h2>
-          <p class="shop-quote__description">
-            맞춤 제작도 가능합니다. 아래 양식으로 견적을 문의하세요.
-          </p>
-        </div>
-        <QuoteForm />
+    <!-- Quote CTA -->
+    <section class="shop-quote-cta">
+      <div class="shop-quote-cta__container">
+        <h2 class="shop-quote-cta__title">원하는 제품을 찾지 못하셨나요?</h2>
+        <p class="shop-quote-cta__desc">
+          맞춤 제작도 가능합니다. 무료 견적을 받아보세요.
+        </p>
+        <a href="/shop/quote" class="shop-quote-cta__btn">무료 견적 문의하기</a>
       </div>
     </section>
   </main>
@@ -133,70 +119,64 @@ const { products, categories } = productsData;
     padding: 0 var(--container-padding);
   }
 
-  .shop-products__header {
-    text-align: center;
-    margin-bottom: var(--space-2xl);
-  }
-
-  .shop-products__title {
-    font-size: var(--font-size-3xl);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--space-sm);
-  }
-
-  .shop-products__description {
-    font-size: var(--font-size-lg);
-    color: var(--text-secondary);
-  }
-
   .shop-products__controls {
     margin-bottom: var(--space-2xl);
   }
 
   .shop-products__filter {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-sm);
   }
 
-  /* Quote Section */
-  .shop-quote {
+  /* Quote CTA */
+  .shop-quote-cta {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
     background: var(--surface);
     border-top: 1px solid var(--border);
+    text-align: center;
   }
 
-  .shop-quote__container {
+  .shop-quote-cta__container {
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
 
-  .shop-quote__header {
-    text-align: center;
-    margin-bottom: var(--space-2xl);
-  }
-
-  .shop-quote__title {
+  .shop-quote-cta__title {
     font-size: var(--font-size-3xl);
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
   }
 
-  .shop-quote__description {
+  .shop-quote-cta__desc {
     font-size: var(--font-size-lg);
     color: var(--text-secondary);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .shop-quote-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-md) var(--space-3xl);
+    background: var(--primary);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+  }
+
+  .shop-quote-cta__btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(26, 77, 46, 0.3);
   }
 
   /* Responsive */
   @media (max-width: 719px) {
-    .shop-products__title {
-      font-size: var(--font-size-2xl);
-    }
-
-    .shop-quote__title {
+    .shop-quote-cta__title {
       font-size: var(--font-size-2xl);
     }
   }

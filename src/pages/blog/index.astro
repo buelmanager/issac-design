@@ -1,0 +1,202 @@
+---
+import ShopLayout from '../../components/shop/ShopLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .filter(post => !post.id.startsWith('_'))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+---
+
+<ShopLayout
+  title="블로그 - issac.design"
+  description="LED 사이니지, 간판 디자인, 옥외광고에 대한 인사이트와 트렌드를 공유합니다."
+  showBreadcrumb={false}
+>
+  <main class="blog-page">
+    <section class="blog-hero">
+      <div class="container">
+        <h1>블로그</h1>
+        <p>사이니지 디자인과 광고 트렌드에 대한 인사이트를 공유합니다.</p>
+      </div>
+    </section>
+
+    <section class="blog-list">
+      <div class="container">
+        {posts.length === 0 ? (
+          <p class="empty-message">아직 작성된 글이 없습니다.</p>
+        ) : (
+          <div class="posts-grid">
+            {posts.map((post) => (
+              <a href={`/blog/${post.id}`} class="post-card">
+                {(post.data.heroImage || post.data.thumbnail) && (
+                  <div class="post-thumbnail">
+                    <img
+                      src={post.data.heroImage?.src || post.data.thumbnail}
+                      alt={post.data.heroImage?.alt || post.data.title}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div class="post-content">
+                  {post.data.tags && (
+                    <div class="post-tags">
+                      {post.data.tags.map((tag: string) => (
+                        <span class="tag">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  <h2 class="post-title">{post.data.title}</h2>
+                  {post.data.description && (
+                    <p class="post-description">{post.data.description}</p>
+                  )}
+                  <time class="post-date" datetime={post.data.date}>
+                    {new Date(post.data.date).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </time>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  </main>
+</ShopLayout>
+
+<style>
+  .blog-page {
+    min-height: 100vh;
+    background: var(--background);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Hero */
+  .blog-hero {
+    padding: 8rem 0 3rem;
+    text-align: center;
+  }
+
+  .blog-hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+
+  .blog-hero p {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Post Grid */
+  .blog-list {
+    padding: 2rem 0 6rem;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2rem;
+  }
+
+  .post-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+  }
+
+  .post-thumbnail {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .post-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .post-card:hover .post-thumbnail img {
+    transform: scale(1.05);
+  }
+
+  .post-content {
+    padding: 1.5rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(102, 187, 106, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+  }
+
+  .post-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .post-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .empty-message {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    padding: 4rem 0;
+  }
+
+  @media (max-width: 768px) {
+    .posts-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-hero {
+      padding: 6rem 0 2rem;
+    }
+  }
+</style>

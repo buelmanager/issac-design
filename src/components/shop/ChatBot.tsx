@@ -174,14 +174,46 @@ export default function ChatBot() {
     }
   }, [isOpen]);
 
-  // Listen for custom open-chatbot event
+  // Listen for custom open-chatbot event (from KakaoFloat + ShopHero)
   useEffect(() => {
     function handleOpen() {
       setIsOpen(true);
+      // Add welcome message if none exist
+      setMessages((prev) => {
+        if (prev.length === 0) {
+          const welcome = getWelcomeResponse();
+          return [{
+            id: generateId(),
+            role: 'bot' as const,
+            text: welcome.text,
+            quickReplies: welcome.quickReplies,
+            timestamp: Date.now(),
+          }];
+        }
+        return prev;
+      });
     }
     window.addEventListener('open-chatbot', handleOpen);
     return () => window.removeEventListener('open-chatbot', handleOpen);
   }, []);
+
+  // Lock body scroll when chatbot is open (mobile full-screen)
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isOpen]);
 
   // ESC to close
   useEffect(() => {
@@ -224,26 +256,6 @@ export default function ChatBot() {
     [],
   );
 
-  const handleOpen = useCallback(() => {
-    setIsOpen(true);
-    // Add welcome message if no messages exist
-    setMessages((prev) => {
-      if (prev.length === 0) {
-        const welcome = getWelcomeResponse();
-        return [
-          {
-            id: generateId(),
-            role: 'bot' as const,
-            text: welcome.text,
-            quickReplies: welcome.quickReplies,
-            timestamp: Date.now(),
-          },
-        ];
-      }
-      return prev;
-    });
-  }, []);
-
   const handleSend = useCallback(
     (text: string) => {
       if (!text.trim()) return;
@@ -284,30 +296,6 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Widget Button */}
-      {!isOpen && (
-        <button
-          className="cb-widget"
-          onClick={handleOpen}
-          aria-label="AI 상담 채팅 열기"
-          type="button"
-        >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            <path d="M8 10h.01M12 10h.01M16 10h.01" />
-          </svg>
-        </button>
-      )}
-
       {/* Chat Window */}
       {isOpen && (
         <div className="cb-window" role="dialog" aria-label="AI 상담 채팅">
@@ -415,37 +403,6 @@ export default function ChatBot() {
 
       <style>{`
         /* ==================
-           ChatBot Widget
-           ================== */
-        .cb-widget {
-          position: fixed;
-          bottom: 192px;
-          right: 24px;
-          z-index: 1100;
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #1a4d2e 0%, #4caf50 100%);
-          color: #fff;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
-          transition: ${reducedMotion ? 'none' : 'all 0.3s ease'};
-        }
-
-        .cb-widget:hover {
-          transform: scale(1.1);
-          box-shadow: 0 6px 28px rgba(76, 175, 80, 0.5);
-        }
-
-        .cb-widget:active {
-          transform: scale(0.95);
-        }
-
-        /* ==================
            Chat Window
            ================== */
         .cb-window {
@@ -546,6 +503,8 @@ export default function ChatBot() {
         .cb-messages {
           flex: 1;
           overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
           padding: 16px;
           display: flex;
           flex-direction: column;
@@ -828,13 +787,6 @@ export default function ChatBot() {
            Mobile — Full Screen
            ================== */
         @media (max-width: 720px) {
-          .cb-widget {
-            bottom: 148px;
-            right: 16px;
-            width: 56px;
-            height: 56px;
-          }
-
           .cb-window {
             inset: 0;
             width: 100%;

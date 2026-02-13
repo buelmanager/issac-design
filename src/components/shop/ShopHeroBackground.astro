@@ -1,0 +1,145 @@
+---
+/**
+ * Shop Hero Background Component
+ * 4 rotating videos with crossfade transitions + mobile poster fallback
+ */
+
+const slides = [
+  {
+    webm: '/videos/hero1-opt.webm',
+    mp4: '/videos/hero1-opt.mp4',
+    poster: '/videos/hero1-poster.jpg',
+  },
+  {
+    webm: '/videos/hero2-opt.webm',
+    mp4: '/videos/hero2-opt.mp4',
+    poster: '/videos/hero2-poster.jpg',
+  },
+  {
+    mp4: '/videos/hero3.mp4',
+    poster: '/videos/hero3-poster.jpg',
+  },
+  {
+    mp4: '/videos/hero4.mp4',
+    poster: '/videos/hero4-poster.jpg',
+  },
+];
+---
+
+<div class="shop-hero__bg" data-shop-hero-bg>
+  {slides.map((slide, idx) => (
+    <div
+      class:list={['shop-hero__video-wrap', { 'is-active': idx === 0 }]}
+      data-shop-hero-bg-wrapper
+      data-slide-index={idx}
+    >
+      <!-- Mobile fallback image -->
+      <img
+        class="shop-hero__poster"
+        src={slide.poster}
+        alt=""
+        loading={idx === 0 ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+      <!-- Background video -->
+      <video
+        class="shop-hero__video"
+        autoplay={idx === 0}
+        muted
+        loop
+        playsinline
+        preload={idx === 0 ? 'auto' : 'none'}
+        poster={slide.poster}
+        data-shop-hero-video
+        data-slide-index={idx}
+      >
+        {slide.webm && <source src={slide.webm} type="video/webm" />}
+        <source src={slide.mp4} type="video/mp4" />
+      </video>
+    </div>
+  ))}
+  <div class="shop-hero__overlay"></div>
+</div>
+
+<style>
+  .shop-hero__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .shop-hero__video-wrap {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    will-change: opacity;
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out;
+  }
+
+  .shop-hero__video-wrap.is-active {
+    opacity: 1;
+  }
+
+  .shop-hero__video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: cover;
+    pointer-events: none;
+    filter: brightness(0.4) saturate(1.15);
+  }
+
+  .shop-hero__poster {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.5) saturate(1.2);
+  }
+
+  .shop-hero__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(0, 0, 0, 0.55) 35%,
+      rgba(0, 0, 0, 0.60) 65%,
+      rgba(0, 0, 0, 0.85) 100%
+    );
+  }
+
+  @media (max-width: 719px) {
+    .shop-hero__video {
+      display: none;
+    }
+
+    .shop-hero__poster {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shop-hero__video {
+      display: none;
+    }
+
+    .shop-hero__poster {
+      display: block;
+    }
+
+    .shop-hero__video-wrap {
+      transition: none;
+    }
+  }
+</style>
