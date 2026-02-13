@@ -413,6 +413,11 @@ import ProductSimulator from './ProductSimulator';
     border: none !important;
     overflow: visible !important;
     transform: none !important;
+    /* PWA safe-area for notch/home indicator */
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    padding-left: env(safe-area-inset-left, 0px) !important;
+    padding-right: env(safe-area-inset-right, 0px) !important;
   }
 
   /* AR 모드일 때 부모 요소들이 fixed를 방해하지 않도록 */
@@ -712,11 +717,16 @@ import ProductSimulator from './ProductSimulator';
   /* Mobile */
   @media (max-width: 719px) {
     .simulator-section {
-      padding: var(--space-3xl) 0;
+      padding: var(--space-xl) 0;
+      padding-bottom: calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
+    }
+
+    :global(.product-simulator__container) {
+      padding: 0 var(--space-sm);
     }
 
     :global(.product-simulator__topbar) {
-      padding-top: calc(var(--space-3xl) + var(--space-sm));
+      padding-top: var(--space-sm);
     }
 
     :global(.product-simulator__upload-bar) {
@@ -730,12 +740,37 @@ import ProductSimulator from './ProductSimulator';
     }
 
     :global(.product-simulator__title) {
-      font-size: var(--font-size-2xl);
+      font-size: var(--font-size-xl);
+    }
+
+    :global(.product-simulator__description) {
+      font-size: var(--font-size-xs);
     }
 
     :global(.product-simulator__canvas) {
-      height: 50vh;
-      min-height: 350px;
+      height: calc(100dvh - 160px);
+      min-height: 300px;
+      max-height: none;
+      border-radius: var(--radius-md);
+    }
+
+    :global(.sim-canvas-btn),
+    :global(.sim-daynight-btn) {
+      width: 32px;
+      height: 32px;
+    }
+
+    :global(.sim-ar-btn) {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  /* Small mobile */
+  @media (max-width: 420px) {
+    :global(.product-simulator__canvas) {
+      height: calc(100dvh - 140px);
+      min-height: 260px;
     }
   }
 
