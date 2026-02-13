@@ -19,7 +19,7 @@
         decoding="async"
         data-shop-hero-fallback
       />
-      <!-- Per-slide videos -->
+      <!-- 2개 영상 (슬라이드 0,2 → video 0 / 슬라이드 1,3 → video 1) -->
       <video
         class="shop-hero__video is-active"
         autoplay
@@ -30,40 +30,20 @@
         poster="/videos/hero1-poster.jpg"
         data-shop-hero-video="0"
       >
-        <source src="/videos/hero1.mp4" type="video/mp4" />
+        <source src="/videos/hero1-opt.webm" type="video/webm" />
+        <source src="/videos/hero1-opt.mp4" type="video/mp4" />
       </video>
       <video
         class="shop-hero__video"
         muted
         loop
         playsinline
-        preload="metadata"
+        preload="none"
         poster="/videos/hero2-poster.jpg"
         data-shop-hero-video="1"
       >
-        <source src="/videos/hero2.mp4" type="video/mp4" />
-      </video>
-      <video
-        class="shop-hero__video"
-        muted
-        loop
-        playsinline
-        preload="metadata"
-        poster="/videos/hero3-poster.jpg"
-        data-shop-hero-video="2"
-      >
-        <source src="/videos/hero3.mp4" type="video/mp4" />
-      </video>
-      <video
-        class="shop-hero__video"
-        muted
-        loop
-        playsinline
-        preload="metadata"
-        poster="/videos/hero4-poster.jpg"
-        data-shop-hero-video="3"
-      >
-        <source src="/videos/hero4.mp4" type="video/mp4" />
+        <source src="/videos/hero2-opt.webm" type="video/webm" />
+        <source src="/videos/hero2-opt.mp4" type="video/mp4" />
       </video>
     </div>
     <div class="shop-hero__overlay"></div>
@@ -74,71 +54,92 @@
     <div class="shop-hero__content" data-shop-hero-content>
       <!-- Slide System -->
       <div class="shop-hero__slides" data-shop-hero-slides>
-        <!-- Slide 0: Design Quality -->
+        <!-- Slide 0: 가치 제안 -->
         <div class="shop-hero__slide is-active" data-shop-hero-slide="0">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>DESIGN EXCELLENCE</span>
+          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>프리미엄 간판 전문</span>
           <h2 class="shop-hero__headline">
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>간판은</span>
+              <span class="shop-hero__headline-text" data-split-text>내 가게에 딱 맞는</span>
             </span>
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>디자인입니다</span>
+              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>간판을 찾아보세요</span>
             </span>
           </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>브랜드의 첫인상을 결정하는 간판, 디자인부터 다릅니다</p>
+          <p class="shop-hero__desc" data-shop-hero-desc>LED 채널간판, 네온사인, 현수막, 돌출간판 등 16종 이상 제품 라인업</p>
         </div>
 
-        <!-- Slide 1: Product Range -->
+        <!-- Slide 1: 제품 라인업 -->
         <div class="shop-hero__slide" data-shop-hero-slide="1">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>FULL LINEUP</span>
+          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>LED부터 네온까지</span>
           <h2 class="shop-hero__headline">
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>LED부터 네온까지</span>
+              <span class="shop-hero__headline-text" data-split-text>모든 간판, 한곳에서</span>
             </span>
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>모든 간판, 한곳에서</span>
+              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>비교하고 견적받기</span>
             </span>
           </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>채널간판, 네온사인, 현수막, 돌출간판 등 16종 이상의 제품 라인업</p>
+          <p class="shop-hero__desc" data-shop-hero-desc>채널간판, 네온사인, 현수막, 돌출간판 등 원하는 간판을 바로 비교하세요</p>
         </div>
 
-        <!-- Slide 2: Trust / Experience -->
+        <!-- Slide 2: 신뢰 / 경험 -->
         <div class="shop-hero__slide" data-shop-hero-slide="2">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>SINCE 2010</span>
+          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>15년 · 1,000건+</span>
           <h2 class="shop-hero__headline">
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>15년, 1,000건</span>
+              <span class="shop-hero__headline-text" data-split-text>경험이 증명하는</span>
             </span>
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>신뢰가 만든 품질</span>
+              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>신뢰의 품질</span>
             </span>
           </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>천 건 이상의 시공 경험으로 완성한 최고의 기술력</p>
+          <p class="shop-hero__desc" data-shop-hero-desc>천 건 이상의 시공 경험과 1년 무상 A/S로 완성한 기술력</p>
         </div>
 
-        <!-- Slide 3: Easy Process -->
+        <!-- Slide 3: 원스톱 서비스 -->
         <div class="shop-hero__slide" data-shop-hero-slide="3">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>ONE-STOP SERVICE</span>
+          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>원스톱 서비스</span>
           <h2 class="shop-hero__headline">
             <span class="shop-hero__headline-line">
               <span class="shop-hero__headline-text" data-split-text>견적부터 시공까지</span>
             </span>
             <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>간편하게, 한번에</span>
+              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>한번에 해결</span>
             </span>
           </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>온라인 견적 문의, 디자인 시안, 제작, 설치까지 원스톱으로</p>
+          <p class="shop-hero__desc" data-shop-hero-desc>온라인 견적, 디자인 시안, 제작, 설치까지 한곳에서 해결하세요</p>
         </div>
       </div>
 
       <!-- Persistent CTA (outside slides) -->
       <div class="shop-hero__cta" data-shop-hero-cta>
-        <a href="#products" class="shop-hero__cta-btn" data-magnetic>
+        <a href="#products" class="shop-hero__cta-btn shop-hero__cta-btn--primary" data-magnetic>
           <span>제품 둘러보기</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
+        <a href="#quote" class="shop-hero__cta-btn shop-hero__cta-btn--secondary" data-magnetic>
+          <span>무료 견적 문의</span>
+        </a>
+      </div>
+
+      <!-- Trust Badge — 항상 노출 -->
+      <div class="shop-hero__trust" data-shop-hero-trust>
+        <div class="shop-hero__trust-item">
+          <span class="shop-hero__trust-number">15+</span>
+          <span class="shop-hero__trust-label">년 경력</span>
+        </div>
+        <div class="shop-hero__trust-divider"></div>
+        <div class="shop-hero__trust-item">
+          <span class="shop-hero__trust-number">1,000+</span>
+          <span class="shop-hero__trust-label">시공 실적</span>
+        </div>
+        <div class="shop-hero__trust-divider"></div>
+        <div class="shop-hero__trust-item">
+          <span class="shop-hero__trust-number">1년</span>
+          <span class="shop-hero__trust-label">무상 A/S</span>
+        </div>
       </div>
 
       <!-- Slide Indicators -->
@@ -354,6 +355,10 @@
 
   /* CTA */
   .shop-hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
     margin-top: var(--space-2xl);
     opacity: 0;
   }
@@ -366,17 +371,34 @@
     font-size: var(--font-size-sm);
     font-weight: 500;
     letter-spacing: 0.05em;
-    color: var(--text-primary);
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: var(--radius-full);
     transition: all var(--transition-base);
-    text-transform: uppercase;
     text-decoration: none;
     cursor: pointer;
   }
 
-  .shop-hero__cta-btn:hover {
+  /* Primary CTA — 고대비 초록 배경 */
+  .shop-hero__cta-btn--primary {
+    color: #fff;
+    background: var(--primary-light, #4caf50);
+    border: 1px solid var(--primary-light, #4caf50);
+  }
+
+  .shop-hero__cta-btn--primary:hover {
+    background: #43a047;
+    border-color: #43a047;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+  }
+
+  /* Secondary CTA — 아웃라인 */
+  .shop-hero__cta-btn--secondary {
+    color: var(--text-primary);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .shop-hero__cta-btn--secondary:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.5);
   }
@@ -387,6 +409,48 @@
 
   .shop-hero__cta-btn:hover svg {
     transform: translateX(4px);
+  }
+
+  /* Trust Badge */
+  .shop-hero__trust {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+    padding: var(--space-md) var(--space-xl);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    opacity: 0;
+  }
+
+  .shop-hero__trust-item {
+    text-align: center;
+  }
+
+  .shop-hero__trust-number {
+    display: block;
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--primary-light, #4caf50);
+    line-height: 1;
+  }
+
+  .shop-hero__trust-label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-top: var(--space-xs);
+  }
+
+  .shop-hero__trust-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
   }
 
   /* Indicators */
@@ -516,9 +580,26 @@
       padding: 0 var(--space-md);
     }
 
+    .shop-hero__cta {
+      flex-direction: column;
+    }
+
     .shop-hero__cta-btn {
       width: 100%;
       justify-content: center;
+    }
+
+    .shop-hero__trust {
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-lg);
+    }
+
+    .shop-hero__trust-number {
+      font-size: var(--font-size-lg);
+    }
+
+    .shop-hero__trust-divider {
+      height: 24px;
     }
 
     .shop-hero__video {
@@ -527,6 +608,16 @@
 
     .shop-hero__poster {
       display: block;
+      animation: shopHeroKenBurns 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes shopHeroKenBurns {
+      0% {
+        transform: scale(1) translate(0, 0);
+      }
+      100% {
+        transform: scale(1.08) translate(-2%, -1%);
+      }
     }
 
     .shop-hero__scroll {
@@ -552,11 +643,13 @@
 
     .shop-hero__poster {
       display: block;
+      animation: none;
     }
 
     .shop-hero__eyebrow,
     .shop-hero__desc,
     .shop-hero__cta,
+    .shop-hero__trust,
     .shop-hero__indicators,
     .shop-hero__scroll {
       opacity: 1 !important;
@@ -599,15 +692,18 @@
     const indicators = hero.querySelectorAll('[data-shop-hero-indicator]') as NodeListOf<HTMLElement>;
     const indicatorsContainer = hero.querySelector('[data-shop-hero-indicators]') as HTMLElement;
     const ctaEl = hero.querySelector('[data-shop-hero-cta]') as HTMLElement;
+    const trustEl = hero.querySelector('[data-shop-hero-trust]') as HTMLElement;
     const scrollEl = hero.querySelector('[data-shop-hero-scroll]') as HTMLElement;
     const heroVideos = hero.querySelectorAll('[data-shop-hero-video]') as NodeListOf<HTMLVideoElement>;
     const heroFallback = hero.querySelector('[data-shop-hero-fallback]') as HTMLImageElement;
 
+    // 슬라이드 → 영상 매핑 (4슬라이드, 2영상)
+    const slideToVideo = [0, 1, 0, 1]; // 슬라이드 0,2 → video 0 / 슬라이드 1,3 → video 1
     const posterImages = [
       '/videos/hero1-poster.jpg',
       '/videos/hero2-poster.jpg',
-      '/videos/hero3-poster.jpg',
-      '/videos/hero4-poster.jpg',
+      '/videos/hero1-poster.jpg',
+      '/videos/hero2-poster.jpg',
     ];
 
     const SLIDE_COUNT = slides.length;
@@ -662,24 +758,24 @@
       gsap.set(desc, { opacity: 0, y: 20 });
 
       const tl = gsap.timeline({
-        delay: isInitial ? 0.5 : 0.15,
+        delay: isInitial ? 0.2 : 0.1,
         onComplete: () => { isTransitioning = false; }
       });
 
       // Eyebrow
       tl.to(eyebrow, {
         opacity: 1, y: 0,
-        duration: 0.5,
+        duration: 0.4,
         ease: 'power3.out'
       }, 0);
 
-      // Characters — staggered reveal
+      // Characters — staggered reveal (속도 개선: ~2초 → ~1초)
       tl.to(chars, {
         opacity: 1, y: 0,
-        duration: 0.5,
-        stagger: { amount: 0.6, from: 'start' },
+        duration: 0.4,
+        stagger: { amount: 0.35, from: 'start' },
         ease: 'power4.out',
-      }, 0.3);
+      }, 0.15);
 
       // Description
       tl.to(desc, {
@@ -724,9 +820,20 @@
     // =====================
     // CAROUSEL CONTROLLER
     // =====================
-    function switchVideo(index: number) {
+    // Lazy load: 영상이 아직 로드되지 않았으면 로드 시작
+    function ensureVideoLoaded(video: HTMLVideoElement) {
+      if (video.preload === 'none') {
+        video.preload = 'auto';
+        video.load();
+      }
+    }
+
+    function switchVideo(slideIndex: number) {
+      const targetVideoIdx = slideToVideo[slideIndex];
+
       heroVideos.forEach((video, i) => {
-        if (i === index) {
+        if (i === targetVideoIdx) {
+          ensureVideoLoaded(video);
           video.classList.add('is-active');
           video.play().catch((err) => {
             console.debug(`[ShopHero] Video ${i} autoplay failed:`, err.message);
@@ -742,8 +849,13 @@
       });
 
       if (heroFallback) {
-        heroFallback.src = posterImages[index] || posterImages[0];
+        heroFallback.src = posterImages[slideIndex] || posterImages[0];
       }
+
+      // 다음 슬라이드 영상 프리로드
+      const nextSlideIdx = (slideIndex + 1) % SLIDE_COUNT;
+      const nextVideoIdx = slideToVideo[nextSlideIdx];
+      ensureVideoLoaded(heroVideos[nextVideoIdx]);
     }
 
     function goToSlide(index: number) {
@@ -880,6 +992,13 @@
       duration: 0.5, ease: 'power3.out'
     }, '-=0.2');
 
+    // Trust Badge
+    gsap.set(trustEl, { opacity: 0, y: 15 });
+    tl.to(trustEl, {
+      opacity: 1, y: 0,
+      duration: 0.5, ease: 'power3.out'
+    }, '-=0.15');
+
     // Indicators
     tl.to(indicatorsContainer, {
       opacity: 1, y: 0,
@@ -925,7 +1044,7 @@
         gsap.set([
           activeSlide?.querySelector('[data-shop-hero-eyebrow]'),
           activeSlide?.querySelector('[data-shop-hero-desc]'),
-          ctaEl, indicatorsContainer, scrollEl
+          ctaEl, trustEl, indicatorsContainer, scrollEl
         ].filter(Boolean), { opacity: 1 - p * 1.5 });
 
         if (activeChars) {
