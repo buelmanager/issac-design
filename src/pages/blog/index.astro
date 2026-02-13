@@ -1,5 +1,6 @@
 ---
 import ShopLayout from '../../components/shop/ShopLayout.astro';
+import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('blog'))
@@ -30,13 +31,15 @@ const posts = (await getCollection('blog'))
               <a href={`/blog/${post.id}`} class="post-card">
                 {(post.data.heroImage || post.data.thumbnail) && (
                   <div class="post-thumbnail">
-                    <img
-                      src={post.data.heroImage?.src || post.data.thumbnail}
+                    <Image
+                      src={post.data.heroImage?.src || post.data.thumbnail || ''}
                       alt={post.data.heroImage?.alt || post.data.title}
                       loading="lazy"
                       decoding="async"
-                      width="600"
-                      height="340"
+                      width={600}
+                      height={340}
+                      format="webp"
+                      quality={80}
                     />
                   </div>
                 )}

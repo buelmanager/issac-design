@@ -10,16 +10,17 @@ interface Props {
   category: string;
 }
 
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
+import { Image } from 'astro:assets';
 
 const { relatedSlugs, currentSlug, category } = Astro.props;
 
-// Get related products by slug, fallback to same category
-let related = productsData.products.filter(
+const { products: allProducts } = await getProducts();
+let related = allProducts.filter(
   (p) => relatedSlugs.includes(p.slug) && p.slug !== currentSlug
 );
 if (related.length < 3) {
-  const sameCat = productsData.products.filter(
+  const sameCat = allProducts.filter(
     (p) =>
       p.category === category &&
       p.slug !== currentSlug &&
@@ -48,14 +49,16 @@ if (related.length < 3) {
           >
             {/* Thumbnail */}
             <div class="related-products__card-image">
-              <img
+              <Image
                 src={product.thumbnail}
                 alt={product.name}
                 class="related-products__card-img"
                 loading="lazy"
                 decoding="async"
-                width="400"
-                height="300"
+                width={400}
+                height={300}
+                format="webp"
+                quality={80}
               />
             </div>
 

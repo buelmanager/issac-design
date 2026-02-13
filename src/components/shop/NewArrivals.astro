@@ -4,8 +4,10 @@
  * Horizontal scrollable section showcasing new products
  */
 
-import productsData from '../../data/products.json';
-const newProducts = productsData.products.filter(p => p.isNew);
+import { getProducts } from '../../lib/data-fetchers';
+import { Image } from 'astro:assets';
+const { products } = await getProducts();
+const newProducts = products.filter(p => p.isNew);
 ---
 
 <section class="new-arrivals" data-new-arrivals>
@@ -23,13 +25,15 @@ const newProducts = productsData.products.filter(p => p.isNew);
           <a href={`/shop/${product.slug}`} class="new-arrivals__card" data-new-arrival-card>
             {/* Image Container */}
             <div class="new-arrivals__card-image">
-              <img
+              <Image
                 src={product.thumbnail}
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
-                width="400"
-                height="300"
+                width={400}
+                height={300}
+                format="webp"
+                quality={80}
               />
               <span class="new-arrivals__badge">NEW</span>
             </div>

@@ -4,6 +4,8 @@
  * Full-screen hero with premium GSAP animations, parallax, and mouse interactions
  * Inspired by luxury automotive brand landing pages
  */
+import { Image } from 'astro:assets';
+import heroPoster from '../../assets/videos/hero1-poster.jpg';
 ---
 
 <section id="home" class="hero" data-hero>
@@ -15,15 +17,16 @@
     <!-- Self-hosted Video Background (per-slide) -->
     <div class="hero-video-wrapper" data-hero-bg-wrapper>
       <!-- Mobile fallback image -->
-      <img
-        class="hero-video-fallback"
-        src="/videos/hero1-poster.jpg"
+      <Image
+        src={heroPoster}
         alt="issac.design 히어로"
+        class="hero-video-fallback"
         loading="eager"
         decoding="async"
         fetchpriority="high"
-        width="1920"
-        height="1080"
+        width={1920}
+        height={1080}
+        layout="full-width"
         data-hero-fallback
       />
       <!-- Per-slide videos -->
@@ -33,7 +36,7 @@
         muted
         loop
         playsinline
-        preload="auto"
+        preload="metadata"
         poster="/videos/hero1-poster.jpg"
         data-hero-video="0"
       >

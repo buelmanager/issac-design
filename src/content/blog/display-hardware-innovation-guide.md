@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [디지털 사이니지, LCD vs LED, MicroLED, 비디오월, 디스플레이 기술, 총소유비용, TCO, ISE 2026, 간판 디스플레이, 상업용 디스플레이]
 description: "8K가 아닌 실용성으로. 디지털 사이니지 하드웨어 선택의 핵심을 ISE 2026 트렌드와 함께 분석합니다. LCD, LED, MicroLED 기술 비교, 용도별 최적 선택 가이드, 총소유비용(TCO) 분석까지 한 번에 확인하세요."
 heroImage:
-  src: "/images/blog/display-hardware-innovation-guide.jpg"
+  src: "../../assets/blog/display-hardware-innovation-guide.jpg"
   alt: "정리된 색연필 - 다양한 디스플레이 기술 선택지를 상징"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/kbhB_TFbnUA"

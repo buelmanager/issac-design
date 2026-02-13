@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [DOOH, 디지털 옥외광고, 3D 아나모픽, 프로그래매틱 DOOH, 미디어 파사드, 자율표시구역제, 옥외광고 트렌드, 디지털 사이니지, 바이럴 마케팅, RTB 광고]
 description: "DOOH 시장 17.2% 성장의 비밀. 3D 아나모픽이 5천만 조회수를 만드는 방법, 프로그래매틱 DOOH의 실시간 타겟팅 전략, 자율표시구역제가 가져온 한국 시장 변화까지. 2026년 디지털 옥외광고 트렌드 총정리."
 heroImage:
-  src: "/images/blog/dooh-digital-outdoor-advertising.jpg"
+  src: "../../assets/blog/dooh-digital-outdoor-advertising.jpg"
   alt: "뉴욕 도심 항공 사진 - 디지털 옥외광고가 펼쳐지는 도시 풍경"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/DcG39P2Q73k"

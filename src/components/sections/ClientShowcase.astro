@@ -3,6 +3,7 @@
  * Client Showcase Section Component
  * Client projects with filter tabs and GSAP animations
  */
+import { Image } from 'astro:assets';
 
 const clientProjects = [
   { category: 'restaurant', name: '고급 레스토랑 A', type: 'LED 채널 간판', image: 'https://images.unsplash.com/photo-1524237964353-f14cde1db034?w=500&q=80' },
@@ -89,14 +90,16 @@ const filterTabs = [
              <!-- Image Area -->
              <div class="brand-card-image">
                <!-- Product Image -->
-               <img
+               <Image
                  src={product.image}
                  alt={product.name}
                  class="brand-card-img"
                  loading="lazy"
                  decoding="async"
-                 width="500"
-                 height="375"
+                 width={500}
+                 height={375}
+                 format="webp"
+                 quality={80}
                />
                <!-- Dark Overlay for Text Contrast -->
                <div class="brand-card-image-overlay"></div>

@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [AI 간판 디자인, 디지털 사이니지 자동화, 중소상공인 마케팅, AI 디자인 도구, 개인화 콘텐츠, 인공지능기본법]
 description: "AI로 간판 디자인을 자동화하여 매출 67% 증가, 전환율 200% 향상을 달성한 사례를 소개합니다. Mandoe Media, NoviSign, 삼성 AI 스튜디오 등 플랫폼 비교와 규제 준수 체크리스트까지."
 heroImage:
-  src: "/images/blog/ai-sign-design-automation.jpg"
+  src: "../../assets/blog/ai-sign-design-automation.jpg"
   alt: "디지털 디스플레이 모니터 - AI 기반 사이니지 디자인 자동화"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/dI284PFy_pU"

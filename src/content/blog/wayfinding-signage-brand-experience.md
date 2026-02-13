@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [웨이파인딩, 사이니지 디자인, 브랜드 경험, 디지털 웨이파인딩, 타이포그래피, 접근성 디자인]
 description: "웨이파인딩 사이니지를 브랜드 경험으로 전환하는 방법. 타이포그래피, 컬러 전략, 4가지 사이니지 카테고리, 접근성 디자인까지 실전 가이드. 디지털 웨이파인딩으로 내비게이션 효율성 40% 향상."
 heroImage:
-  src: "/images/blog/wayfinding-signage-brand-experience.jpg"
+  src: "../../assets/blog/wayfinding-signage-brand-experience.jpg"
   alt: "도시 횡단보도를 건너는 사람들 - 웨이파인딩과 도시 내비게이션"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/omi6C5fdiLA"

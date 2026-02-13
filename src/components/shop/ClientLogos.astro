@@ -4,6 +4,7 @@
  * Marquee scroll of client/business type logos
  * Pure CSS infinite scroll - no JavaScript
  */
+import { Image } from 'astro:assets';
 
 const logos = [
   {
@@ -72,7 +73,7 @@ const logos = [
       {logos.map((logo) => (
         <div class="client-logos__item">
           <div class="client-logos__image">
-            <img src={logo.image} alt={logo.name} loading="lazy" decoding="async" width="400" height="300" />
+            <Image src={logo.image} alt={logo.name} loading="lazy" decoding="async" width={400} height={300} format="webp" quality={80} />
           </div>
           <span class="client-logos__icon" set:html={logo.icon} />
           <span class="client-logos__name">{logo.name}</span>
@@ -82,7 +83,7 @@ const logos = [
       {logos.map((logo) => (
         <div class="client-logos__item">
           <div class="client-logos__image">
-            <img src={logo.image} alt={logo.name} loading="lazy" decoding="async" width="400" height="300" />
+            <Image src={logo.image} alt={logo.name} loading="lazy" decoding="async" width={400} height={300} format="webp" quality={80} />
           </div>
           <span class="client-logos__icon" set:html={logo.icon} />
           <span class="client-logos__name">{logo.name}</span>

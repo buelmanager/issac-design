@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [QR코드, NFC, 옴니채널, 디지털사이니지, 모바일핸드오프, 다이나믹QR, 리테일테크]
 description: "디지털 사이니지에서 모바일로의 핸드오프 전략. QR 코드 디자인 베스트 프랙티스(10:1 법칙, 8-12초 법칙), NFC 통합, 옴니채널 측정 방법을 실제 사례와 통계로 알아보세요."
 heroImage:
-  src: "/images/blog/qr-nfc-omnichannel-signage.jpg"
+  src: "../../assets/blog/qr-nfc-omnichannel-signage.jpg"
   alt: "다양한 색상이 섞인 팔레트 - 옴니채널의 다채로운 연결을 상징"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/f6Xv0xs9JWg"

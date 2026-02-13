@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [간판 제작 견적, 간판 비용, 업체 선정 체크리스트, 소재 비교, 숨겨진 비용, 총소유비용]
 description: "간판 제작 평균 비용 85만원, 실제로는 설치비와 고소작업비 등 숨겨진 비용으로 20-40% 증가. 소재별 장단점, 업체 선정 5대 체크리스트, TCO 계산법으로 합리적 의사결정하는 법."
 heroImage:
-  src: "/images/blog/sign-cost-estimate-checklist.jpg"
+  src: "../../assets/blog/sign-cost-estimate-checklist.jpg"
   alt: "차량 내부에서 바라본 풍경 - 꼼꼼한 검토와 체크의 시선"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/rCO7Y5ALdNE"

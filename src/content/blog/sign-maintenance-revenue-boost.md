@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [간판 유지보수, LED 조명 전환, 간판 관리 체크리스트, 예방적 유지보수, 디지털 사이니지, 에너지 절감]
 description: "예방적 간판 유지보수의 7가지 비용 절감 효과와 LED 조명 전환 ROI 계산. 월별/분기별 체크리스트로 연간 매출 4.75% 증가 전략. 디지털 사이니지 함정 피하기."
 heroImage:
-  src: "/images/blog/sign-maintenance-revenue-boost.jpg"
+  src: "../../assets/blog/sign-maintenance-revenue-boost.jpg"
   alt: "산 아래 목조 건물 - 건물과 간판의 장기적 유지보수"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/18joWFjUhKw"

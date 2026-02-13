@@ -4,9 +4,9 @@
  * Footer for shop pages with links, company info, and business details
  */
 
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
 
-const { categories } = productsData;
+const { categories } = await getProducts();
 const currentYear = new Date().getFullYear();
 ---
 

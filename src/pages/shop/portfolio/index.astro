@@ -5,15 +5,18 @@
  * before/after comparison, and client testimonials
  */
 
+import { Image } from 'astro:assets';
 import ShopLayout from '../../../components/shop/ShopLayout.astro';
-import portfolioData from '../../../data/portfolio.json';
+import { getPortfolioItems } from '../../../lib/data-fetchers';
+
+const { portfolioItems } = await getPortfolioItems();
 
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },
   { label: '포트폴리오' },
 ];
 
-const items = portfolioData.portfolioItems;
+const items = portfolioItems;
 
 // Category map
 const categoryMap: Record<string, string> = {
@@ -66,24 +69,28 @@ const categories = [...new Set(items.map((i) => i.category))];
             <article class="pf-card" data-pf-card data-category={item.category}>
               <!-- Before/After Slider -->
               <div class="pf-card__compare" data-pf-compare>
-                <img
+                <Image
                   src={`${item.images.after}&w=640&q=80`}
                   alt={`${item.title} - 시공 후`}
                   class="pf-card__img pf-card__img--after"
                   loading={idx < 4 ? 'eager' : 'lazy'}
                   decoding="async"
-                  width="640"
-                  height="400"
+                  width={640}
+                  height={400}
+                  format="webp"
+                  quality={75}
                 />
                 <div class="pf-card__before-wrap" data-pf-before-wrap>
-                  <img
+                  <Image
                     src={`${item.images.before}&w=640&q=80`}
                     alt={`${item.title} - 시공 전`}
                     class="pf-card__img pf-card__img--before"
                     loading={idx < 4 ? 'eager' : 'lazy'}
                     decoding="async"
-                    width="640"
-                    height="400"
+                    width={640}
+                    height={400}
+                    format="webp"
+                    quality={75}
                   />
                 </div>
                 <input

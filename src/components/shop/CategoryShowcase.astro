@@ -4,8 +4,8 @@
  * Horizontal scrollable showcase of product categories
  */
 
-import productsData from '../../data/products.json';
-const { categories, products } = productsData;
+import { getProducts } from '../../lib/data-fetchers';
+const { categories, products } = await getProducts();
 
 // Count products per category
 const categoryWithCount = categories.map(cat => ({

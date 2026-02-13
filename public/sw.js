@@ -1,4 +1,4 @@
-const CACHE_NAME = 'issac-design-v4';
+const CACHE_VERSION = 'issac-design-v5';
 const PRECACHE_URLS = [
   '/',
   '/shop',
@@ -8,9 +8,16 @@ const PRECACHE_URLS = [
   '/icon-512x512.png',
 ];
 
+// Cache names for different strategies
+const CACHES = {
+  precache: CACHE_VERSION,
+  images: `${CACHE_VERSION}-images`,
+  fonts: `${CACHE_VERSION}-fonts`,
+};
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHES.precache).then((cache) => cache.addAll(PRECACHE_URLS))
   );
   self.skipWaiting();
 });
@@ -18,22 +25,107 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter((k) => !Object.values(CACHES).includes(k))
+          .map((k) => caches.delete(k))
+      )
     )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
+  const { request } = event;
+  const url = new URL(request.url);
 
+  // Skip non-GET requests
+  if (request.method !== 'GET') return;
+
+  // Skip external APIs and tracking
+  if (url.hostname !== self.location.hostname) return;
+
+  // Cache-first: Astro bundles (content-hashed, immutable)
+  if (url.pathname.startsWith('/_astro/')) {
+    return event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (!response.ok) return response;
+          const clone = response.clone();
+          caches.open(CACHES.precache).then((cache) => cache.put(request, clone));
+          return response;
+        });
+      })
+    );
+  }
+
+  // Cache-first: Fonts (long-lived)
+  if (url.pathname.startsWith('/fonts/')) {
+    return event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (!response.ok) return response;
+          const clone = response.clone();
+          caches.open(CACHES.fonts).then((cache) => cache.put(request, clone));
+          return response;
+        });
+      })
+    );
+  }
+
+  // Stale-while-revalidate: Images
+  if (/\.(webp|avif|jpg|jpeg|png|svg|gif)$/i.test(url.pathname)) {
+    return event.respondWith(
+      caches.match(request).then((cached) => {
+        const fetchPromise = fetch(request).then((response) => {
+          if (!response.ok) return response;
+          const clone = response.clone();
+          caches.open(CACHES.images).then((cache) => {
+            cache.put(request, clone);
+            trimCache(CACHES.images, 100);
+          });
+          return response;
+        });
+        return cached || fetchPromise;
+      })
+    );
+  }
+
+  // Network-first: HTML pages (navigation requests)
+  if (request.mode === 'navigate') {
+    return event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (!response.ok) return response;
+          const clone = response.clone();
+          caches.open(CACHES.precache).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+  }
+
+  // Network-first: Everything else
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then((response) => {
+        if (!response.ok) return response;
         const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        caches.open(CACHES.precache).then((cache) => cache.put(request, clone));
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(request))
   );
 });
+
+// Trim cache to max entries (FIFO)
+async function trimCache(cacheName, maxEntries) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > maxEntries) {
+    await cache.delete(keys[0]);
+    return trimCache(cacheName, maxEntries);
+  }
+}

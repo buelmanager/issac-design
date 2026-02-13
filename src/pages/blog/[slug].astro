@@ -1,5 +1,6 @@
 ---
 import ShopLayout from '../../components/shop/ShopLayout.astro';
+import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -49,14 +50,16 @@ const { Content } = await render(post);
 
       {(post.data.heroImage || post.data.thumbnail) && (
         <div class="post-hero-image container">
-          <img
-            src={post.data.heroImage?.src || post.data.thumbnail}
+          <Image
+            src={post.data.heroImage?.src || post.data.thumbnail || ''}
             alt={post.data.heroImage?.alt || post.data.title}
             loading="eager"
             decoding="async"
             fetchpriority="high"
-            width="800"
-            height="450"
+            width={800}
+            height={450}
+            format="webp"
+            quality={85}
           />
           {post.data.heroImage?.credit && (
             <p class="image-credit">

@@ -3,6 +3,7 @@
  * InstallationGallery Component
  * Before/After image comparison slider for installation showcase
  */
+import { Image } from 'astro:assets';
 
 interface Props {
   gallery: Array<{
@@ -34,28 +35,32 @@ const { gallery } = Astro.props;
         >
           <div class="installation-gallery__comparison">
             {/* Before image (full width, sits behind) */}
-            <img
+            <Image
               src={item.before}
               alt={`${item.location} - 시공 전`}
               class="installation-gallery__before"
               loading="lazy"
               decoding="async"
-              width="800"
-              height="500"
+              width={800}
+              height={500}
               draggable="false"
+              format="webp"
+              quality={80}
             />
 
             {/* After image (clipped from the left) */}
-            <img
+            <Image
               src={item.after}
               alt={`${item.location} - 시공 후`}
               class="installation-gallery__after"
               loading="lazy"
               decoding="async"
-              width="800"
-              height="500"
+              width={800}
+              height={500}
               draggable="false"
               style="clip-path: inset(0 0 0 50%);"
+              format="webp"
+              quality={80}
             />
 
             {/* Labels */}

@@ -4,6 +4,8 @@
  * 4 rotating videos with crossfade transitions + mobile poster fallback
  */
 
+import { Image } from 'astro:assets';
+
 const slides = [
   {
     webm: '/videos/hero1-opt.webm',
@@ -36,14 +38,16 @@ const slides = [
       data-slide-index={idx}
     >
       <!-- Mobile fallback image -->
-      <img
+      <Image
         class="shop-hero__poster"
         src={slide.poster}
         alt=""
         loading={idx === 0 ? 'eager' : 'lazy'}
         decoding="async"
-        width="1920"
-        height="1080"
+        width={1920}
+        height={1080}
+        format="webp"
+        quality={80}
       />
       <!-- Background video -->
       <video

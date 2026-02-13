@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [리테일미디어, 디지털사이니지, 구매시점마케팅, AI타겟팅, 인스토어마케팅]
 description: "2026년 리테일 미디어 시장 710억 달러 돌파. 디지털 사이니지로 충동구매 19% 증가, ROI 154% 달성. 계산대 마케팅 전략과 AI 타겟팅 사례를 분석합니다."
 heroImage:
-  src: "/images/blog/retail-media-digital-signage.jpg"
+  src: "../../assets/blog/retail-media-digital-signage.jpg"
   alt: "플랫아이언 빌딩 - 리테일과 상업 공간의 상징적 건축물"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/YRvfhIzgCnU"

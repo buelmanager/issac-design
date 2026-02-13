@@ -25,9 +25,9 @@ import SearchOverlay from '../../components/shop/SearchOverlay.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
 import ScrollProgress from '../../components/ScrollProgress.astro';
 import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
 
-const { products, categories } = productsData;
+const { products, categories } = await getProducts();
 ---
 
 <Layout

@@ -3,6 +3,7 @@
  * ImageGallery Component
  * Product image gallery with thumbnails, lightbox modal, material toggle, and lighting switch
  */
+import { Image } from 'astro:assets';
 
 interface Props {
   images: string[];
@@ -111,15 +112,17 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
 
   <!-- Main Image -->
   <div class="image-gallery__main" data-gallery-main>
-    <img
+    <Image
       src={images[0]}
       alt={productName}
       class="image-gallery__main-img"
       loading="eager"
       decoding="async"
-      width="800"
-      height="600"
+      width={800}
+      height={600}
       data-gallery-main-img
+      format="webp"
+      quality={85}
     />
   </div>
 
@@ -133,13 +136,15 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
           data-index={i}
           aria-label={`${productName} image ${i + 1}`}
         >
-          <img
+          <Image
             src={img}
             alt={`${productName} - ${i + 1}`}
             loading="lazy"
             decoding="async"
-            width="200"
-            height="150"
+            width={200}
+            height={150}
+            format="webp"
+            quality={70}
           />
         </button>
       ))}

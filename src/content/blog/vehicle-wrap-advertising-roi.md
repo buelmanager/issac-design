@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [차량 래핑 광고, 차량 광고 ROI, 이동식 빌보드, 소상공인 광고, 저비용 마케팅, 브랜드 인지도]
 description: "차량 래핑 광고는 연간 1,200만 조회수, 1,500% ROI, CPM $0.48로 빌보드 대비 7~40배 저렴합니다. 소상공인을 위한 성공 사례와 디자인 5원칙, 한국 법규까지 완벽 가이드."
 heroImage:
-  src: "/images/blog/vehicle-wrap-advertising-roi.jpg"
+  src: "../../assets/blog/vehicle-wrap-advertising-roi.jpg"
   alt: "운전석에서 바라본 도로 풍경 - 이동하는 광고 매체의 시점"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/SuVjsdryqzU"

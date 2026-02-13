@@ -6,12 +6,13 @@
  */
 import ShopHeroBackground from './ShopHeroBackground.astro';
 import HeroSimulatorPreview from './HeroSimulatorPreview.tsx';
-import productsData from '../../data/products.json';
+import { Image } from 'astro:assets';
+import { getProducts } from '../../lib/data-fetchers';
 
-// 카테고리별 대표 상품 (isFeatured) 추출
+const { products } = await getProducts();
 const categoryOrder = ['led-channel', 'neon', 'acrylic', 'banner', 'protruding', 'rooftop'];
 const featuredProducts = categoryOrder.map((catId) => {
-  const product = productsData.products.find(
+  const product = products.find(
     (p) => p.category === catId && p.isFeatured
   );
   return product!;
@@ -118,7 +119,7 @@ const heroSlides = [
       <div class="shop-hero__simulator-wrap">
         <p class="shop-hero__sim-desc"><span class="shop-hero__sim-desc-accent">시뮬레이션</span>으로 가게 간판 디자인을 확인해보세요</p>
         <div class="shop-hero__simulator" data-shop-hero-simulator>
-          <HeroSimulatorPreview client:load />
+          <HeroSimulatorPreview client:visible />
         </div>
         <a href="/shop/simulator" class="shop-hero__sim-cta">
           <span>3D 시뮬레이터 체험해 보세요</span>
@@ -136,14 +137,16 @@ const heroSlides = [
         {[...featuredProducts, ...featuredProducts, ...featuredProducts].map((product) => (
           <a href="#products" class="shop-hero__product-card" data-filter={product.category}>
             <div class="shop-hero__product-img-wrap">
-              <img
-                src={`${product.thumbnail}&w=240&q=75`}
+              <Image
+                src={product.thumbnail}
                 alt={product.name}
                 class="shop-hero__product-img"
                 loading="lazy"
                 decoding="async"
-                width="240"
-                height="180"
+                width={240}
+                height={180}
+                format="webp"
+                quality={75}
               />
             </div>
             <div class="shop-hero__product-info">

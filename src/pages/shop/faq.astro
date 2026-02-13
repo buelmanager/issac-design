@@ -9,14 +9,14 @@ import ShopNavbar from '../../components/shop/ShopNavbar.astro';
 import Breadcrumb from '../../components/shop/Breadcrumb.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
-import faqData from '../../data/shop-faq.json';
+import { getFaqData } from '../../lib/data-fetchers';
 
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },
   { label: 'FAQ' },
 ];
 
-const { faqCategories, faqs } = faqData;
+const { faqCategories, faqs } = await getFaqData();
 ---
 
 <Layout

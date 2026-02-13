@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [간판 디자인, 3초 법칙, 가독성, 타이포그래피, 색상 대비, 매장 사이니지]
 description: "효과적인 간판은 3초 안에 메시지를 전달한다. 1인치-10피트 법칙, 산세리프 볼드체, 고대비 색상 등 과학적으로 검증된 가독성 원칙과 실패 사례를 통해 매출 증대 간판 디자인 전략을 알아보세요."
 heroImage:
-  src: "/images/blog/sign-design-3-second-rule.jpg"
+  src: "../../assets/blog/sign-design-3-second-rule.jpg"
   alt: "깔끔한 고대비 산세리프 간판이 설치된 도시 상가 건물 전경"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/c9FQyqIECds"

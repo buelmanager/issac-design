@@ -15,10 +15,10 @@ import SearchOverlay from '../../../components/shop/SearchOverlay.astro';
 import SortControls from '../../../components/shop/SortControls.astro';
 import QuickViewModal from '../../../components/shop/QuickViewModal.astro';
 import QuoteCartBadge from '../../../components/shop/QuoteCartBadge.astro';
-import productsData from '../../../data/products.json';
+import { getProducts } from '../../../lib/data-fetchers';
 
 export async function getStaticPaths() {
-  const { categories, products } = productsData;
+  const { categories, products } = await getProducts();
   return categories.map(cat => ({
     params: { category: cat.id },
     props: {

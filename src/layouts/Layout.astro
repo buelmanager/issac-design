@@ -64,12 +64,10 @@ const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
 
     <title>{title}</title>
 
-    <!-- Preconnect to external domains -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <!-- DNS Prefetch for performance -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <!-- Preload critical self-hosted fonts -->
+    <link rel="preload" href="/fonts/outfit-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Schema.org Structured Data (LocalBusiness) -->
     <script type="application/ld+json" set:html={JSON.stringify({

@@ -24,3 +24,21 @@ pnpm-debug.log*
 .idea/
 .vercel
 .env*.local
+
+# Video originals (unoptimized)
+public/videos/hero[0-9].mp4
+
+# Development screenshots & reference images
+*.png
+!public/**/*.png
+!src/**/*.png
+
+# Backup files
+*.backup
+*.old
+
+# Development docs
+docs/
+
+# Blog draft folder
+blog/

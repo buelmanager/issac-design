@@ -4,9 +4,9 @@
  * Full-screen search overlay with real-time product filtering
  */
 
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
 
-const { products, categories } = productsData;
+const { products, categories } = await getProducts();
 
 // Build a simplified product list for search
 const searchProducts = products.map(p => ({
@@ -91,9 +91,7 @@ const searchProducts = products.map(p => ({
 </div>
 
 <!-- Embedded product data for client-side search -->
-<script type="application/json" data-products>
-  {JSON.stringify(searchProducts)}
-</script>
+<script type="application/json" data-products set:html={JSON.stringify(searchProducts)} />
 
 <style>
   .search-overlay {

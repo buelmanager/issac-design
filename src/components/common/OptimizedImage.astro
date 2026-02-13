@@ -1,0 +1,128 @@
+---
+/**
+ * OptimizedImage — Vercel Image Optimization 기반 반응형 이미지 컴포넌트
+ *
+ * Supabase Storage에 업로드된 이미지를 Vercel의 /_vercel/image 엔드포인트를 통해
+ * 런타임에 WebP/AVIF 변환 + 리사이징합니다.
+ *
+ * 빌드 없이 관리자가 올린 고용량 이미지가 자동으로 최적화됩니다.
+ *
+ * @example Supabase Storage 이미지
+ * <OptimizedImage
+ *   bucket="images"
+ *   path="products/hero-banner.jpg"
+ *   alt="제품 배너"
+ *   width={1200}
+ *   height={600}
+ * />
+ *
+ * @example 외부 URL 이미지 (Unsplash 등)
+ * <OptimizedImage
+ *   src="https://images.unsplash.com/photo-xxx"
+ *   alt="배경 이미지"
+ *   width={1920}
+ *   height={1080}
+ *   loading="eager"
+ *   fetchpriority="high"
+ * />
+ *
+ * @example 반응형 sizes 지정
+ * <OptimizedImage
+ *   bucket="images"
+ *   path="blog/thumbnail.jpg"
+ *   alt="블로그 썸네일"
+ *   width={800}
+ *   height={450}
+ *   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+ *   widths={[400, 600, 800]}
+ * />
+ */
+
+import {
+  getSupabasePublicUrl,
+  getImageUrl,
+  generateSrcset,
+  generateSupabaseSrcset,
+  isDev,
+} from '../../lib/image';
+
+interface Props {
+  /** Supabase Storage bucket 이름 (src와 함께 사용 불가) */
+  bucket?: string;
+  /** Supabase Storage 파일 경로 (bucket과 함께 사용) */
+  path?: string;
+  /** 외부 이미지 URL (bucket/path와 함께 사용 불가) */
+  src?: string;
+  /** 이미지 대체 텍스트 */
+  alt: string;
+  /** 표시 너비 (px) */
+  width: number;
+  /** 표시 높이 (px) */
+  height: number;
+  /** 반응형 sizes 속성 */
+  sizes?: string;
+  /** srcset에 사용할 이미지 너비 배열 */
+  widths?: number[];
+  /** 이미지 품질 1-100 */
+  quality?: number;
+  /** 로딩 전략 */
+  loading?: 'lazy' | 'eager';
+  /** 페치 우선순위 */
+  fetchpriority?: 'high' | 'low' | 'auto';
+  /** 디코딩 */
+  decoding?: 'async' | 'sync' | 'auto';
+  /** CSS 클래스 */
+  class?: string;
+  /** object-fit 스타일 */
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+}
+
+const {
+  bucket,
+  path,
+  src: externalSrc,
+  alt,
+  width,
+  height,
+  sizes = '100vw',
+  widths,
+  quality = 75,
+  loading = 'lazy',
+  fetchpriority,
+  decoding = 'async',
+  class: className,
+  objectFit,
+} = Astro.props;
+
+// Determine source URL
+let sourceUrl: string;
+if (bucket && path) {
+  sourceUrl = getSupabasePublicUrl(bucket, path);
+} else if (externalSrc) {
+  sourceUrl = externalSrc;
+} else {
+  throw new Error('OptimizedImage: bucket+path 또는 src 중 하나를 지정해야 합니다.');
+}
+
+// Generate optimized URLs
+const dev = isDev();
+const imgSrc = dev ? sourceUrl : getImageUrl(sourceUrl, { width, quality });
+const imgSrcset = dev ? undefined : generateSrcset(sourceUrl, { widths, quality });
+
+// Build style string
+const styleStr = objectFit ? `object-fit: ${objectFit};` : undefined;
+---
+
+<img
+  src={imgSrc}
+  srcset={imgSrcset}
+  sizes={imgSrcset ? sizes : undefined}
+  alt={alt}
+  width={width}
+  height={height}
+  loading={loading}
+  fetchpriority={fetchpriority}
+  decoding={decoding}
+  class={className}
+  style={styleStr}
+/>

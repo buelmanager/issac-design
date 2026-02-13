@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [클라우드 디지털 사이니지, 엣지 컴퓨팅, 하이브리드 아키텍처, 네트워크 복원력, 다점포 사이니지 관리, 엣지 AI, 스마트 사이니지]
 description: "2026년 클라우드와 엣지의 하이브리드 아키텍처가 스마트 사이니지 표준입니다. 네트워크 중단 시에도 작동하는 복원력, 다점포 체인의 중앙 관리와 지역 자율성 균형, 엣지 AI 통합까지 실전 가이드를 확인하세요."
 heroImage:
-  src: "/images/blog/cloud-edge-smart-signage.jpg"
+  src: "../../assets/blog/cloud-edge-smart-signage.jpg"
   alt: "현대적인 콘크리트 건물 외관 - 스마트 빌딩과 커넥티드 인프라"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/MxXMgI-elGw"

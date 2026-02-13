@@ -5,8 +5,9 @@
  * process images, and client testimonial
  */
 
+import { Image } from 'astro:assets';
 import ShopLayout from '../../../components/shop/ShopLayout.astro';
-import portfolioData from '../../../data/portfolio.json';
+import { getPortfolioItems } from '../../../lib/data-fetchers';
 
 const categoryMap: Record<string, string> = {
   'led-channel': 'LED 채널',
@@ -17,14 +18,15 @@ const categoryMap: Record<string, string> = {
   'rooftop': '옥상간판',
 };
 
-export function getStaticPaths() {
-  return portfolioData.portfolioItems.map((item) => ({
+export async function getStaticPaths() {
+  const { portfolioItems } = await getPortfolioItems();
+  return portfolioItems.map((item) => ({
     params: { id: item.id },
+    props: { item },
   }));
 }
 
-const { id } = Astro.params;
-const item = portfolioData.portfolioItems.find((p) => p.id === id);
+const { item } = Astro.props;
 
 if (!item) {
   return Astro.redirect('/shop/portfolio');
@@ -47,9 +49,9 @@ const galleryImages = [
   { src: item.images.after.replace('w=800', 'w=700').replace('q=80', 'q=75'), label: '설치 완료', type: 'after' as const },
 ];
 
-// Other projects for recommendations
-const otherProjects = portfolioData.portfolioItems
-  .filter((p) => p.id !== id)
+const { portfolioItems: allItems } = await getPortfolioItems();
+const otherProjects = allItems
+  .filter((p) => p.id !== item.id)
   .slice(0, 3);
 ---
 
@@ -62,14 +64,17 @@ const otherProjects = portfolioData.portfolioItems
     <!-- Hero: Main Image + Info Overlay -->
     <section class="pd-hero">
       <div class="pd-hero__img-wrap">
-        <img
+        <Image
           src={`${item.images.after}&w=1400&q=85`}
           alt={item.title}
           class="pd-hero__img"
-          width="1400"
-          height="700"
+          width={1400}
+          height={700}
           loading="eager"
+          fetchpriority="high"
           decoding="async"
+          format="webp"
+          quality={85}
         />
         <div class="pd-hero__overlay"></div>
       </div>
@@ -121,24 +126,28 @@ const otherProjects = portfolioData.portfolioItems
       <div class="pd-compare__container">
         <h2 class="pd-compare__heading">Before & After</h2>
         <div class="pd-compare__slider" data-pd-compare>
-          <img
+          <Image
             src={`${item.images.after}&w=1200&q=85`}
             alt="시공 후"
             class="pd-compare__img pd-compare__img--after"
             loading="lazy"
             decoding="async"
-            width="1200"
-            height="675"
+            width={1200}
+            height={675}
+            format="webp"
+            quality={80}
           />
           <div class="pd-compare__before-wrap" data-pd-before-wrap>
-            <img
+            <Image
               src={`${item.images.before}&w=1200&q=85`}
               alt="시공 전"
               class="pd-compare__img pd-compare__img--before"
               loading="lazy"
               decoding="async"
-              width="1200"
-              height="675"
+              width={1200}
+              height={675}
+              format="webp"
+              quality={80}
             />
           </div>
           <input type="range" min="0" max="100" value="50" class="pd-compare__range" data-pd-range aria-label="Before/After 비교" />
@@ -157,14 +166,16 @@ const otherProjects = portfolioData.portfolioItems
           {galleryImages.map((img, idx) => (
             <figure class="pd-gallery__item" data-pd-gallery-item={idx}>
               <div class="pd-gallery__img-wrap">
-                <img
+                <Image
                   src={`${img.src}&w=640&q=80`}
                   alt={`${item.title} - ${img.label}`}
                   class="pd-gallery__img"
                   loading="lazy"
                   decoding="async"
-                  width="640"
-                  height="400"
+                  width={640}
+                  height={400}
+                  format="webp"
+                  quality={80}
                 />
                 <span class="pd-gallery__index">{String(idx + 1).padStart(2, '0')}</span>
               </div>
@@ -215,14 +226,16 @@ const otherProjects = portfolioData.portfolioItems
           {otherProjects.map((p) => (
             <a href={`/shop/portfolio/${p.id}`} class="pd-others__card">
               <div class="pd-others__img-wrap">
-                <img
+                <Image
                   src={`${p.images.after}&w=480&q=80`}
                   alt={p.title}
                   class="pd-others__img"
                   loading="lazy"
                   decoding="async"
-                  width="480"
-                  height="300"
+                  width={480}
+                  height={300}
+                  format="webp"
+                  quality={75}
                 />
               </div>
               <div class="pd-others__info">

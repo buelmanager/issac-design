@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [프랜차이즈 간판, 브랜드 일관성, 다점포 사이니지, 간판 관리, 프랜차이즈 브랜드 전략, 중앙 집중식 관리, 브랜드북, 80/20 법칙, 디지털 사이니지]
 description: "프랜차이즈 간판 일관성이 매출을 23-33% 올립니다. 80/20 법칙, 중앙 집중식 관리 플레이북, 브랜드북 작성 가이드까지 2026년 실전 전략을 공개합니다."
 heroImage:
-  src: "/images/blog/franchise-sign-consistency-strategy.jpg"
+  src: "../../assets/blog/franchise-sign-consistency-strategy.jpg"
   alt: "비행기에서 내려다본 도시 풍경 - 프랜차이즈의 넓은 시야와 전략적 관점"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/xcJttKVHSxE"

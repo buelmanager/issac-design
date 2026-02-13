@@ -3,6 +3,7 @@
  * ProductCard Component
  * Individual product card for shop grid
  */
+import { Image } from 'astro:assets';
 
 interface Props {
   product: {
@@ -42,14 +43,16 @@ const { product, index = 0 } = Astro.props;
   <!-- Image Container -->
   <a href={`/shop/${product.slug}`} class="product-card__image-link">
     <div class="product-card__image-container">
-      <img
+      <Image
         src={product.thumbnail}
         alt={product.name}
         class="product-card__image"
         loading="lazy"
         decoding="async"
-        width="400"
-        height="300"
+        width={400}
+        height={300}
+        format="webp"
+        quality={80}
       />
       <div class="product-card__overlay">
         <span class="product-card__view-btn">상세보기</span>

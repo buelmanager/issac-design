@@ -4,9 +4,9 @@
  * Premium navigation bar with category dropdown, search, quote cart badge, mobile menu
  */
 
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
 
-const { categories } = productsData;
+const { categories } = await getProducts();
 ---
 
 <nav class="shop-navbar" data-shop-navbar>

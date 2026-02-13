@@ -22,10 +22,10 @@ import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
 import ScrollProgress from '../../components/ScrollProgress.astro';
 import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
 
 export async function getStaticPaths() {
-  const { products } = productsData;
+  const { products } = await getProducts();
   return products.map((product) => ({
     params: { slug: product.slug },
     props: { product },

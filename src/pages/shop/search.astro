@@ -11,9 +11,9 @@ import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 import SearchOverlay from '../../components/shop/SearchOverlay.astro';
 import QuickViewModal from '../../components/shop/QuickViewModal.astro';
-import productsData from '../../data/products.json';
+import { getProducts } from '../../lib/data-fetchers';
 
-const { products, categories } = productsData;
+const { products, categories } = await getProducts();
 
 // Build simplified product list for client-side search
 const searchProducts = products.map(p => ({
@@ -145,9 +145,7 @@ const searchProducts = products.map(p => ({
 </Layout>
 
 <!-- Embedded product data for client-side search -->
-<script type="application/json" data-page-products>
-  {JSON.stringify(searchProducts)}
-</script>
+<script type="application/json" data-page-products set:html={JSON.stringify(searchProducts)} />
 
 <style>
   .search-page {

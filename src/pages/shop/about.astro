@@ -6,34 +6,35 @@
  */
 
 import ShopLayout from '../../components/shop/ShopLayout.astro';
-import portfolioData from '../../data/portfolio.json';
+import { Image } from 'astro:assets';
+import { getPortfolioItems } from '../../lib/data-fetchers';
+
+const { portfolioItems } = await getPortfolioItems();
 
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },
   { label: '회사 소개' },
 ];
 
-// Testimonials: 3 selections
 const testimonials = [
   {
-    text: portfolioData.portfolioItems[0].testimonial,
-    client: portfolioData.portfolioItems[0].client,
-    location: portfolioData.portfolioItems[0].location,
+    text: portfolioItems[0].testimonial,
+    client: portfolioItems[0].client,
+    location: portfolioItems[0].location,
   },
   {
-    text: portfolioData.portfolioItems[6].testimonial,
-    client: portfolioData.portfolioItems[6].client,
-    location: portfolioData.portfolioItems[6].location,
+    text: portfolioItems[6].testimonial,
+    client: portfolioItems[6].client,
+    location: portfolioItems[6].location,
   },
   {
-    text: portfolioData.portfolioItems[7].testimonial,
-    client: portfolioData.portfolioItems[7].client,
-    location: portfolioData.portfolioItems[7].location,
+    text: portfolioItems[7].testimonial,
+    client: portfolioItems[7].client,
+    location: portfolioItems[7].location,
   },
 ];
 
-// Story section image
-const storyImage = portfolioData.portfolioItems[0].images.after;
+const storyImage = portfolioItems[0].images.after;
 ---
 
 <ShopLayout
@@ -165,14 +166,16 @@ const storyImage = portfolioData.portfolioItems[0].images.after;
             </p>
           </div>
           <div class="about-story__image-wrap">
-            <img
+            <Image
               src={`${storyImage}&w=800&q=80`}
               alt="issac.design 시공 사례"
               class="about-story__image"
               loading="lazy"
               decoding="async"
-              width="800"
-              height="600"
+              width={800}
+              height={600}
+              format="webp"
+              quality={80}
             />
           </div>
         </div>
@@ -199,27 +202,27 @@ const storyImage = portfolioData.portfolioItems[0].images.after;
 
           <!-- Image Cells -->
           <div class="about-office__cell about-office__cell--a" data-office-reveal>
-            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" alt="디자인 스튜디오" class="about-office__img" loading="lazy" decoding="async" width="600" height="400" />
+            <Image src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80" alt="디자인 스튜디오" class="about-office__img" loading="lazy" decoding="async" width={600} height={400} format="webp" quality={80} />
             <span class="about-office__cell-label">디자인 스튜디오</span>
           </div>
           <div class="about-office__cell about-office__cell--b" data-office-reveal>
-            <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&q=80" alt="제작 공방" class="about-office__img" loading="lazy" decoding="async" width="600" height="400" />
+            <Image src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&q=80" alt="제작 공방" class="about-office__img" loading="lazy" decoding="async" width={600} height={400} format="webp" quality={80} />
             <span class="about-office__cell-label">제작 공방</span>
           </div>
           <div class="about-office__cell about-office__cell--c" data-office-reveal>
-            <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="소재 쇼룸" class="about-office__img" loading="lazy" decoding="async" width="600" height="400" />
+            <Image src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="소재 쇼룸" class="about-office__img" loading="lazy" decoding="async" width={600} height={400} format="webp" quality={80} />
             <span class="about-office__cell-label">소재 쇼룸</span>
           </div>
           <div class="about-office__cell about-office__cell--d" data-office-reveal>
-            <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="고객 미팅룸" class="about-office__img" loading="lazy" decoding="async" width="600" height="400" />
+            <Image src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="고객 미팅룸" class="about-office__img" loading="lazy" decoding="async" width={600} height={400} format="webp" quality={80} />
             <span class="about-office__cell-label">고객 미팅룸</span>
           </div>
           <div class="about-office__cell about-office__cell--e" data-office-reveal>
-            <img src="https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=600&q=80" alt="품질 검수" class="about-office__img" loading="lazy" decoding="async" width="600" height="400" />
+            <Image src="https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=600&q=80" alt="품질 검수" class="about-office__img" loading="lazy" decoding="async" width={600} height={400} format="webp" quality={80} />
             <span class="about-office__cell-label">품질 검수</span>
           </div>
           <div class="about-office__cell about-office__cell--f" data-office-reveal>
-            <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400&q=80" alt="완제품 보관" class="about-office__img" loading="lazy" decoding="async" width="600" height="400" />
+            <Image src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=400&q=80" alt="완제품 보관" class="about-office__img" loading="lazy" decoding="async" width={600} height={400} format="webp" quality={80} />
             <span class="about-office__cell-label">완제품 보관</span>
           </div>
         </div>

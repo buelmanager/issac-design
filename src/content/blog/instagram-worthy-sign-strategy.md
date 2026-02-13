@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [인스타그램 간판, SNS 바이럴, 네온사인, 포토 스팟, UGC 마케팅, 간판 디자인]
 description: "스타벅스는 5일 만에 155,000개 인스타그램 게시물로 3% 매출 증가. 조명, 색감, 포토 스팟 배치로 고객이 찍고 싶어하는 간판 만드는 실전 체크리스트와 검증된 ROI 사례 공개."
 heroImage:
-  src: "/images/blog/instagram-worthy-sign-strategy.jpg"
+  src: "../../assets/blog/instagram-worthy-sign-strategy.jpg"
   alt: "건물 외벽의 네온 파크 사인 - 인스타그래머블 간판의 대표적 사례"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/a5_9A5HXsUs"

@@ -4,7 +4,7 @@ date: "2026-02-13"
 tags: [간판 설치 신고, 옥외광고물 허가, 간판 과태료, 지자체 간판 규정, 간판 안전점검, 간판 법규]
 description: "간판 설치 전 꼭 알아야 할 신고 절차 6단계, 지자체별 규정 차이, 과태료 사례를 실무 중심으로 정리. 무단 설치 시 최대 500만원 과태료를 피하는 법규 가이드."
 heroImage:
-  src: "/images/blog/sign-installation-permit-guide.jpg"
+  src: "../../assets/blog/sign-installation-permit-guide.jpg"
   alt: "도시 철도 풍경 - 간판 설치 인허가와 도시 인프라"
   credit: "Photo by Mike Petrucci on Unsplash"
   creditUrl: "https://unsplash.com/photos/Zp79cAGPTII"
