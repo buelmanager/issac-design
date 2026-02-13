@@ -395,7 +395,7 @@ function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgC
       <directionalLight position={[-3, 3, -3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.4} color={lightColor} />
       <directionalLight position={[0, -2, 3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.2} color={lightColor} />
 
-      <group position={[0, signPositionY, 0]} rotation={[0.08, 0, 0]}>
+      <group position={[0, signPositionY, 0]}>
         <ExtrudedMesh shapes={shapes} shapeResult={shapeResult} {...meshProps} />
       </group>
 
@@ -859,7 +859,7 @@ export default function ProductSimulator() {
               <Canvas shadows
                 dpr={[1, 2]}
                 gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
-                camera={{ position: [0, 2, 5.5], fov: 45 }}
+                camera={{ position: [0, 0.5, 5.5], fov: 45 }}
                 style={{ background: isAR || showBgImage ? 'transparent' : bgColor }}>
                 <Scene shapes={shapes} shapeResult={shapeResult} meshProps={meshProps}
                   lightColor={lightColor} lightIntensity={lightIntensity} bgColor={bgColor} isNight={isNight} isAR={isAR} signPositionY={signPositionY} />
