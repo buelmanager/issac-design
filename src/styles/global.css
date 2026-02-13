@@ -128,7 +128,9 @@
   --container-max: 1400px;
   --container-padding: 1.5rem;
   
-  /* Header (safe-area 포함) */
+  /* Header */
+  --header-height-inner: 80px;
+  --header-height-inner-mobile: 60px;
   --header-height: calc(80px + env(safe-area-inset-top, 0px));
   --header-height-mobile: calc(60px + env(safe-area-inset-top, 0px));
 
