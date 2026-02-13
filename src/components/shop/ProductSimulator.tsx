@@ -529,17 +529,9 @@ export default function ProductSimulator() {
   const downsample = TEXTURE_PRESETS[textureQuality].downsample;
   const simplify = TEXTURE_PRESETS[textureQuality].simplify;
 
-  // ─── Debug Logger ───
-  const debugLogsRef = useRef<string[]>([]);
-  const [debugVisible, setDebugVisible] = useState(false);
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-
+  // ─── Debug Logger (console only) ───
   const dbg = useCallback((msg: string) => {
-    const ts = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    const entry = `[${ts}] ${msg}`;
     console.log('[SIM-DBG]', msg);
-    debugLogsRef.current = [...debugLogsRef.current.slice(-29), entry];
-    setDebugLogs([...debugLogsRef.current]);
   }, []);
 
   // 부모 요소들의 stacking context를 제거하여 position:fixed가 정상 동작하도록
@@ -1218,56 +1210,6 @@ export default function ProductSimulator() {
         </div>
       </div>
 
-      {/* Debug Panel */}
-      <button
-        onClick={() => setDebugVisible(!debugVisible)}
-        type="button"
-        style={{
-          position: 'fixed', bottom: 8, right: 8, zIndex: 99999,
-          width: 36, height: 36, borderRadius: '50%',
-          background: debugVisible ? '#f44' : 'rgba(0,0,0,0.6)',
-          color: '#fff', border: 'none', fontSize: 14, fontWeight: 700,
-          cursor: 'pointer',
-        }}
-      >
-        {debugVisible ? 'X' : 'D'}
-      </button>
-      {debugVisible && (
-        <div style={{
-          position: 'fixed', bottom: 48, left: 4, right: 4, zIndex: 99999,
-          maxHeight: '40vh', overflow: 'auto',
-          background: 'rgba(0,0,0,0.92)', color: '#0f0',
-          fontFamily: 'monospace', fontSize: 10, lineHeight: 1.4,
-          padding: 8, borderRadius: 8, border: '1px solid #333',
-        }}>
-          <div style={{ marginBottom: 4, color: '#ff0', fontWeight: 700 }}>
-            SIM DEBUG ({debugLogs.length} logs)
-            <button onClick={() => {
-              const el = canvasContainerRef.current;
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                const cs = getComputedStyle(el);
-                dbg(`NOW: top=${rect.top.toFixed(0)} h=${rect.height.toFixed(0)} pos=${cs.position} display=${cs.display}`);
-                // 부모 체인 덤프
-                let p = el.parentElement;
-                let d = 0;
-                while (p && p !== document.body && d < 8) {
-                  const pr = p.getBoundingClientRect();
-                  const pc = getComputedStyle(p);
-                  dbg(`  P[${d}] ${p.tagName}.${(p.className||'').split(' ')[0]}: top=${pr.top.toFixed(0)} h=${pr.height.toFixed(0)} pos=${pc.position} ovf=${pc.overflow} tf=${pc.transform?.slice(0,20)}`);
-                  p = p.parentElement;
-                  d++;
-                }
-              }
-            }} type="button" style={{ marginLeft: 8, padding: '2px 6px', fontSize: 9, background: '#333', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-              위치체크
-            </button>
-          </div>
-          {debugLogs.map((log, i) => (
-            <div key={i} style={{ borderBottom: '1px solid #222', padding: '1px 0' }}>{log}</div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
