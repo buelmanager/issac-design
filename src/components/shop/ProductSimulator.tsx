@@ -524,6 +524,8 @@ export default function ProductSimulator() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const originalParentRef = useRef<HTMLElement | null>(null);
+  const placeholderRef = useRef<HTMLDivElement | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
 
   const downsample = TEXTURE_PRESETS[textureQuality].downsample;
@@ -546,7 +548,17 @@ export default function ProductSimulator() {
         (document as any).webkitExitFullscreen();
       }
     } catch {}
-    canvasContainerRef.current?.classList.remove('ar-fullscreen');
+
+    // body에서 원래 위치로 복귀
+    const el = canvasContainerRef.current;
+    if (el && originalParentRef.current && placeholderRef.current) {
+      el.classList.remove('ar-fullscreen');
+      originalParentRef.current.replaceChild(el, placeholderRef.current);
+      originalParentRef.current = null;
+      placeholderRef.current = null;
+    } else if (el) {
+      el.classList.remove('ar-fullscreen');
+    }
     document.body.style.overflow = '';
     setIsAR(false);
   }, []);
@@ -601,7 +613,18 @@ export default function ProductSimulator() {
         return;
       }
     } catch {}
-    // 2차: CSS fallback (iOS/PWA)
+    // 2차: DOM을 body로 이동 + CSS fullscreen (iOS/모바일)
+    // parent transform/backdrop-filter가 position:fixed를 깨뜨리므로 body로 이동
+    const parent = el.parentElement;
+    if (parent) {
+      originalParentRef.current = parent;
+      const placeholder = document.createElement('div');
+      placeholder.style.display = 'none';
+      placeholder.setAttribute('data-simulator-placeholder', '');
+      parent.insertBefore(placeholder, el);
+      placeholderRef.current = placeholder;
+      document.body.appendChild(el);
+    }
     el.classList.add('ar-fullscreen');
     document.body.style.overflow = 'hidden';
   }, []);

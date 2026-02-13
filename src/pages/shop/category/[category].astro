@@ -8,13 +8,12 @@ import Layout from '../../../layouts/Layout.astro';
 import ShopNavbar from '../../../components/shop/ShopNavbar.astro';
 import Breadcrumb from '../../../components/shop/Breadcrumb.astro';
 import ProductGrid from '../../../components/shop/ProductGrid.astro';
-import QuoteForm from '../../../components/shop/QuoteForm.astro';
+
 import ShopFooter from '../../../components/shop/ShopFooter.astro';
 import Toast from '../../../components/shop/Toast.astro';
 import SearchOverlay from '../../../components/shop/SearchOverlay.astro';
 import SortControls from '../../../components/shop/SortControls.astro';
 import QuickViewModal from '../../../components/shop/QuickViewModal.astro';
-import KakaoFloat from '../../../components/shop/KakaoFloat.astro';
 import QuoteCartBadge from '../../../components/shop/QuoteCartBadge.astro';
 import productsData from '../../../data/products.json';
 
@@ -67,7 +66,7 @@ const { category, categoryProducts } = Astro.props;
               </svg>
               <span>{categoryProducts.length}개 제품</span>
             </span>
-            <a href="/shop#quote" class="category-hero__cta">
+            <a href="/shop/quote" class="category-hero__cta">
               <span>무료 견적 문의</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -92,22 +91,29 @@ const { category, categoryProducts } = Astro.props;
       </div>
     </section>
 
-    <!-- Quote Section -->
-    <section class="category-quote" id="quote">
-      <div class="category-quote__container">
-        <div class="category-quote__header">
-          <h2 class="category-quote__title">맞춤 {category.name} 견적 문의</h2>
-          <p class="category-quote__description">
-            원하는 제품을 찾지 못하셨나요? 맞춤 제작도 가능합니다.
-          </p>
+    <!-- Quote CTA -->
+    <section class="category-cta" id="quote">
+      <div class="category-cta__container">
+        <div class="category-cta__content">
+          <h2 class="category-cta__title">맞춤 {category.name} 견적이 필요하신가요?</h2>
+          <p class="category-cta__desc">원하는 제품을 찾지 못하셨나요? 맞춤 제작도 가능합니다. 무료 견적을 받아보세요.</p>
+          <div class="category-cta__actions">
+            <a href="/shop/quote" class="category-cta__button category-cta__button--primary">
+              <span>무료 견적 요청하기</span>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <a href="/shop/contact" class="category-cta__button category-cta__button--secondary">
+              <span>고객센터 문의</span>
+            </a>
+          </div>
         </div>
-        <QuoteForm />
       </div>
     </section>
   </main>
 
   <QuickViewModal />
-  <KakaoFloat />
   <QuoteCartBadge />
   <ShopFooter />
 </Layout>
@@ -259,8 +265,8 @@ const { category, categoryProducts } = Astro.props;
     font-weight: 600;
   }
 
-  /* Quote Section */
-  .category-quote {
+  /* CTA Section */
+  .category-cta {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
@@ -268,27 +274,75 @@ const { category, categoryProducts } = Astro.props;
     border-top: 1px solid var(--border);
   }
 
-  .category-quote__container {
-    max-width: var(--container-max);
+  .category-cta__container {
+    max-width: 640px;
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
 
-  .category-quote__header {
+  .category-cta__content {
     text-align: center;
-    margin-bottom: var(--space-2xl);
   }
 
-  .category-quote__title {
-    font-size: var(--font-size-3xl);
+  .category-cta__title {
+    font-size: var(--font-size-2xl);
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
   }
 
-  .category-quote__description {
-    font-size: var(--font-size-lg);
+  .category-cta__desc {
+    font-size: var(--font-size-base);
     color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-xl);
+  }
+
+  .category-cta__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .category-cta__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .category-cta__button--primary {
+    background: var(--primary);
+    color: var(--text-primary);
+  }
+
+  .category-cta__button--primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26, 77, 46, 0.3);
+  }
+
+  .category-cta__button--secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .category-cta__button--secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .category-cta__button:active {
+    transform: translateY(0);
   }
 
   /* Responsive - Tablet */
@@ -339,8 +393,24 @@ const { category, categoryProducts } = Astro.props;
       font-size: var(--font-size-xl);
     }
 
-    .category-quote__title {
-      font-size: var(--font-size-2xl);
+    .category-cta {
+      padding: var(--space-3xl) 0;
+    }
+
+    .category-cta__title {
+      font-size: var(--font-size-xl);
+    }
+
+    .category-cta__desc {
+      font-size: var(--font-size-sm);
+    }
+
+    .category-cta__actions {
+      flex-direction: column;
+    }
+
+    .category-cta__button {
+      width: 100%;
     }
   }
 </style>

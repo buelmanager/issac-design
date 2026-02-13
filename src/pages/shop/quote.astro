@@ -1,0 +1,548 @@
+---
+/**
+ * Quote Page
+ * 견적 문의 전용 페이지 - 모던 디자인
+ */
+
+import Layout from '../../layouts/Layout.astro';
+import ShopNavbar from '../../components/shop/ShopNavbar.astro';
+import Breadcrumb from '../../components/shop/Breadcrumb.astro';
+import QuoteForm from '../../components/shop/QuoteForm.astro';
+import ShopFooter from '../../components/shop/ShopFooter.astro';
+import Toast from '../../components/shop/Toast.astro';
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '견적 문의' },
+];
+---
+
+<Layout
+  title="견적 문의 - issac.design 쇼핑몰"
+  description="issac.design 무료 견적 문의. LED 채널간판, 네온사인, 현수막 등 모든 간판 제품 견적을 빠르게 받아보세요."
+>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+  <Toast />
+
+  <main class="quote-page">
+    <!-- Breadcrumb -->
+    <div class="quote-page__breadcrumb">
+      <Breadcrumb items={breadcrumbs} />
+    </div>
+
+    <!-- Hero Section -->
+    <section class="quote-hero">
+      <div class="quote-hero__bg"></div>
+      <div class="quote-hero__container">
+        <span class="quote-hero__label">Free Quote</span>
+        <h1 class="quote-hero__title">무료 견적 문의</h1>
+        <p class="quote-hero__subtitle">원하는 간판 제품의 견적을 무료로 받아보세요. 24시간 내 상세한 견적서를 보내드립니다.</p>
+      </div>
+    </section>
+
+    <!-- Info Cards -->
+    <section class="quote-info">
+      <div class="quote-info__container">
+        <div class="quote-info__grid">
+          <div class="quote-info__card">
+            <div class="quote-info__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="quote-info__text">
+              <h3>24시간 내 회신</h3>
+              <p>문의 접수 후 24시간 이내에 상세한 견적서를 보내드립니다.</p>
+            </div>
+          </div>
+          <div class="quote-info__card">
+            <div class="quote-info__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div class="quote-info__text">
+              <h3>무료 현장 조사</h3>
+              <p>전문가가 현장을 방문하여 정확한 측정 후 견적을 제공합니다.</p>
+            </div>
+          </div>
+          <div class="quote-info__card">
+            <div class="quote-info__icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div class="quote-info__text">
+              <h3>디자인 시안 무료</h3>
+              <p>계약 시 전문 디자이너가 2~3개의 시안을 무료로 제작해드립니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content: Steps + Form -->
+    <section class="quote-main">
+      <div class="quote-main__container">
+        <!-- Left: Process Steps -->
+        <div class="quote-main__sidebar">
+          <div class="quote-steps">
+            <h2 class="quote-steps__title">진행 절차</h2>
+            <div class="quote-steps__list">
+              <div class="quote-step">
+                <span class="quote-step__number">1</span>
+                <div class="quote-step__content">
+                  <h3>견적 요청</h3>
+                  <p>아래 양식을 작성하여 견적을 요청해주세요.</p>
+                </div>
+              </div>
+              <div class="quote-step">
+                <span class="quote-step__number">2</span>
+                <div class="quote-step__content">
+                  <h3>견적서 발송</h3>
+                  <p>24시간 내 상세 견적서를 이메일로 보내드립니다.</p>
+                </div>
+              </div>
+              <div class="quote-step">
+                <span class="quote-step__number">3</span>
+                <div class="quote-step__content">
+                  <h3>상담 및 확정</h3>
+                  <p>담당자와 상세 상담 후 최종 사양을 확정합니다.</p>
+                </div>
+              </div>
+              <div class="quote-step">
+                <span class="quote-step__number">4</span>
+                <div class="quote-step__content">
+                  <h3>제작 및 설치</h3>
+                  <p>확정된 사양으로 제작하여 현장 설치까지 완료합니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Alternatives -->
+          <div class="quote-alt">
+            <h3 class="quote-alt__title">다른 방법으로 문의</h3>
+            <div class="quote-alt__list">
+              <a href="tel:02-1234-5678" class="quote-alt__card">
+                <div class="quote-alt__icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                  </svg>
+                </div>
+                <div class="quote-alt__text">
+                  <span class="quote-alt__label">전화 상담</span>
+                  <span class="quote-alt__value">02-1234-5678</span>
+                </div>
+                <span class="quote-alt__arrow">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+                </span>
+              </a>
+              <a href="https://pf.kakao.com/issac_design" target="_blank" rel="noopener noreferrer" class="quote-alt__card">
+                <div class="quote-alt__icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                  </svg>
+                </div>
+                <div class="quote-alt__text">
+                  <span class="quote-alt__label">카카오톡 상담</span>
+                  <span class="quote-alt__value">issac_design</span>
+                </div>
+                <span class="quote-alt__arrow">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+                </span>
+              </a>
+              <a href="mailto:info@issac.design" class="quote-alt__card">
+                <div class="quote-alt__icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="M22 7l-10 7L2 7"/>
+                  </svg>
+                </div>
+                <div class="quote-alt__text">
+                  <span class="quote-alt__label">이메일 문의</span>
+                  <span class="quote-alt__value">info@issac.design</span>
+                </div>
+                <span class="quote-alt__arrow">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Quote Form -->
+        <div class="quote-main__form" id="quote">
+          <QuoteForm />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<style>
+  .quote-page {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: var(--background);
+  }
+
+  .quote-page__breadcrumb {
+    padding-top: var(--header-height);
+  }
+
+  /* ===== Hero ===== */
+  .quote-hero {
+    position: relative;
+    width: 100%;
+    padding: var(--space-3xl) 0 var(--space-2xl);
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .quote-hero__bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(26, 77, 46, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .quote-hero__container {
+    position: relative;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .quote-hero__label {
+    display: inline-block;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    margin-bottom: var(--space-md);
+    padding: var(--space-xs) var(--space-md);
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-full);
+  }
+
+  .quote-hero__title {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-tight);
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+  }
+
+  .quote-hero__subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ===== Info Cards ===== */
+  .quote-info {
+    position: relative;
+    width: 100%;
+    padding-bottom: var(--space-3xl);
+  }
+
+  .quote-info__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .quote-info__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .quote-info__card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .quote-info__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-md);
+    color: var(--primary-light);
+    flex-shrink: 0;
+  }
+
+  .quote-info__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .quote-info__card h3 {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .quote-info__card p {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* ===== Main Content (2 Column) ===== */
+  .quote-main {
+    position: relative;
+    width: 100%;
+    padding: var(--space-3xl) 0 var(--space-4xl);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .quote-main__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: var(--space-3xl);
+    align-items: start;
+  }
+
+  /* Sidebar */
+  .quote-main__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-xl));
+  }
+
+  /* Process Steps */
+  .quote-steps {
+    padding: var(--space-xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .quote-steps__title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+  }
+
+  .quote-steps__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .quote-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .quote-step__number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-light);
+    flex-shrink: 0;
+  }
+
+  .quote-step__content h3 {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .quote-step__content p {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* Contact Alternatives */
+  .quote-alt {
+    padding: var(--space-xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .quote-alt__title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+  }
+
+  .quote-alt__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .quote-alt__card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-base);
+  }
+
+  .quote-alt__card:hover {
+    border-color: var(--primary);
+    background: var(--surface);
+  }
+
+  .quote-alt__card:hover .quote-alt__arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .quote-alt__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-sm);
+    color: var(--primary-light);
+    flex-shrink: 0;
+  }
+
+  .quote-alt__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .quote-alt__label {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    margin-bottom: 1px;
+  }
+
+  .quote-alt__value {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .quote-alt__arrow {
+    flex-shrink: 0;
+    color: var(--primary-light);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all var(--transition-base);
+  }
+
+  /* Form Column */
+  .quote-main__form {
+    min-width: 0;
+  }
+
+  /* ===== Responsive - Tablet ===== */
+  @media (max-width: 1023px) {
+    .quote-hero__title {
+      font-size: var(--font-size-3xl);
+    }
+
+    .quote-info__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .quote-main__container {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+
+    .quote-main__sidebar {
+      position: static;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+  }
+
+  /* ===== Responsive - Mobile ===== */
+  @media (max-width: 719px) {
+    .quote-page__breadcrumb {
+      padding-top: var(--header-height-mobile);
+    }
+
+    .quote-hero {
+      padding: var(--space-2xl) 0 var(--space-xl);
+    }
+
+    .quote-hero__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .quote-hero__subtitle {
+      font-size: var(--font-size-base);
+    }
+
+    .quote-info {
+      padding-bottom: var(--space-2xl);
+    }
+
+    .quote-info__card {
+      padding: var(--space-lg);
+      gap: var(--space-md);
+    }
+
+    .quote-main {
+      padding: var(--space-2xl) 0 var(--space-3xl);
+    }
+
+    .quote-main__sidebar {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .quote-steps,
+    .quote-alt {
+      padding: var(--space-lg);
+    }
+  }
+</style>

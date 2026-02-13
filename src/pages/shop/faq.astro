@@ -9,7 +9,6 @@ import ShopNavbar from '../../components/shop/ShopNavbar.astro';
 import Breadcrumb from '../../components/shop/Breadcrumb.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
-import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 import faqData from '../../data/shop-faq.json';
 
 const breadcrumbs = [
@@ -36,10 +35,11 @@ const { faqCategories, faqs } = faqData;
 
     <!-- Hero Section -->
     <section class="faq-hero">
+      <div class="faq-hero__bg"></div>
       <div class="faq-hero__container">
         <span class="faq-hero__label">FAQ</span>
         <h1 class="faq-hero__title">자주 묻는 질문</h1>
-        <p class="faq-hero__subtitle">궁금한 점을 찾아보세요</p>
+        <p class="faq-hero__subtitle">간판 제작부터 설치, A/S까지 궁금한 점을 찾아보세요.</p>
       </div>
     </section>
 
@@ -78,8 +78,8 @@ const { faqCategories, faqs } = faqData;
                 <h3 class="faq-item__question">{faq.question}</h3>
               </div>
               <span class="faq-item__icon">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 6l4 4 4-4"/>
                 </svg>
               </span>
             </button>
@@ -91,9 +91,13 @@ const { faqCategories, faqs } = faqData;
           </div>
         ))}
 
-        <!-- Empty state for filtering -->
+        <!-- Empty state -->
         <div class="faq-list__empty" data-faq-empty style="display: none;">
-          <p class="faq-list__empty-text">해당 카테고리에 등록된 질문이 없습니다.</p>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <p>해당 카테고리에 등록된 질문이 없습니다.</p>
         </div>
       </div>
     </section>
@@ -101,23 +105,25 @@ const { faqCategories, faqs } = faqData;
     <!-- Contact CTA -->
     <section class="faq-cta">
       <div class="faq-cta__container">
-        <div class="faq-cta__card">
+        <div class="faq-cta__content">
           <h2 class="faq-cta__title">원하는 답을 찾지 못하셨나요?</h2>
-          <p class="faq-cta__desc">
-            추가 문의 사항이 있으시면 언제든 연락주세요. 친절하게 안내해드리겠습니다.
-          </p>
-          <a href="/shop/contact" class="faq-cta__button">
-            <span>고객센터 바로가기</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
+          <p class="faq-cta__desc">추가 문의 사항이 있으시면 언제든 연락주세요. 친절하게 안내해드리겠습니다.</p>
+          <div class="faq-cta__actions">
+            <a href="/shop/contact" class="faq-cta__button faq-cta__button--primary">
+              <span>고객센터 바로가기</span>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <a href="/shop/quote" class="faq-cta__button faq-cta__button--secondary">
+              <span>견적 문의하기</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <KakaoFloat />
   <ShopFooter />
 </Layout>
 
@@ -129,20 +135,28 @@ const { faqCategories, faqs } = faqData;
     background: var(--background);
   }
 
-  /* Breadcrumb */
   .faq-page__breadcrumb {
     padding-top: var(--header-height);
   }
 
-  /* ===== Hero Section ===== */
+  /* ===== Hero ===== */
   .faq-hero {
     position: relative;
     width: 100%;
-    padding: var(--space-3xl) 0;
+    padding: var(--space-3xl) 0 var(--space-2xl);
     text-align: center;
+    overflow: hidden;
+  }
+
+  .faq-hero__bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(26, 77, 46, 0.06) 0%, transparent 70%);
+    pointer-events: none;
   }
 
   .faq-hero__container {
+    position: relative;
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--container-padding);
@@ -150,12 +164,15 @@ const { faqCategories, faqs } = faqData;
 
   .faq-hero__label {
     display: inline-block;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
     color: var(--primary-light);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-wider);
     margin-bottom: var(--space-md);
+    padding: var(--space-xs) var(--space-md);
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-full);
   }
 
   .faq-hero__title {
@@ -164,13 +181,15 @@ const { faqCategories, faqs } = faqData;
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
     color: var(--text-primary);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
   }
 
   .faq-hero__subtitle {
     font-size: var(--font-size-lg);
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
+    max-width: 480px;
+    margin: 0 auto;
   }
 
   /* ===== Category Filter ===== */
@@ -178,11 +197,10 @@ const { faqCategories, faqs } = faqData;
     position: relative;
     width: 100%;
     padding-bottom: var(--space-2xl);
-    border-bottom: 1px solid var(--border);
   }
 
   .faq-filter__container {
-    max-width: var(--container-max);
+    max-width: 800px;
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
@@ -229,11 +247,12 @@ const { faqCategories, faqs } = faqData;
   .faq-list {
     position: relative;
     width: 100%;
-    padding: var(--space-2xl) 0 var(--space-4xl);
+    padding: 0 0 var(--space-4xl);
+    border-top: 1px solid var(--border);
   }
 
   .faq-list__container {
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
@@ -249,7 +268,7 @@ const { faqCategories, faqs } = faqData;
     justify-content: space-between;
     gap: var(--space-lg);
     width: 100%;
-    padding: var(--space-xl) 0;
+    padding: var(--space-lg) 0;
     background: none;
     border: none;
     cursor: pointer;
@@ -266,7 +285,7 @@ const { faqCategories, faqs } = faqData;
   .faq-item__header-left {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     flex: 1;
     min-width: 0;
   }
@@ -274,20 +293,16 @@ const { faqCategories, faqs } = faqData;
   .faq-item__badge {
     display: inline-block;
     width: fit-content;
-    padding: var(--space-xs) var(--space-sm);
-    background: rgba(26, 77, 46, 0.1);
-    color: var(--primary-light);
     font-size: var(--font-size-xs);
-    font-weight: 600;
-    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--primary-light);
     letter-spacing: var(--letter-spacing-wide);
-    border-radius: var(--radius-sm);
   }
 
   .faq-item__question {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    line-height: var(--line-height-normal);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    line-height: var(--line-height-relaxed);
   }
 
   .faq-item__icon {
@@ -295,25 +310,32 @@ const { faqCategories, faqs } = faqData;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--border);
+    width: 28px;
+    height: 28px;
     border-radius: var(--radius-full);
-    color: var(--text-secondary);
-    transition: transform var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: all var(--transition-base);
+  }
+
+  .faq-item__icon svg {
+    transition: transform var(--transition-base);
   }
 
   .faq-item--open .faq-item__icon {
-    transform: rotate(45deg);
-    color: var(--primary);
-    border-color: var(--primary);
+    background: rgba(26, 77, 46, 0.08);
+    color: var(--primary-light);
+  }
+
+  .faq-item--open .faq-item__icon svg {
+    transform: rotate(180deg);
   }
 
   /* FAQ Body (collapsible) */
   .faq-item__body {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease;
+    transition: max-height 0.35s ease;
   }
 
   .faq-item--open .faq-item__body {
@@ -321,45 +343,48 @@ const { faqCategories, faqs } = faqData;
   }
 
   .faq-item__answer {
-    padding: 0 0 var(--space-xl) 0;
+    padding: 0 0 var(--space-lg) 0;
   }
 
   .faq-item__answer p {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
+    max-width: 640px;
   }
 
   /* Empty State */
   .faq-list__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
     text-align: center;
-    padding: var(--space-3xl) 0;
-  }
-
-  .faq-list__empty-text {
-    font-size: var(--font-size-lg);
+    padding: var(--space-4xl) 0;
     color: var(--text-muted);
   }
 
-  /* ===== Contact CTA ===== */
+  .faq-list__empty p {
+    font-size: var(--font-size-base);
+  }
+
+  /* ===== CTA ===== */
   .faq-cta {
     position: relative;
     width: 100%;
-    padding: 0 0 var(--space-4xl);
+    padding: var(--space-4xl) 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
   }
 
   .faq-cta__container {
-    max-width: 900px;
+    max-width: 640px;
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
 
-  .faq-cta__card {
+  .faq-cta__content {
     text-align: center;
-    padding: var(--space-3xl);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
   }
 
   .faq-cta__title {
@@ -376,24 +401,51 @@ const { faqCategories, faqs } = faqData;
     margin-bottom: var(--space-xl);
   }
 
+  .faq-cta__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
   .faq-cta__button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-sm);
-    padding: var(--space-md) var(--space-2xl);
-    background: var(--primary);
-    color: var(--text-primary);
-    font-size: var(--font-size-base);
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--font-size-sm);
     font-weight: 600;
     border-radius: var(--radius-md);
+    text-decoration: none;
     transition: all var(--transition-base);
   }
 
-  .faq-cta__button:hover {
+  .faq-cta__button--primary {
+    background: var(--primary);
+    color: var(--text-primary);
+  }
+
+  .faq-cta__button--primary:hover {
     background: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(26, 77, 46, 0.3);
+  }
+
+  .faq-cta__button--secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .faq-cta__button--secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .faq-cta__button:active {
+    transform: translateY(0);
   }
 
   /* ===== Responsive - Tablet ===== */
@@ -410,7 +462,7 @@ const { faqCategories, faqs } = faqData;
     }
 
     .faq-hero {
-      padding: var(--space-2xl) 0;
+      padding: var(--space-2xl) 0 var(--space-xl);
     }
 
     .faq-hero__title {
@@ -419,6 +471,10 @@ const { faqCategories, faqs } = faqData;
 
     .faq-hero__subtitle {
       font-size: var(--font-size-base);
+    }
+
+    .faq-filter {
+      padding-bottom: var(--space-lg);
     }
 
     .faq-filter__pills {
@@ -431,41 +487,46 @@ const { faqCategories, faqs } = faqData;
     }
 
     .faq-item__header {
-      padding: var(--space-lg) 0;
+      padding: var(--space-md) 0;
       gap: var(--space-md);
     }
 
     .faq-item__question {
-      font-size: var(--font-size-base);
-    }
-
-    .faq-item__icon {
-      width: 32px;
-      height: 32px;
-    }
-
-    .faq-item__icon svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    .faq-item__answer p {
       font-size: var(--font-size-sm);
     }
 
-    .faq-cta__card {
-      padding: var(--space-xl);
+    .faq-item__answer p {
+      font-size: var(--font-size-xs);
+    }
+
+    .faq-list {
+      padding-bottom: var(--space-3xl);
+    }
+
+    .faq-cta {
+      padding: var(--space-3xl) 0;
     }
 
     .faq-cta__title {
       font-size: var(--font-size-xl);
+    }
+
+    .faq-cta__desc {
+      font-size: var(--font-size-sm);
+    }
+
+    .faq-cta__actions {
+      flex-direction: column;
+    }
+
+    .faq-cta__button {
+      width: 100%;
     }
   }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // ===== Accordion Toggle =====
     const faqItems = document.querySelectorAll('[data-faq-item]');
     const faqToggles = document.querySelectorAll('[data-faq-toggle]');
 
@@ -476,19 +537,17 @@ const { faqCategories, faqs } = faqData;
 
         const isOpen = parentItem.classList.contains('faq-item--open');
 
-        // Close all open items (accordion behavior)
-        faqItems.forEach((item) => {
-          item.classList.remove('faq-item--open');
-        });
+        // Close all
+        faqItems.forEach((item) => item.classList.remove('faq-item--open'));
 
-        // Toggle current item
+        // Toggle current
         if (!isOpen) {
           parentItem.classList.add('faq-item--open');
         }
       });
     });
 
-    // ===== Category Filtering =====
+    // Category Filtering
     const categoryPills = document.querySelectorAll('[data-faq-category]');
     const emptyState = document.querySelector('[data-faq-empty]') as HTMLElement;
 
@@ -496,16 +555,11 @@ const { faqCategories, faqs } = faqData;
       pill.addEventListener('click', () => {
         const category = (pill as HTMLElement).dataset.faqCategory;
 
-        // Update active pill
         categoryPills.forEach((p) => p.classList.remove('faq-filter__pill--active'));
         pill.classList.add('faq-filter__pill--active');
 
-        // Close all open items when changing category
-        faqItems.forEach((item) => {
-          item.classList.remove('faq-item--open');
-        });
+        faqItems.forEach((item) => item.classList.remove('faq-item--open'));
 
-        // Filter FAQ items
         let visibleCount = 0;
         faqItems.forEach((item) => {
           const el = item as HTMLElement;
@@ -519,9 +573,8 @@ const { faqCategories, faqs } = faqData;
           }
         });
 
-        // Show/hide empty state
         if (emptyState) {
-          emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+          emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
         }
       });
     });

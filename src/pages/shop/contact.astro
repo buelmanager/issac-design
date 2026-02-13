@@ -1,20 +1,41 @@
 ---
 /**
  * Contact Page
- * Customer service center with contact methods, business hours, quote form, and location
+ * Modern customer service center with contact methods, FAQ, quote form, and location
  */
 
 import Layout from '../../layouts/Layout.astro';
 import ShopNavbar from '../../components/shop/ShopNavbar.astro';
 import Breadcrumb from '../../components/shop/Breadcrumb.astro';
-import QuoteForm from '../../components/shop/QuoteForm.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
-import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },
   { label: '고객센터' },
+];
+
+const faqs = [
+  {
+    question: '주문 후 제작 기간은 얼마나 걸리나요?',
+    answer: '제품 종류와 사양에 따라 다르지만, 일반적으로 LED 채널간판은 7~10일, 네온사인은 5~7일, 실사출력물은 2~3일 정도 소요됩니다. 대형 프로젝트나 특수 사양의 경우 별도 협의가 필요합니다.',
+  },
+  {
+    question: '시안(디자인) 수정은 몇 번까지 가능한가요?',
+    answer: '기본 2회 수정이 포함되어 있으며, 추가 수정이 필요한 경우 별도 비용이 발생할 수 있습니다. 초기 상담 시 원하는 디자인 방향을 상세히 알려주시면 수정 횟수를 줄일 수 있습니다.',
+  },
+  {
+    question: '설치 비용은 별도인가요?',
+    answer: '네, 설치 비용은 설치 환경(층수, 크레인 필요 여부 등)에 따라 별도로 산정됩니다. 견적 요청 시 설치 장소 정보를 함께 보내주시면 설치비를 포함한 총 견적을 안내드립니다.',
+  },
+  {
+    question: 'A/S 및 보증 기간은 어떻게 되나요?',
+    answer: 'LED 제품은 2년, 기타 제품은 1년의 무상 보증 기간을 제공합니다. 보증 기간 이후에도 합리적인 비용으로 수리 및 유지보수 서비스를 제공합니다.',
+  },
+  {
+    question: '현장 방문 상담도 가능한가요?',
+    answer: '네, 서울/경기 지역은 무료 현장 방문 상담이 가능합니다. 그 외 지역은 상담 후 방문 여부를 협의합니다. 전화 또는 카카오톡으로 방문 일정을 예약해주세요.',
+  },
 ];
 ---
 
@@ -34,120 +55,228 @@ const breadcrumbs = [
 
     <!-- Hero Section -->
     <section class="contact-hero">
+      <div class="contact-hero__bg"></div>
       <div class="contact-hero__container">
         <span class="contact-hero__label">Contact Us</span>
-        <h1 class="contact-hero__title">고객센터</h1>
-        <p class="contact-hero__subtitle">언제든 편하게 연락주세요</p>
+        <h1 class="contact-hero__title">무엇을 도와드릴까요?</h1>
+        <p class="contact-hero__subtitle">간판 제작부터 설치까지, 궁금한 점은 언제든 편하게 문의하세요.</p>
       </div>
     </section>
 
-    <!-- Contact Methods Grid -->
+    <!-- Contact Methods -->
     <section class="contact-methods">
       <div class="contact-methods__container">
         <div class="contact-methods__grid">
           <!-- Phone -->
-          <div class="contact-methods__card">
+          <a href="tel:02-1234-5678" class="contact-methods__card">
             <div class="contact-methods__icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
               </svg>
             </div>
-            <h3 class="contact-methods__card-title">전화 문의</h3>
-            <p class="contact-methods__card-value">02-1234-5678</p>
-            <p class="contact-methods__card-note">평일 09:00 ~ 18:00</p>
-          </div>
+            <div class="contact-methods__text">
+              <h3 class="contact-methods__card-title">전화 문의</h3>
+              <p class="contact-methods__card-value">02-1234-5678</p>
+              <p class="contact-methods__card-note">평일 09:00 ~ 18:00</p>
+            </div>
+            <span class="contact-methods__arrow">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 4l4 4-4 4"/>
+              </svg>
+            </span>
+          </a>
 
           <!-- KakaoTalk -->
-          <div class="contact-methods__card">
-            <div class="contact-methods__icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <a href="https://pf.kakao.com/issac_design" target="_blank" rel="noopener noreferrer" class="contact-methods__card">
+            <div class="contact-methods__icon contact-methods__icon--kakao">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
               </svg>
             </div>
-            <h3 class="contact-methods__card-title">카카오톡</h3>
-            <p class="contact-methods__card-value">issac_design</p>
-            <p class="contact-methods__card-note">24시간 상담 가능</p>
-          </div>
+            <div class="contact-methods__text">
+              <h3 class="contact-methods__card-title">카카오톡 상담</h3>
+              <p class="contact-methods__card-value">issac_design</p>
+              <p class="contact-methods__card-note">24시간 접수 가능</p>
+            </div>
+            <span class="contact-methods__arrow">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 4l4 4-4 4"/>
+              </svg>
+            </span>
+          </a>
 
           <!-- Email -->
-          <div class="contact-methods__card">
+          <a href="mailto:info@issac.design" class="contact-methods__card">
             <div class="contact-methods__icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="4" width="20" height="16" rx="2"/>
                 <path d="M22 7l-10 7L2 7"/>
               </svg>
             </div>
-            <h3 class="contact-methods__card-title">이메일</h3>
-            <p class="contact-methods__card-value">info@issac.design</p>
-            <p class="contact-methods__card-note">24시간 이내 회신</p>
+            <div class="contact-methods__text">
+              <h3 class="contact-methods__card-title">이메일 문의</h3>
+              <p class="contact-methods__card-value">info@issac.design</p>
+              <p class="contact-methods__card-note">24시간 이내 회신</p>
+            </div>
+            <span class="contact-methods__arrow">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 4l4 4-4 4"/>
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Info Cards Section -->
+    <section class="contact-main">
+      <div class="contact-main__container">
+        <div class="contact-main__grid">
+          <!-- Business Hours -->
+          <div class="contact-info-card">
+            <div class="contact-info-card__header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+              <h2 class="contact-info-card__title">영업시간</h2>
+            </div>
+            <div class="contact-info-card__body">
+              <div class="hours-row">
+                <span class="hours-row__day">평일</span>
+                <span class="hours-row__time">09:00 ~ 18:00</span>
+              </div>
+              <div class="hours-row">
+                <span class="hours-row__day">토요일</span>
+                <span class="hours-row__time">10:00 ~ 15:00</span>
+              </div>
+              <div class="hours-row hours-row--closed">
+                <span class="hours-row__day">일요일 / 공휴일</span>
+                <span class="hours-row__time">휴무</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="contact-info-card">
+            <div class="contact-info-card__header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <h2 class="contact-info-card__title">오시는 길</h2>
+            </div>
+            <div class="contact-info-card__body">
+              <p class="contact-info-card__address">서울특별시 강남구 역삼동 123-45</p>
+              <p class="contact-info-card__desc">역삼역 3번 출구에서 도보 5분</p>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="contact-info-card">
+            <div class="contact-info-card__header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
+                <path d="M13 2v7h7"/>
+              </svg>
+              <h2 class="contact-info-card__title">빠른 링크</h2>
+            </div>
+            <div class="contact-info-card__body">
+              <a href="/shop" class="quick-link">
+                <span>제품 둘러보기</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+              </a>
+              <a href="/shop/about" class="quick-link">
+                <span>회사 소개</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+              </a>
+              <a href="/shop/faq" class="quick-link">
+                <span>자주 묻는 질문</span>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Business Hours -->
-    <section class="contact-hours">
-      <div class="contact-hours__container">
-        <div class="contact-hours__card">
-          <div class="contact-hours__header">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
+    <!-- Map Section -->
+    <section class="contact-map">
+      <div class="contact-map__container">
+        <div class="contact-map__header">
+          <span class="contact-map__label">Location</span>
+          <h2 class="contact-map__title">오시는 길</h2>
+          <p class="contact-map__address">서울특별시 강남구 역삼동 123-45 &middot; 역삼역 3번 출구 도보 5분</p>
+        </div>
+        <div class="contact-map__wrapper">
+          <div id="kakao-map" class="contact-map__embed"></div>
+          <div class="contact-map__overlay">
+            <a
+              href="https://map.kakao.com/link/map/issac.design,37.5012,127.0396"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="contact-map__link"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              카카오맵에서 보기
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="contact-cta">
+      <div class="contact-cta__container">
+        <div class="contact-cta__content">
+          <h2 class="contact-cta__title">견적이 필요하신가요?</h2>
+          <p class="contact-cta__desc">간판 제작 견적을 무료로 받아보세요. 현장 사진과 요구사항을 보내주시면 빠르게 안내드립니다.</p>
+          <a href="/shop/quote" class="contact-cta__button">
+            <span>무료 견적 요청하기</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <h2 class="contact-hours__title">영업시간</h2>
-          </div>
-          <div class="contact-hours__list">
-            <div class="contact-hours__row">
-              <span class="contact-hours__day">평일</span>
-              <span class="contact-hours__time">09:00 ~ 18:00</span>
-            </div>
-            <div class="contact-hours__row">
-              <span class="contact-hours__day">토요일</span>
-              <span class="contact-hours__time">10:00 ~ 15:00</span>
-            </div>
-            <div class="contact-hours__row contact-hours__row--closed">
-              <span class="contact-hours__day">일요일 / 공휴일</span>
-              <span class="contact-hours__time">휴무</span>
-            </div>
-          </div>
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- Quote Form Section -->
-    <section class="contact-form" id="quote">
-      <div class="contact-form__container">
-        <div class="contact-form__header">
-          <h2 class="contact-form__title">견적 문의</h2>
-          <p class="contact-form__desc">
-            아래 양식을 작성해주시면 빠르게 연락드리겠습니다.
-          </p>
+    <!-- FAQ Section -->
+    <section class="contact-faq">
+      <div class="contact-faq__container">
+        <div class="contact-faq__header">
+          <span class="contact-faq__label">FAQ</span>
+          <h2 class="contact-faq__title">자주 묻는 질문</h2>
         </div>
-        <QuoteForm />
-      </div>
-    </section>
-
-    <!-- Location Info -->
-    <section class="contact-location">
-      <div class="contact-location__container">
-        <div class="contact-location__card">
-          <div class="contact-location__header">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            <h2 class="contact-location__title">오시는 길</h2>
-          </div>
-          <p class="contact-location__address">서울특별시 강남구 역삼동 123-45</p>
-          <p class="contact-location__note">
-            역삼역 3번 출구에서 도보 5분 거리에 위치해 있습니다.
-          </p>
+        <div class="contact-faq__list">
+          {faqs.map((faq, index) => (
+            <details class="contact-faq__item" data-faq-item>
+              <summary class="contact-faq__question">
+                <span class="contact-faq__q-text">{faq.question}</span>
+                <span class="contact-faq__toggle">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6l4 4 4-4"/>
+                  </svg>
+                </span>
+              </summary>
+              <div class="contact-faq__answer">
+                <p>{faq.answer}</p>
+              </div>
+            </details>
+          ))}
+        </div>
+        <div class="contact-faq__more">
+          <p>찾으시는 답변이 없으신가요?</p>
+          <a href="/shop/faq" class="contact-faq__more-link">전체 FAQ 보기 →</a>
         </div>
       </div>
     </section>
   </main>
 
-  <KakaoFloat />
   <ShopFooter />
 </Layout>
 
@@ -159,20 +288,28 @@ const breadcrumbs = [
     background: var(--background);
   }
 
-  /* Breadcrumb */
   .contact-page__breadcrumb {
     padding-top: var(--header-height);
   }
 
-  /* ===== Hero Section ===== */
+  /* ===== Hero ===== */
   .contact-hero {
     position: relative;
     width: 100%;
-    padding: var(--space-3xl) 0;
+    padding: var(--space-3xl) 0 var(--space-2xl);
     text-align: center;
+    overflow: hidden;
+  }
+
+  .contact-hero__bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(26, 77, 46, 0.06) 0%, transparent 70%);
+    pointer-events: none;
   }
 
   .contact-hero__container {
+    position: relative;
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--container-padding);
@@ -180,12 +317,15 @@ const breadcrumbs = [
 
   .contact-hero__label {
     display: inline-block;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
     color: var(--primary-light);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-wider);
     margin-bottom: var(--space-md);
+    padding: var(--space-xs) var(--space-md);
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-full);
   }
 
   .contact-hero__title {
@@ -194,20 +334,22 @@ const breadcrumbs = [
     line-height: var(--line-height-tight);
     letter-spacing: var(--letter-spacing-tight);
     color: var(--text-primary);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
   }
 
   .contact-hero__subtitle {
     font-size: var(--font-size-lg);
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
+    max-width: 480px;
+    margin: 0 auto;
   }
 
-  /* ===== Contact Methods Grid ===== */
+  /* ===== Contact Methods ===== */
   .contact-methods {
     position: relative;
     width: 100%;
-    padding: var(--space-2xl) 0 var(--space-4xl);
+    padding-bottom: var(--space-3xl);
   }
 
   .contact-methods__container {
@@ -219,214 +361,481 @@ const breadcrumbs = [
   .contact-methods__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-xl);
+    gap: var(--space-lg);
   }
 
   .contact-methods__card {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
-    padding: var(--space-2xl) var(--space-xl);
+    gap: var(--space-lg);
+    padding: var(--space-xl) var(--space-xl);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    transition: transform var(--transition-base), border-color var(--transition-base);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
   }
 
   .contact-methods__card:hover {
-    transform: translateY(-4px);
     border-color: var(--primary);
+    box-shadow: 0 4px 20px rgba(26, 77, 46, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .contact-methods__card:hover .contact-methods__arrow {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   .contact-methods__icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
-    background: rgba(26, 77, 46, 0.1);
-    border-radius: var(--radius-lg);
-    color: var(--primary-light);
-    margin-bottom: var(--space-lg);
-  }
-
-  .contact-methods__card-title {
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    margin-bottom: var(--space-sm);
-  }
-
-  .contact-methods__card-value {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--space-xs);
-  }
-
-  .contact-methods__card-note {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-  }
-
-  /* ===== Business Hours ===== */
-  .contact-hours {
-    position: relative;
-    width: 100%;
-    padding-bottom: var(--space-4xl);
-  }
-
-  .contact-hours__container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 0 var(--container-padding);
-  }
-
-  .contact-hours__card {
-    padding: var(--space-2xl);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-  }
-
-  .contact-hours__header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-    color: var(--text-primary);
-  }
-
-  .contact-hours__header svg {
+    width: 48px;
+    height: 48px;
+    background: rgba(26, 77, 46, 0.08);
+    border-radius: var(--radius-md);
     color: var(--primary-light);
     flex-shrink: 0;
   }
 
-  .contact-hours__title {
-    font-size: var(--font-size-xl);
-    font-weight: 600;
+  .contact-methods__text {
+    flex: 1;
+    min-width: 0;
   }
 
-  .contact-hours__list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .contact-hours__row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .contact-hours__row:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  .contact-hours__day {
-    font-size: var(--font-size-base);
+  .contact-methods__card-title {
+    font-size: var(--font-size-xs);
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    margin-bottom: 2px;
   }
 
-  .contact-hours__time {
-    font-size: var(--font-size-base);
+  .contact-methods__card-value {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .contact-methods__card-note {
+    font-size: var(--font-size-xs);
     color: var(--text-secondary);
   }
 
-  .contact-hours__row--closed .contact-hours__time {
-    color: var(--error);
-    font-weight: 500;
+  .contact-methods__arrow {
+    flex-shrink: 0;
+    color: var(--primary-light);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all var(--transition-base);
   }
 
-  /* ===== Quote Form Section ===== */
-  .contact-form {
+  /* ===== Info Cards Section ===== */
+  .contact-main {
     position: relative;
     width: 100%;
-    padding: var(--space-4xl) 0;
+    padding: var(--space-3xl) 0;
     background: var(--surface);
     border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
   }
 
-  .contact-form__container {
+  .contact-main__container {
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
 
-  .contact-form__header {
+  .contact-main__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .contact-info-card {
+    padding: var(--space-xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .contact-info-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+    color: var(--text-primary);
+  }
+
+  .contact-info-card__header svg {
+    color: var(--primary-light);
+    flex-shrink: 0;
+  }
+
+  .contact-info-card__title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+  }
+
+  .contact-info-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  /* Hours */
+  .hours-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hours-row:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .hours-row__day {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .hours-row__time {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .hours-row--closed .hours-row__time {
+    color: var(--error);
+    font-weight: 500;
+  }
+
+  /* Location */
+  .contact-info-card__address {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .contact-info-card__desc {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  /* Quick Links */
+  .quick-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    transition: color var(--transition-base);
+    text-decoration: none;
+  }
+
+  .quick-link:last-child {
+    border-bottom: none;
+  }
+
+  .quick-link:hover {
+    color: var(--primary);
+  }
+
+  .quick-link svg {
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all var(--transition-base);
+  }
+
+  .quick-link:hover svg {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ===== Map Section ===== */
+  .contact-map {
+    position: relative;
+    width: 100%;
+    padding: var(--space-4xl) 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .contact-map__container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .contact-map__header {
     text-align: center;
     margin-bottom: var(--space-2xl);
   }
 
-  .contact-form__title {
-    font-size: var(--font-size-3xl);
+  .contact-map__label {
+    display: inline-block;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+    margin-bottom: var(--space-sm);
+  }
+
+  .contact-map__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .contact-map__address {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .contact-map__wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .contact-map__embed {
+    width: 100%;
+    height: 420px;
+    background: var(--surface);
+  }
+
+  .contact-map__overlay {
+    position: absolute;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+  }
+
+  .contact-map__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .contact-map__link:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* ===== CTA Section ===== */
+  .contact-cta {
+    position: relative;
+    width: 100%;
+    padding: var(--space-4xl) 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .contact-cta__container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+  }
+
+  .contact-cta__content {
+    text-align: center;
+  }
+
+  .contact-cta__title {
+    font-size: var(--font-size-2xl);
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
   }
 
-  .contact-form__desc {
-    font-size: var(--font-size-lg);
+  .contact-cta__desc {
+    font-size: var(--font-size-base);
     color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-xl);
   }
 
-  /* ===== Location Info ===== */
-  .contact-location {
+  .contact-cta__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-2xl);
+    background: var(--primary);
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .contact-cta__button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26, 77, 46, 0.3);
+  }
+
+  .contact-cta__button:active {
+    transform: translateY(0);
+  }
+
+  /* ===== FAQ Section ===== */
+  .contact-faq {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
+    border-top: 1px solid var(--border);
   }
 
-  .contact-location__container {
-    max-width: 600px;
+  .contact-faq__container {
+    max-width: 800px;
     margin: 0 auto;
     padding: 0 var(--container-padding);
   }
 
-  .contact-location__card {
-    padding: var(--space-2xl);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+  .contact-faq__header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
   }
 
-  .contact-location__header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-    color: var(--text-primary);
-  }
-
-  .contact-location__header svg {
-    color: var(--primary-light);
-    flex-shrink: 0;
-  }
-
-  .contact-location__title {
-    font-size: var(--font-size-xl);
+  .contact-faq__label {
+    display: inline-block;
+    font-size: var(--font-size-xs);
     font-weight: 600;
-  }
-
-  .contact-location__address {
-    font-size: var(--font-size-lg);
-    font-weight: 500;
-    color: var(--text-primary);
+    color: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
     margin-bottom: var(--space-sm);
   }
 
-  .contact-location__note {
+  .contact-faq__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .contact-faq__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .contact-faq__item {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .contact-faq__item:first-child {
+    border-top: 1px solid var(--border);
+  }
+
+  .contact-faq__question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    padding: var(--space-lg) 0;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .contact-faq__question::-webkit-details-marker {
+    display: none;
+  }
+
+  .contact-faq__q-text {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .contact-faq__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    color: var(--text-muted);
+    transition: all var(--transition-base);
+  }
+
+  .contact-faq__toggle svg {
+    transition: transform var(--transition-base);
+  }
+
+  .contact-faq__item[open] .contact-faq__toggle {
+    background: rgba(26, 77, 46, 0.08);
+    color: var(--primary-light);
+  }
+
+  .contact-faq__item[open] .contact-faq__toggle svg {
+    transform: rotate(180deg);
+  }
+
+  .contact-faq__answer {
+    padding: 0 0 var(--space-lg);
+  }
+
+  .contact-faq__answer p {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
+    max-width: 640px;
+  }
+
+  .contact-faq__more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-xl);
+  }
+
+  .contact-faq__more p {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .contact-faq__more-link {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--primary-light);
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+
+  .contact-faq__more-link:hover {
+    color: var(--primary);
   }
 
   /* ===== Responsive - Tablet ===== */
@@ -436,12 +845,17 @@ const breadcrumbs = [
     }
 
     .contact-methods__grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-lg);
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
     }
 
-    .contact-form__title {
-      font-size: var(--font-size-2xl);
+    .contact-main__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .contact-map__embed {
+      height: 360px;
     }
   }
 
@@ -452,7 +866,7 @@ const breadcrumbs = [
     }
 
     .contact-hero {
-      padding: var(--space-2xl) 0;
+      padding: var(--space-2xl) 0 var(--space-xl);
     }
 
     .contact-hero__title {
@@ -464,48 +878,176 @@ const breadcrumbs = [
     }
 
     .contact-methods {
-      padding: var(--space-xl) 0 var(--space-3xl);
-    }
-
-    .contact-methods__grid {
-      grid-template-columns: 1fr;
-      gap: var(--space-md);
+      padding-bottom: var(--space-2xl);
     }
 
     .contact-methods__card {
-      padding: var(--space-xl) var(--space-lg);
+      padding: var(--space-lg);
+      gap: var(--space-md);
     }
 
-    .contact-hours {
-      padding-bottom: var(--space-3xl);
+    .contact-methods__icon {
+      width: 40px;
+      height: 40px;
     }
 
-    .contact-hours__card {
-      padding: var(--space-xl);
+    .contact-methods__icon svg {
+      width: 20px;
+      height: 20px;
     }
 
-    .contact-form {
+    .contact-methods__card-value {
+      font-size: var(--font-size-base);
+    }
+
+    .contact-main {
+      padding: var(--space-2xl) 0;
+    }
+
+    .contact-info-card {
+      padding: var(--space-lg);
+    }
+
+    .contact-map {
       padding: var(--space-3xl) 0;
     }
 
-    .contact-form__title {
+    .contact-map__title {
       font-size: var(--font-size-xl);
     }
 
-    .contact-form__desc {
-      font-size: var(--font-size-base);
+    .contact-map__embed {
+      height: 280px;
     }
 
-    .contact-location {
+    .contact-map__overlay {
+      bottom: var(--space-md);
+      right: var(--space-md);
+    }
+
+    .contact-cta {
       padding: var(--space-3xl) 0;
     }
 
-    .contact-location__card {
-      padding: var(--space-xl);
+    .contact-cta__title {
+      font-size: var(--font-size-xl);
     }
 
-    .contact-location__address {
-      font-size: var(--font-size-base);
+    .contact-cta__desc {
+      font-size: var(--font-size-sm);
+    }
+
+    .contact-faq {
+      padding: var(--space-3xl) 0;
+    }
+
+    .contact-faq__title {
+      font-size: var(--font-size-xl);
+    }
+
+    .contact-faq__q-text {
+      font-size: var(--font-size-sm);
+    }
+
+    .contact-faq__more {
+      flex-direction: column;
+      gap: var(--space-sm);
     }
   }
 </style>
+
+<script>
+  // FAQ smooth open/close animation
+  document.querySelectorAll('[data-faq-item]').forEach(item => {
+    const summary = item.querySelector('summary');
+    const answer = item.querySelector('.contact-faq__answer') as HTMLElement;
+    if (!summary || !answer) return;
+
+    summary.addEventListener('click', (e) => {
+      e.preventDefault();
+      const details = item as HTMLDetailsElement;
+
+      if (details.open) {
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        requestAnimationFrame(() => {
+          answer.style.maxHeight = '0';
+          answer.style.opacity = '0';
+        });
+        answer.addEventListener('transitionend', () => {
+          details.open = false;
+          answer.style.maxHeight = '';
+          answer.style.opacity = '';
+        }, { once: true });
+      } else {
+        details.open = true;
+        const h = answer.scrollHeight;
+        answer.style.maxHeight = '0';
+        answer.style.opacity = '0';
+        requestAnimationFrame(() => {
+          answer.style.maxHeight = h + 'px';
+          answer.style.opacity = '1';
+        });
+        answer.addEventListener('transitionend', () => {
+          answer.style.maxHeight = '';
+          answer.style.opacity = '';
+        }, { once: true });
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  .contact-faq__answer {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+  }
+</style>
+
+<!-- Kakao Map -->
+<script is:inline src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=KAKAO_APP_KEY&autoload=false"></script>
+<script>
+  // Initialize Kakao Map
+  document.addEventListener('DOMContentLoaded', () => {
+    const mapContainer = document.getElementById('kakao-map');
+    if (!mapContainer) return;
+
+    // Check if Kakao Maps SDK is loaded
+    if (typeof window.kakao !== 'undefined' && window.kakao.maps) {
+      window.kakao.maps.load(() => {
+        const coords = new window.kakao.maps.LatLng(37.5012, 127.0396);
+        const map = new window.kakao.maps.Map(mapContainer, {
+          center: coords,
+          level: 3,
+        });
+
+        const marker = new window.kakao.maps.Marker({
+          map: map,
+          position: coords,
+        });
+
+        const infowindow = new window.kakao.maps.InfoWindow({
+          content: '<div style="padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;">issac.design</div>',
+        });
+        infowindow.open(map, marker);
+
+        // Responsive resize
+        const resizeObserver = new ResizeObserver(() => {
+          map.relayout();
+        });
+        resizeObserver.observe(mapContainer);
+      });
+    } else {
+      // Fallback if SDK fails to load
+      mapContainer.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--text-muted);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <p style="font-size:14px;">서울특별시 강남구 역삼동 123-45</p>
+          <a href="https://map.kakao.com/link/map/issac.design,37.5012,127.0396" target="_blank" rel="noopener noreferrer" style="font-size:13px;color:var(--primary-light);text-decoration:underline;">카카오맵에서 보기</a>
+        </div>
+      `;
+    }
+  });
+</script>

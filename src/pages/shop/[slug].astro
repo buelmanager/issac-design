@@ -13,17 +13,15 @@ import ProductConfigurator from '../../components/shop/ProductConfigurator.astro
 import AddToQuoteButton from '../../components/shop/AddToQuoteButton.astro';
 import ProductionTimeline from '../../components/shop/ProductionTimeline.astro';
 import RelatedProducts from '../../components/shop/RelatedProducts.astro';
-import QuoteForm from '../../components/shop/QuoteForm.astro';
+
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 import SearchOverlay from '../../components/shop/SearchOverlay.astro';
 import InstallationGallery from '../../components/shop/InstallationGallery.astro';
-import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
 import ScrollProgress from '../../components/ScrollProgress.astro';
 import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
-import ProductSimulatorSection from '../../components/shop/ProductSimulatorSection.astro';
 import productsData from '../../data/products.json';
 
 export async function getStaticPaths() {
@@ -106,9 +104,6 @@ const breadcrumbs = [
       </section>
     )}
 
-    <!-- 3D Simulator -->
-    <ProductSimulatorSection />
-
     <!-- Related Products -->
     {product.relatedProducts && (
       <RelatedProducts
@@ -121,15 +116,28 @@ const breadcrumbs = [
     <!-- Warranty & Insurance Badges -->
     <WarrantyBadge />
 
-    <!-- Quote Form Section -->
-    <section class="product-page__quote" id="quote-form">
-      <div class="product-page__quote-container">
-        <QuoteForm productName={product.name} />
+    <!-- Quote CTA -->
+    <section class="product-page__cta" id="quote-form">
+      <div class="product-page__cta-container">
+        <div class="product-page__cta-content">
+          <h2 class="product-page__cta-title">{product.name} 견적이 필요하신가요?</h2>
+          <p class="product-page__cta-desc">사이즈, 설치 환경에 맞춘 정확한 견적을 무료로 받아보세요.</p>
+          <div class="product-page__cta-actions">
+            <a href="/shop/quote" class="product-page__cta-btn product-page__cta-btn--primary">
+              <span>무료 견적 요청하기</span>
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            <a href="/shop/contact" class="product-page__cta-btn product-page__cta-btn--secondary">
+              <span>고객센터 문의</span>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <KakaoFloat />
   <QuoteCartBadge />
   <ShopFooter />
   <ShopAnimations />
@@ -197,18 +205,84 @@ const breadcrumbs = [
     border-top: 1px solid var(--border);
   }
 
-  /* Quote Section */
-  .product-page__quote {
+  /* CTA Section */
+  .product-page__cta {
     position: relative;
     width: 100%;
     padding: var(--space-4xl) 0;
-    background: var(--background-alt);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
   }
 
-  .product-page__quote-container {
-    max-width: var(--container-max);
+  .product-page__cta-container {
+    max-width: 640px;
     margin: 0 auto;
     padding: 0 var(--container-padding);
+  }
+
+  .product-page__cta-content {
+    text-align: center;
+  }
+
+  .product-page__cta-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+  }
+
+  .product-page__cta-desc {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--space-xl);
+  }
+
+  .product-page__cta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .product-page__cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .product-page__cta-btn--primary {
+    background: var(--primary);
+    color: var(--text-primary);
+  }
+
+  .product-page__cta-btn--primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26, 77, 46, 0.3);
+  }
+
+  .product-page__cta-btn--secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .product-page__cta-btn--secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .product-page__cta-btn:active {
+    transform: translateY(0);
   }
 
   /* Responsive */
@@ -233,9 +307,25 @@ const breadcrumbs = [
       padding: var(--space-lg) 0 var(--space-3xl);
     }
 
-    .product-page__quote,
+    .product-page__cta,
     .product-page__timeline {
       padding: var(--space-3xl) 0;
+    }
+
+    .product-page__cta-title {
+      font-size: var(--font-size-xl);
+    }
+
+    .product-page__cta-desc {
+      font-size: var(--font-size-sm);
+    }
+
+    .product-page__cta-actions {
+      flex-direction: column;
+    }
+
+    .product-page__cta-btn {
+      width: 100%;
     }
   }
 </style>

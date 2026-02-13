@@ -1,4 +1,4 @@
-const CACHE_NAME = 'issac-design-v2';
+const CACHE_NAME = 'issac-design-v3';
 const PRECACHE_URLS = [
   '/',
   '/shop',
