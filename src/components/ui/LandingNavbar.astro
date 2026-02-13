@@ -16,14 +16,24 @@
       <span class="landing-navbar__logo-text">issac.design</span>
     </a>
 
-    <!-- Shop CTA -->
-    <a href="/shop" class="landing-navbar__cta">
-      <span>쇼핑몰</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14"/>
-        <path d="M12 5l7 7-7 7"/>
-      </svg>
-    </a>
+    <!-- CTAs -->
+    <div class="landing-navbar__ctas">
+      <a href="/shop" class="landing-navbar__cta">
+        <span>쇼핑몰</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/>
+          <path d="M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="/shop/simulator" class="landing-navbar__cta landing-navbar__cta--3d">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <span>3D 간판 체험하기</span>
+      </a>
+    </div>
   </div>
 </nav>
 
@@ -95,6 +105,13 @@
     opacity: 0.8;
   }
 
+  /* CTAs Wrapper */
+  .landing-navbar__ctas {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
   /* CTA Button */
   .landing-navbar__cta {
     display: flex;
@@ -109,6 +126,7 @@
     letter-spacing: var(--letter-spacing-tight);
     transition: all var(--transition-base);
     box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+    white-space: nowrap;
   }
 
   .landing-navbar__cta:hover {
@@ -140,9 +158,19 @@
       font-size: var(--font-size-lg);
     }
 
+    .landing-navbar__ctas {
+      gap: 6px;
+    }
+
     .landing-navbar__cta {
-      padding: var(--space-xs) var(--space-md);
-      font-size: var(--font-size-xs);
+      padding: var(--space-xs) var(--space-sm);
+      font-size: 11px;
+      gap: 4px;
+    }
+
+    .landing-navbar__cta svg {
+      width: 12px;
+      height: 12px;
     }
   }
 </style>

@@ -1,10 +1,11 @@
 ---
 /**
- * Shop Hero Section — Single-focus Hero
- * 단일 가치 제안 + 듀얼 CTA + 신뢰 배지 + 카테고리 퀵 네비
- * 캐러셀 제거, 메시지 100% 항상 노출
+ * Shop Hero Section — 4-slide Rolling Hero
+ * 4개 문구 + 4개 영상 롤링 전환
+ * 듀얼 CTA + 카테고리 퀵 네비
  */
 import ShopHeroBackground from './ShopHeroBackground.astro';
+import HeroSimulatorPreview from './HeroSimulatorPreview.tsx';
 import productsData from '../../data/products.json';
 
 // 카테고리별 대표 상품 (isFeatured) 추출
@@ -15,78 +16,142 @@ const featuredProducts = categoryOrder.map((catId) => {
   );
   return product!;
 });
+
+// 4개 슬라이드 문구
+const heroSlides = [
+  {
+    eyebrow: '감각적인 사인 디자인 · issac.design',
+    line1: '내 가게에 딱 맞는',
+    line2: '간판을 찾아보세요',
+    desc: 'LED 채널간판, 네온사인, 현수막, 돌출간판 등<br class="hide-mobile" />온라인에서 비교하고 바로 견적받으세요',
+  },
+  {
+    eyebrow: 'Premium Signage · issac.design',
+    line1: '브랜드의 첫인상을',
+    line2: '디자인합니다',
+    desc: '세련된 감각과 섬세한 디테일로<br class="hide-mobile" />브랜드의 가치를 높이는 맞춤형 간판',
+  },
+  {
+    eyebrow: 'Neon & LED · issac.design',
+    line1: '빛으로 완성하는',
+    line2: '당신의 브랜드',
+    desc: '네온사인부터 LED 채널까지<br class="hide-mobile" />다양한 조명 간판으로 매장의 분위기를 만듭니다',
+  },
+  {
+    eyebrow: 'Free Consultation · issac.design',
+    line1: '무료 상담으로',
+    line2: '시작하세요',
+    desc: '전문 디자이너의 1:1 맞춤 상담으로<br class="hide-mobile" />최적의 간판을 제안받으세요',
+  },
+];
 ---
 
 <section class="shop-hero" data-shop-hero>
-  <!-- LAYER 1: Background -->
+  <!-- LAYER 1: Background (4 videos) -->
   <ShopHeroBackground />
 
   <!-- LAYER 2: Content -->
   <div class="shop-hero__container">
     <div class="shop-hero__content" data-shop-hero-content>
-      <!-- Eyebrow -->
-      <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>프리미엄 간판 전문 · 15년 1,000건+</span>
 
-      <!-- Headline -->
-      <h2 class="shop-hero__headline">
-        <span class="shop-hero__headline-line">
-          <span class="shop-hero__headline-text" data-split-text>내 가게에 딱 맞는</span>
-        </span>
-        <span class="shop-hero__headline-line">
-          <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>간판을 찾아보세요</span>
-        </span>
-      </h2>
+      <!-- Left: Text slides + indicators + CTA -->
+      <div class="shop-hero__left">
+        <!-- Slide Text Sets -->
+        <div class="shop-hero__slides" data-hero-slides>
+          {heroSlides.map((slide, idx) => (
+            <div
+              class:list={['shop-hero__slide', { 'is-active': idx === 0 }]}
+              data-hero-slide={idx}
+            >
+              <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>
+                {slide.eyebrow}
+              </span>
+              <h2 class="shop-hero__headline">
+                <span class="shop-hero__headline-line">
+                  <span class="shop-hero__headline-text" data-split-text>{slide.line1}</span>
+                </span>
+                <span class="shop-hero__headline-line">
+                  <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>{slide.line2}</span>
+                </span>
+              </h2>
+              <p class="shop-hero__desc" data-shop-hero-desc set:html={slide.desc} />
+            </div>
+          ))}
+        </div>
 
-      <!-- Description -->
-      <p class="shop-hero__desc" data-shop-hero-desc>
-        LED 채널간판, 네온사인, 현수막, 돌출간판 등 16종 이상의 제품을<br class="hide-mobile" />
-        온라인에서 비교하고 바로 견적받으세요
-      </p>
+        <!-- Slide Indicators -->
+        <div class="shop-hero__indicators" data-hero-indicators>
+          {heroSlides.map((_, idx) => (
+            <button
+              class:list={['shop-hero__indicator', { 'is-active': idx === 0 }]}
+              data-hero-indicator={idx}
+              type="button"
+              aria-label={`슬라이드 ${idx + 1}`}
+            >
+              <span class="shop-hero__indicator-fill"></span>
+            </button>
+          ))}
+        </div>
 
-      <!-- Dual CTA -->
-      <div class="shop-hero__cta" data-shop-hero-cta>
-        <a href="#products" class="shop-hero__cta-btn shop-hero__cta-btn--primary" data-magnetic>
-          <span>제품 둘러보기</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <!-- Dual CTA -->
+        <div class="shop-hero__cta" data-shop-hero-cta>
+          <a href="#products" class="shop-hero__cta-btn shop-hero__cta-btn--primary" data-magnetic>
+            <span>제품 둘러보기</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="/shop/quote" class="shop-hero__cta-btn shop-hero__cta-btn--secondary" data-magnetic>
+            <span>무료 견적 문의</span>
+          </a>
+          <button class="shop-hero__cta-btn shop-hero__cta-btn--chat" data-open-chat type="button" data-magnetic>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              <path d="M8 10h.01M12 10h.01M16 10h.01"/>
+            </svg>
+            <span>AI 상담</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: 3D Simulator Preview -->
+      <div class="shop-hero__simulator-wrap">
+        <p class="shop-hero__sim-desc"><span class="shop-hero__sim-desc-accent">시뮬레이션</span>으로 가게 간판 디자인을 확인해보세요</p>
+        <div class="shop-hero__simulator" data-shop-hero-simulator>
+          <HeroSimulatorPreview client:load />
+        </div>
+        <a href="/shop/simulator" class="shop-hero__sim-cta">
+          <span>3D 시뮬레이터 체험해 보세요</span>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
-        <a href="#quote" class="shop-hero__cta-btn shop-hero__cta-btn--secondary" data-magnetic>
-          <span>무료 견적 문의</span>
-        </a>
-        <button class="shop-hero__cta-btn shop-hero__cta-btn--chat" data-open-chat type="button" data-magnetic>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-            <path d="M8 10h.01M12 10h.01M16 10h.01"/>
-          </svg>
-          <span>AI 상담</span>
-        </button>
       </div>
 
-      <!-- Category Products Showcase — Marquee -->
-      <div class="shop-hero__showcase" data-shop-hero-categories aria-label="대표 제품">
-        <div class="shop-hero__showcase-track">
-          {/* 3배 복제로 넓은 화면에서도 끊김 없는 무한 스크롤 */}
-          {[...featuredProducts, ...featuredProducts, ...featuredProducts].map((product) => (
-            <a href="#products" class="shop-hero__product-card" data-filter={product.category}>
-              <div class="shop-hero__product-img-wrap">
-                <img
-                  src={`${product.thumbnail}&w=240&q=75`}
-                  alt={product.name}
-                  class="shop-hero__product-img"
-                  loading="lazy"
-                  decoding="async"
-                  width="240"
-                  height="180"
-                />
-              </div>
-              <div class="shop-hero__product-info">
-                <span class="shop-hero__product-category">{product.categoryName}</span>
-                <span class="shop-hero__product-name">{product.name}</span>
-                </div>
-            </a>
-          ))}
-        </div>
+    </div>
+
+    <!-- Category Products Showcase — Marquee (full width, outside grid) -->
+    <div class="shop-hero__showcase" data-shop-hero-categories aria-label="대표 제품">
+      <div class="shop-hero__showcase-track">
+        {[...featuredProducts, ...featuredProducts, ...featuredProducts].map((product) => (
+          <a href="#products" class="shop-hero__product-card" data-filter={product.category}>
+            <div class="shop-hero__product-img-wrap">
+              <img
+                src={`${product.thumbnail}&w=240&q=75`}
+                alt={product.name}
+                class="shop-hero__product-img"
+                loading="lazy"
+                decoding="async"
+                width="240"
+                height="180"
+              />
+            </div>
+            <div class="shop-hero__product-info">
+              <span class="shop-hero__product-category">{product.categoryName}</span>
+              <span class="shop-hero__product-name">{product.name}</span>
+            </div>
+          </a>
+        ))}
       </div>
     </div>
   </div>
@@ -101,7 +166,7 @@ const featuredProducts = categoryOrder.map((catId) => {
 
 <style>
   /* ==================
-     Shop Hero — Single-focus
+     Shop Hero — Rolling Hero
      ================== */
   .shop-hero {
     position: relative;
@@ -126,10 +191,41 @@ const featuredProducts = categoryOrder.map((catId) => {
   }
 
   .shop-hero__content {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    align-items: center;
+    gap: var(--space-2xl);
+  }
+
+  /* Left Column */
+  .shop-hero__left {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Slides Container */
+  .shop-hero__slides {
+    position: relative;
+    width: 100%;
+    min-height: 280px;
+    display: flex;
     align-items: center;
-    text-align: center;
+    justify-content: flex-start;
+  }
+
+  .shop-hero__slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   /* Eyebrow */
@@ -141,29 +237,28 @@ const featuredProducts = categoryOrder.map((catId) => {
     letter-spacing: 0.15em;
     color: rgba(76, 175, 80, 0.7);
     margin-bottom: var(--space-lg);
-    opacity: 0;
   }
 
   /* Headline */
   .shop-hero__headline {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
     gap: 0;
-    margin-bottom: var(--space-xl);
+    margin-bottom: var(--space-md);
   }
 
   .shop-hero__headline-line {
     display: block;
     overflow: hidden;
-    line-height: 1;
+    line-height: 1.1;
   }
 
   .shop-hero__headline-text {
     display: inline-block;
     font-family: var(--font-heading);
-    font-size: clamp(4rem, 10vw, 7rem);
+    font-size: clamp(2.8rem, 5vw, 5rem);
     font-weight: 800;
     line-height: 1.05;
     letter-spacing: -0.03em;
@@ -177,7 +272,6 @@ const featuredProducts = categoryOrder.map((catId) => {
   /* Split-text character spans */
   .shop-hero__headline-text :global(.char) {
     display: inline-block;
-    opacity: 0;
   }
 
   .shop-hero__headline-text :global(.char-space) {
@@ -192,22 +286,132 @@ const featuredProducts = categoryOrder.map((catId) => {
     line-height: var(--line-height-relaxed);
     color: var(--text-secondary);
     max-width: 520px;
-    margin: 0 auto;
-    text-align: center;
+    margin: 0;
+    text-align: left;
+  }
+
+  .shop-hero__desc :global(.hide-mobile) {
+    display: inline;
+  }
+
+  /* Indicators */
+  .shop-hero__indicators {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-2xl);
     opacity: 0;
   }
 
-  .hide-mobile {
-    display: inline;
+  /* ==================
+     Right Column — Simulator Preview
+     ================== */
+  .shop-hero__simulator-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .shop-hero__sim-desc {
+    font-size: var(--font-size-base, 1rem);
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    margin: 0;
+    letter-spacing: -0.01em;
+    opacity: 0;
+  }
+
+  .shop-hero__sim-desc-accent {
+    color: var(--primary-light, #4caf50);
+  }
+
+  .shop-hero__simulator {
+    position: relative;
+    width: 100%;
+    min-height: 380px;
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    opacity: 0;
+  }
+
+  .shop-hero__sim-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-xl);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: #fff;
+    background: var(--primary-light, #4caf50);
+    border: 1px solid var(--primary-light, #4caf50);
+    border-radius: var(--radius-full, 999px);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    opacity: 0;
+  }
+
+  .shop-hero__sim-cta:hover {
+    background: #43a047;
+    border-color: #43a047;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+  }
+
+  .shop-hero__sim-cta svg {
+    transition: transform var(--transition-base);
+  }
+
+  .shop-hero__sim-cta:hover svg {
+    transform: translateX(3px);
+  }
+
+  .shop-hero__indicator {
+    position: relative;
+    width: 60px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .shop-hero__indicator:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .shop-hero__indicator-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--primary-light, #4caf50);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .shop-hero__indicator.is-active .shop-hero__indicator-fill {
+    animation: indicatorFill 6s linear forwards;
+  }
+
+  @keyframes indicatorFill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
   }
 
   /* CTA */
   .shop-hero__cta {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: var(--space-md);
-    margin-top: var(--space-2xl);
+    margin-top: var(--space-3xl);
     opacity: 0;
   }
 
@@ -299,7 +503,6 @@ const featuredProducts = categoryOrder.map((catId) => {
   .shop-hero__showcase-track {
     display: flex;
     gap: var(--card-gap);
-    /* 6장 원본 너비만큼 이동 → 복제본으로 이음새 없이 반복 */
     animation: showcaseMarquee 36s linear infinite;
   }
 
@@ -422,35 +625,85 @@ const featuredProducts = categoryOrder.map((catId) => {
     100% { top: 0; opacity: 0.8; }
   }
 
+  /* Spinner for 3D preview loading */
+  :global(@keyframes spin) {
+    to { transform: rotate(360deg); }
+  }
+
   /* ==================
-     Responsive — Tablet
+     Responsive — Tablet (≤1023px): 1-column stack
      ================== */
   @media (max-width: 1023px) {
+    .shop-hero__content {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .shop-hero__left {
+      align-items: center;
+      text-align: center;
+    }
+
+    .shop-hero__slides {
+      min-height: 240px;
+      justify-content: center;
+    }
+
+    .shop-hero__slide {
+      align-items: center;
+      text-align: center;
+    }
+
+    .shop-hero__headline {
+      align-items: center;
+      text-align: center;
+    }
+
     .shop-hero__headline-text {
-      font-size: clamp(3.5rem, 8vw, 6rem);
+      font-size: clamp(3.15rem, 7.2vw, 5.4rem);
+    }
+
+    .shop-hero__desc {
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    .shop-hero__cta {
+      justify-content: center;
+    }
+
+    .shop-hero__simulator {
+      max-width: 600px;
+      min-height: 300px;
+      margin: 0 auto;
     }
   }
 
   /* ==================
-     Responsive — Mobile
+     Responsive — Mobile (≤719px)
      ================== */
   @media (max-width: 719px) {
     .shop-hero {
-      min-height: 100vh;
-      min-height: 100dvh;
+      min-height: auto;
+      height: auto;
+      padding: calc(var(--header-height, 64px) + var(--space-2xl)) 0 var(--space-xl);
+    }
+
+    .shop-hero__slides {
+      min-height: 200px;
     }
 
     .shop-hero__headline-text {
-      font-size: clamp(2.5rem, 10vw, 4rem);
+      font-size: clamp(2.25rem, 9vw, 3.6rem);
     }
 
     .shop-hero__desc {
-      font-size: var(--font-size-base);
+      font-size: var(--font-size-sm);
       max-width: 100%;
       padding: 0 var(--space-md);
     }
 
-    .hide-mobile {
+    .shop-hero__desc :global(.hide-mobile) {
       display: none;
     }
 
@@ -463,6 +716,10 @@ const featuredProducts = categoryOrder.map((catId) => {
     .shop-hero__cta-btn {
       width: 100%;
       justify-content: center;
+    }
+
+    .shop-hero__simulator {
+      min-height: 220px;
     }
 
     .shop-hero__showcase {
@@ -486,25 +743,35 @@ const featuredProducts = categoryOrder.map((catId) => {
     .shop-hero__scroll {
       display: none;
     }
+
+    .shop-hero__indicator {
+      width: 44px;
+    }
   }
 
   /* ==================
      Reduced Motion
      ================== */
   @media (prefers-reduced-motion: reduce) {
+    .shop-hero__slide {
+      transition: none;
+    }
+
     .shop-hero__eyebrow,
     .shop-hero__desc,
     .shop-hero__cta,
+    .shop-hero__indicators,
     .shop-hero__showcase,
-    .shop-hero__scroll {
+    .shop-hero__scroll,
+    .shop-hero__sim-desc,
+    .shop-hero__simulator,
+    .shop-hero__sim-cta {
       opacity: 1 !important;
-      transform: none !important;
     }
 
     .shop-hero__headline-text,
     .shop-hero__headline-text :global(.char) {
       opacity: 1 !important;
-      transform: none !important;
     }
 
     .shop-hero__scroll-dot {
@@ -513,6 +780,11 @@ const featuredProducts = categoryOrder.map((catId) => {
 
     .shop-hero__showcase-track {
       animation: none;
+    }
+
+    .shop-hero__indicator-fill {
+      animation: none;
+      transform: scaleX(1);
     }
   }
 </style>

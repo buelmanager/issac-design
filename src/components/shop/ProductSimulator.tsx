@@ -384,7 +384,7 @@ function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgC
 }) {
   if (shapes.length === 0) return null;
 
-  const ambientIntensity = isAR ? 0.8 : isNight ? 0.08 : 0.5;
+  const ambientIntensity = isAR ? 0.8 : isNight ? 0.35 : 0.6;
   const envPreset = isNight ? 'night' as const : 'city' as const;
 
   return (
@@ -474,7 +474,7 @@ export default function ProductSimulator() {
 
   // Shape controls
   const depth = 2;
-  const [color, setColor] = useState('#c0c0c0');
+  const [color, setColor] = useState('#e0e0e0');
   const [wireframe, setWireframe] = useState(false);
   const [showBackboard, setShowBackboard] = useState(true);
   const [showBoardSettings, setShowBoardSettings] = useState(false);
@@ -483,7 +483,7 @@ export default function ProductSimulator() {
   // Backboard controls
   const [backboardColor, setBackboardColor] = useState('#7a7a7a');
   const [boardPaddingX, setBoardPaddingX] = useState(0.6);
-  const [boardPaddingY, setBoardPaddingY] = useState(0.5);
+  const [boardPaddingY, setBoardPaddingY] = useState(-0.10);
   const boardDepth = 0.3;
 
   // LED controls
@@ -500,6 +500,20 @@ export default function ProductSimulator() {
   // Scene controls
   const [bgColor, setBgColor] = useState('#0a0a1a');
   const [isNight, setIsNight] = useState(true);
+
+  // Background image
+  const [showBgImage, setShowBgImage] = useState(false);
+  const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
+
+  const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (customBgUrl) URL.revokeObjectURL(customBgUrl);
+    const url = URL.createObjectURL(file);
+    setCustomBgUrl(url);
+    setShowBgImage(true);
+    e.target.value = '';
+  }, [customBgUrl]);
 
   // AR mode
   const [isAR, setIsAR] = useState(false);
@@ -682,7 +696,7 @@ export default function ProductSimulator() {
   }, [imageUrl, processImage]);
 
   const meshProps = {
-    depth, color, metalness: 0.5, roughness: 0.3, wireframe, texture,
+    depth, color, metalness: 0.3, roughness: 0.4, wireframe, texture,
     backboardColor, ledColor, ledIntensity, standoffDistance, ledSpread,
     boardPaddingX, boardPaddingY, boardDepth, ledSpacing, showBackboard,
   };
@@ -705,25 +719,21 @@ export default function ProductSimulator() {
               <span>AR 모드로 실제 설치 장소에서 미리 확인</span>
             </div>
           </div>
-          <div className="product-simulator__upload-bar">
-            <label className="sim-upload-btn">
-              <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span>이미지 업로드</span>
-            </label>
-            <button className="sim-upload-btn sim-upload-btn--sample" onClick={handleLoadTestPng} type="button">
-              샘플 (test.png)
-            </button>
-          </div>
         </div>
 
         {/* 3D Canvas - Full Width */}
         <div className="product-simulator__content">
           <div className={`product-simulator__canvas ${isAR ? 'ar-active' : ''}`} ref={canvasContainerRef}>
+            {/* Background Image */}
+            {showBgImage && !isAR && (
+              <img
+                className="sim-bg-image"
+                src={customBgUrl || (isNight ? '/images/simulator-bg-night.jpg' : '/images/simulator-bg-building.jpg')}
+                alt=""
+                draggable={false}
+              />
+            )}
+
             {/* AR Camera Feed */}
             <video
               ref={videoRef}
@@ -747,8 +757,8 @@ export default function ProductSimulator() {
               <Canvas shadows
                 dpr={[1, 2]}
                 gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
-                camera={{ position: [0, 3, 7], fov: 50 }}
-                style={{ background: isAR ? 'transparent' : bgColor }}>
+                camera={{ position: [0, 2, 5.5], fov: 45 }}
+                style={{ background: isAR || showBgImage ? 'transparent' : bgColor }}>
                 <Scene shapes={shapes} shapeResult={shapeResult} meshProps={meshProps}
                   lightColor={lightColor} lightIntensity={lightIntensity} bgColor={bgColor} isNight={isNight} isAR={isAR} />
               </Canvas>
@@ -764,7 +774,7 @@ export default function ProductSimulator() {
                 setLightIntensity(next ? 1.5 : 2.5);
               }}
               type="button"
-              title={isNight ? '낮 모드로 전환' : '밤 모드로 전환'}
+              data-tooltip={isNight ? '낮 모드' : '밤 모드'}
             >
               {isNight ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -790,7 +800,7 @@ export default function ProductSimulator() {
               className={`sim-canvas-btn sim-wireframe-btn ${wireframe ? 'active' : ''}`}
               onClick={() => setWireframe(!wireframe)}
               type="button"
-              title={wireframe ? '와이어프레임 끄기' : '와이어프레임'}
+              data-tooltip="와이어프레임"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -804,7 +814,7 @@ export default function ProductSimulator() {
               className={`sim-canvas-btn sim-backboard-btn ${showBackboard ? 'active' : ''}`}
               onClick={() => setShowBackboard(!showBackboard)}
               type="button"
-              title={showBackboard ? '백보드 숨기기' : '백보드 보이기'}
+              data-tooltip="백보드"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -812,12 +822,41 @@ export default function ProductSimulator() {
               </svg>
             </button>
 
+            {/* Background Image Toggle */}
+            <button
+              className={`sim-canvas-btn sim-bgimage-btn ${showBgImage ? 'active' : ''}`}
+              onClick={() => setShowBgImage(!showBgImage)}
+              type="button"
+              data-tooltip="배경 이미지"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </button>
+
+            {/* Background Image Upload */}
+            <label
+              className="sim-canvas-btn sim-bgupload-btn"
+              data-tooltip="배경 업로드"
+            >
+              <input type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+                <line x1="16" y1="3" x2="16" y2="8"/>
+                <line x1="13.5" y1="5.5" x2="18.5" y2="5.5"/>
+              </svg>
+            </label>
+
             {/* Board Settings Button + Popover */}
             <button
               className={`sim-canvas-btn sim-board-settings-btn ${showBoardSettings ? 'active' : ''}`}
               onClick={() => setShowBoardSettings(!showBoardSettings)}
               type="button"
-              title="간판 설정"
+              data-tooltip="간판 설정"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3"/>
@@ -844,12 +883,26 @@ export default function ProductSimulator() {
               </div>
             )}
 
+            {/* Sign Image Upload — left side */}
+            <label
+              className="sim-canvas-btn sim-sign-upload-btn"
+              data-tooltip="간판 업로드"
+            >
+              <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <path d="M3 15h6"/>
+                <path d="M6 12v6"/>
+              </svg>
+            </label>
+
             {/* AR Mode Button */}
             <button
               className={`sim-ar-btn ${isAR ? 'active' : ''}`}
               onClick={toggleAR}
               type="button"
-              title={isAR ? 'AR 모드 끄기' : 'AR 모드'}
+              data-tooltip={isAR ? 'AR 끄기' : 'AR 모드'}
             >
               {isAR ? (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
