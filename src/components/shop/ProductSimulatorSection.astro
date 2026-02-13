@@ -381,18 +381,19 @@ import ProductSimulator from './ProductSimulator';
     z-index: 1;
   }
 
-  /* AR Fullscreen */
-  :global(.product-simulator__canvas:fullscreen),
-  :global(.product-simulator__canvas:-webkit-full-screen) {
+  /* AR Fullscreen — CSS-based overlay (works on iOS/Android/PWA) */
+  :global(.product-simulator__canvas.ar-fullscreen) {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    min-height: 0;
     border-radius: 0;
-    background: #000;
-  }
-
-  :global(.product-simulator__canvas.ar-active:fullscreen),
-  :global(.product-simulator__canvas.ar-active:-webkit-full-screen) {
     background: transparent;
+    border: none;
   }
 
   /* AR Button - below bg image toggle */

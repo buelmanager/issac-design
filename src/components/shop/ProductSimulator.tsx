@@ -534,9 +534,8 @@ export default function ProductSimulator() {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
-    }
+    canvasContainerRef.current?.classList.remove('ar-fullscreen');
+    document.body.style.overflow = '';
     setIsAR(false);
   }, []);
 
@@ -569,12 +568,12 @@ export default function ProductSimulator() {
     } else {
       try {
         await startCamera(facingMode);
-        if (canvasContainerRef.current?.requestFullscreen) {
-          await canvasContainerRef.current.requestFullscreen();
-        }
+        canvasContainerRef.current?.classList.add('ar-fullscreen');
+        document.body.style.overflow = 'hidden';
         setIsAR(true);
       } catch (err) {
         console.error('Camera access denied:', err);
+        setError('카메라 접근이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.');
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
           streamRef.current = null;
@@ -594,16 +593,17 @@ export default function ProductSimulator() {
     }
   }, [facingMode, startCamera]);
 
-  // Handle fullscreen exit (system back gesture / swipe)
+  // Handle back button / popstate to exit AR
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      if (!document.fullscreenElement && isAR) {
-        stopAR();
-      }
+    if (!isAR) return;
+    const handleBack = (e: PopStateEvent) => {
+      e.preventDefault();
+      stopAR();
     };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.history.pushState({ ar: true }, '');
+    window.addEventListener('popstate', handleBack);
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('popstate', handleBack);
     };
   }, [isAR, stopAR]);
 
