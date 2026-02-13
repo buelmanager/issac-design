@@ -323,24 +323,6 @@ export function initShopHero() {
     });
   });
 
-  ScrollTrigger.create({
-    trigger: hero,
-    start: 'top top',
-    end: '50% top',
-    scrub: 1,
-    onUpdate: (self) => {
-      const p = self.progress;
-      gsap.set([
-        ctaEl, categoriesEl, scrollEl, indicatorsWrap, simDescEl, simulatorEl, simCtaEl
-      ].filter(Boolean), { opacity: 1 - p * 1.5 });
-
-      // Fade active slide text
-      const activeSlide = textSlides[currentSlide];
-      if (activeSlide) {
-        gsap.set(activeSlide, { opacity: 1 - p * 1.5 });
-      }
-    },
-  });
 
   // =====================
   // SCROLL INDICATOR CLICK
