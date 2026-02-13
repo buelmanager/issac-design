@@ -303,6 +303,75 @@ function ExtrudedMesh({
   );
 }
 
+// ─── Auto-rotate orbit controller ───
+
+const IDLE_TIMEOUT = 5000; // 5초 무조작 시 자동 회전 시작
+const SWING_ANGLE = Math.PI / 3; // 60도
+const ROTATE_SPEED = 0.15; // rad/s
+
+function AutoRotateControls({ isAR }: { isAR: boolean }) {
+  const controlsRef = useRef<any>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isIdle = useRef(true);
+  const baseAzimuth = useRef(0);
+  const direction = useRef(1);
+  const currentOffset = useRef(0);
+
+  const resetIdleTimer = useCallback(() => {
+    isIdle.current = false;
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => {
+      if (!isAR && controlsRef.current) {
+        baseAzimuth.current = controlsRef.current.getAzimuthalAngle();
+        currentOffset.current = 0;
+        direction.current = 1;
+        isIdle.current = true;
+      }
+    }, IDLE_TIMEOUT);
+  }, [isAR]);
+
+  // 최초 로딩 시 자동 회전 시작
+  useEffect(() => {
+    if (!isAR) {
+      isIdle.current = true;
+      if (controlsRef.current) {
+        baseAzimuth.current = controlsRef.current.getAzimuthalAngle();
+      }
+    }
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    };
+  }, [isAR]);
+
+  useFrame((_, delta) => {
+    if (!controlsRef.current || isAR) return;
+    if (!isIdle.current) return;
+
+    const step = ROTATE_SPEED * delta * direction.current;
+    currentOffset.current += step;
+
+    if (Math.abs(currentOffset.current) >= SWING_ANGLE / 2) {
+      direction.current *= -1;
+      currentOffset.current = Math.sign(currentOffset.current) * (SWING_ANGLE / 2);
+    }
+
+    const targetAngle = baseAzimuth.current + currentOffset.current;
+    controlsRef.current.setAzimuthalAngle(targetAngle);
+    controlsRef.current.update();
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enableDamping
+      dampingFactor={0.05}
+      minDistance={2}
+      maxDistance={20}
+      onStart={resetIdleTimer}
+    />
+  );
+}
+
 function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgColor, isNight, isAR }: {
   shapes: THREE.Shape[];
   shapeResult: ShapeResult | null;
@@ -331,7 +400,7 @@ function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgC
 
       {!isAR && <ContactShadows position={[0, -3, 0]} opacity={isNight ? 0.2 : 0.5} scale={15} blur={2} far={6} resolution={512} />}
       {!isAR && <Environment preset={envPreset} resolution={512} />}
-      <OrbitControls enableDamping dampingFactor={0.05} minDistance={2} maxDistance={20} />
+      <AutoRotateControls isAR={isAR} />
     </>
   );
 }
@@ -412,7 +481,7 @@ export default function ProductSimulator() {
   const textureQuality: TextureQuality = 'mid';
 
   // Backboard controls
-  const [backboardColor, setBackboardColor] = useState('#2a2a2a');
+  const [backboardColor, setBackboardColor] = useState('#7a7a7a');
   const [boardPaddingX, setBoardPaddingX] = useState(0.6);
   const [boardPaddingY, setBoardPaddingY] = useState(0.5);
   const boardDepth = 0.3;
@@ -678,7 +747,7 @@ export default function ProductSimulator() {
               <Canvas shadows
                 dpr={[1, 2]}
                 gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
-                camera={{ position: [0, 2, 6], fov: 50 }}
+                camera={{ position: [0, 3, 7], fov: 50 }}
                 style={{ background: isAR ? 'transparent' : bgColor }}>
                 <Scene shapes={shapes} shapeResult={shapeResult} meshProps={meshProps}
                   lightColor={lightColor} lightIntensity={lightIntensity} bgColor={bgColor} isNight={isNight} isAR={isAR} />
