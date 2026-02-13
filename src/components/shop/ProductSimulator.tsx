@@ -305,7 +305,7 @@ function ExtrudedMesh({
 
 // ─── Auto-rotate orbit controller ───
 
-const IDLE_TIMEOUT = 5000; // 5초 무조작 시 자동 회전 시작
+const IDLE_TIMEOUT = 15000; // 15초 무조작 시 자동 회전 시작
 const SWING_ANGLE = Math.PI / 3; // 60도
 const ROTATE_SPEED = 0.15; // rad/s
 
@@ -372,7 +372,7 @@ function AutoRotateControls({ isAR }: { isAR: boolean }) {
   );
 }
 
-function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgColor, isNight, isAR }: {
+function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgColor, isNight, isAR, signPositionY }: {
   shapes: THREE.Shape[];
   shapeResult: ShapeResult | null;
   meshProps: Omit<ExtrudedMeshProps, 'shapes' | 'shapeResult'>;
@@ -381,6 +381,7 @@ function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgC
   bgColor: string;
   isNight: boolean;
   isAR: boolean;
+  signPositionY: number;
 }) {
   if (shapes.length === 0) return null;
 
@@ -394,7 +395,7 @@ function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgC
       <directionalLight position={[-3, 3, -3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.4} color={lightColor} />
       <directionalLight position={[0, -2, 3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.2} color={lightColor} />
 
-      <group position={isAR ? [0, 1.25, 0] : [0, 0, 0]}>
+      <group position={[0, signPositionY, 0]}>
         <ExtrudedMesh shapes={shapes} shapeResult={shapeResult} {...meshProps} />
       </group>
 
@@ -486,6 +487,9 @@ export default function ProductSimulator() {
   const [boardPaddingY, setBoardPaddingY] = useState(-0.10);
   const boardDepth = 0.3;
 
+  // Sign position
+  const [signPositionY, setSignPositionY] = useState(0);
+
   // LED controls
   const [ledColor, setLedColor] = useState('#ffffff');
   const ledIntensity = 3;
@@ -502,7 +506,7 @@ export default function ProductSimulator() {
   const [isNight, setIsNight] = useState(true);
 
   // Background image
-  const [showBgImage, setShowBgImage] = useState(false);
+  const [showBgImage, setShowBgImage] = useState(true);
   const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
 
   const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -534,6 +538,14 @@ export default function ProductSimulator() {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    // 전체화면 종료
+    try {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitFullscreenElement) {
+        (document as any).webkitExitFullscreen();
+      }
+    } catch {}
     canvasContainerRef.current?.classList.remove('ar-fullscreen');
     document.body.style.overflow = '';
     setIsAR(false);
@@ -574,35 +586,68 @@ export default function ProductSimulator() {
     }
   }, []);
 
+  // 전체화면 진입
+  const enterFullscreen = useCallback(async () => {
+    const el = canvasContainerRef.current;
+    if (!el) return;
+    // 1차: Fullscreen API (데스크탑/Android)
+    try {
+      if (el.requestFullscreen) {
+        await el.requestFullscreen();
+        return;
+      }
+      if ((el as any).webkitRequestFullscreen) {
+        await (el as any).webkitRequestFullscreen();
+        return;
+      }
+    } catch {}
+    // 2차: CSS fallback (iOS/PWA)
+    el.classList.add('ar-fullscreen');
+    document.body.style.overflow = 'hidden';
+  }, []);
+
+  // 전체화면 종료
+  const exitFullscreen = useCallback(() => {
+    try {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else if ((document as any).webkitFullscreenElement) {
+        (document as any).webkitExitFullscreen();
+      }
+    } catch {}
+    canvasContainerRef.current?.classList.remove('ar-fullscreen');
+    document.body.style.overflow = '';
+  }, []);
+
   // AR camera toggle
   const toggleAR = useCallback(async () => {
     if (isAR) {
       stopAR();
     } else {
       setError(null);
+      // 먼저 전체화면 전환
+      await enterFullscreen();
+      setIsAR(true);
+
+      // 카메라 시도 (실패해도 전체화면 유지)
       try {
         await startCamera(facingMode);
-        canvasContainerRef.current?.classList.add('ar-fullscreen');
-        document.body.style.overflow = 'hidden';
-        setIsAR(true);
       } catch (err: any) {
         const msg = err?.message || '';
         if (msg.includes('지원하지')) {
           setError(msg);
-        } else if (msg.includes('NotAllowedError') || msg.includes('Permission')) {
-          setError('카메라 권한이 거부되었습니다. 브라우저 설정 > 사이트 설정에서 카메라를 허용해주세요.');
+        } else if (msg.includes('NotAllowed') || msg.includes('Permission')) {
+          setError('카메라 권한이 거부되었습니다. 설정에서 카메라를 허용해주세요.');
         } else {
-          setError(`카메라 접근 실패: ${msg || '알 수 없는 오류'}. HTTPS 환경에서 시도해주세요.`);
+          setError(`카메라 없이 전체화면 모드로 실행 중`);
         }
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
           streamRef.current = null;
         }
-        canvasContainerRef.current?.classList.remove('ar-fullscreen');
-        document.body.style.overflow = '';
       }
     }
-  }, [isAR, stopAR, startCamera, facingMode]);
+  }, [isAR, stopAR, startCamera, facingMode, enterFullscreen]);
 
   // Flip camera
   const flipCamera = useCallback(async () => {
@@ -615,16 +660,28 @@ export default function ProductSimulator() {
     }
   }, [facingMode, startCamera]);
 
-  // Handle back button / popstate to exit AR
+  // Handle fullscreen exit (ESC / back button)
   useEffect(() => {
     if (!isAR) return;
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !(document as any).webkitFullscreenElement && isAR) {
+        stopAR();
+      }
+    };
+
     const handleBack = (e: PopStateEvent) => {
       e.preventDefault();
       stopAR();
     };
+
     window.history.pushState({ ar: true }, '');
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     window.addEventListener('popstate', handleBack);
     return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
       window.removeEventListener('popstate', handleBack);
     };
   }, [isAR, stopAR]);
@@ -750,7 +807,7 @@ export default function ProductSimulator() {
             {showBgImage && !isAR && (
               <img
                 className="sim-bg-image"
-                src={customBgUrl || (isNight ? '/images/simulator-bg-night.jpg' : '/images/simulator-bg-building.jpg')}
+                src={customBgUrl || '/images/bg_sample.png'}
                 alt=""
                 draggable={false}
               />
@@ -782,7 +839,7 @@ export default function ProductSimulator() {
                 camera={{ position: [0, 2, 5.5], fov: 45 }}
                 style={{ background: isAR || showBgImage ? 'transparent' : bgColor }}>
                 <Scene shapes={shapes} shapeResult={shapeResult} meshProps={meshProps}
-                  lightColor={lightColor} lightIntensity={lightIntensity} bgColor={bgColor} isNight={isNight} isAR={isAR} />
+                  lightColor={lightColor} lightIntensity={lightIntensity} bgColor={bgColor} isNight={isNight} isAR={isAR} signPositionY={signPositionY} />
               </Canvas>
             )}
 
@@ -899,6 +956,8 @@ export default function ProductSimulator() {
                 <div className="sim-board-popover__divider" />
                 <Stepper label="크기 (좌우)" value={boardPaddingX} min={-2} max={3} step={0.2} onChange={setBoardPaddingX} />
                 <Stepper label="크기 (상하)" value={boardPaddingY} min={-2} max={3} step={0.2} onChange={setBoardPaddingY} />
+                <div className="sim-board-popover__divider" />
+                <Stepper label="위치 (상하)" value={signPositionY} min={-5} max={5} step={0.2} onChange={setSignPositionY} />
                 <div className="sim-board-popover__divider" />
                 <ColorPicker label="LED 색상" value={ledColor} onChange={setLedColor} />
                 <Stepper label="LED 간격" value={ledSpacing} min={0.3} max={3} step={0.1} onChange={setLedSpacing} />
