@@ -539,25 +539,38 @@ export default function ProductSimulator() {
     setIsAR(false);
   }, []);
 
-  // Start camera with given facing mode (fallback to any camera)
+  // Start camera with given facing mode (triple fallback)
   const startCamera = useCallback(async (mode: 'environment' | 'user') => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('이 브라우저에서는 카메라를 지원하지 않습니다.');
+    }
+
     let stream: MediaStream;
+    // 1차: exact facingMode
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { exact: mode } },
       });
     } catch {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: mode === 'environment' ? 'user' : 'environment' },
-      });
+      // 2차: ideal facingMode (반대)
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: mode === 'environment' ? 'user' : 'environment' },
+        });
+      } catch {
+        // 3차: 아무 카메라
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
     }
+
     streamRef.current = stream;
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
-      videoRef.current.play();
+      await videoRef.current.play().catch(() => {});
     }
   }, []);
 
@@ -566,18 +579,27 @@ export default function ProductSimulator() {
     if (isAR) {
       stopAR();
     } else {
+      setError(null);
       try {
         await startCamera(facingMode);
         canvasContainerRef.current?.classList.add('ar-fullscreen');
         document.body.style.overflow = 'hidden';
         setIsAR(true);
-      } catch (err) {
-        console.error('Camera access denied:', err);
-        setError('카메라 접근이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.');
+      } catch (err: any) {
+        const msg = err?.message || '';
+        if (msg.includes('지원하지')) {
+          setError(msg);
+        } else if (msg.includes('NotAllowedError') || msg.includes('Permission')) {
+          setError('카메라 권한이 거부되었습니다. 브라우저 설정 > 사이트 설정에서 카메라를 허용해주세요.');
+        } else {
+          setError(`카메라 접근 실패: ${msg || '알 수 없는 오류'}. HTTPS 환경에서 시도해주세요.`);
+        }
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
           streamRef.current = null;
         }
+        canvasContainerRef.current?.classList.remove('ar-fullscreen');
+        document.body.style.overflow = '';
       }
     }
   }, [isAR, stopAR, startCamera, facingMode]);
