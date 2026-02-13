@@ -3,7 +3,18 @@
  * Shop Animations
  * GSAP ScrollTrigger animations for all shop sections
  * Include this component in shop pages that need animations
- * Note: Shop Hero animation is handled by Hero.astro's own script
+ *
+ * Performance optimisations
+ * ─────────────────────────
+ * • GPU-only props (transform + opacity) — no layout/paint triggers
+ * • force3D: true → hardware-accelerated compositing layer
+ * • will-change added just-in-time via onStart, removed onComplete
+ * • ScrollTrigger.batch() for product cards — single IntersectionObserver, O(1) setup
+ * • once: true on every trigger — auto-killed after first fire (less observers over time)
+ * • Reduced-motion bail-out at the top (accessibility)
+ * • Cleanup on astro:before-swap for MPA/View-Transitions
+ *
+ * Note: Shop Hero animation is handled by shop-hero-animations.ts
  */
 ---
 
@@ -13,32 +24,103 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
+  // ─── Perf: reduced-motion guard ────────────────────────
+  const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /**
+   * will-change lifecycle — add on animation start, remove on complete.
+   * Avoids permanent compositor-layer cost while still hinting the browser
+   * right before the animation runs.
+   */
+  function wcLifecycle(
+    targets: gsap.TweenTarget,
+    props = 'transform, opacity',
+  ) {
+    const toArray = (t: gsap.TweenTarget): HTMLElement[] =>
+      t instanceof NodeList || Array.isArray(t)
+        ? Array.from(t as Iterable<HTMLElement>)
+        : [t as HTMLElement];
+
+    return {
+      onStart() {
+        toArray(targets).forEach((el) => {
+          if (el?.style) el.style.willChange = props;
+        });
+      },
+      onComplete() {
+        toArray(targets).forEach((el) => {
+          if (el?.style) el.style.willChange = 'auto';
+        });
+      },
+    };
+  }
+
+  // ─── Main init ─────────────────────────────────────────
   function initShopAnimations() {
-    // Note: Don't kill all ScrollTrigger instances here,
-    // as Hero.astro manages its own ScrollTrigger lifecycle
+    if (REDUCED_MOTION) return;
 
-    // ─── 1. Shop Hero ─── (handled by Hero.astro's own script)
+    // 1. Section headers (universal)
+    animateSectionHeaders();
 
-    // ─── 2. Featured Bento Grid ───
+    // 2. Featured Bento Grid
     animateBentoGrid();
 
-    // ─── 3. Category Showcase ───
+    // 3. New Arrivals
+    animateNewArrivals();
+
+    // 4. Category Showcase
     animateCategoryShowcase();
 
-    // ─── 4. Process Timeline ───
-    animateProcessTimeline();
-
-    // ─── 5. Trust Indicators ───
-    animateTrustSection();
-
-    // ─── 6. Product Grid Cards ───
+    // 5. Product Cards (batch — single observer)
     animateProductCards();
 
-    // ─── 7. Production Timeline ───
+    // 6. Process Timeline
+    animateProcessTimeline();
+
+    // 7. Trust Indicators + counters
+    animateTrustSection();
+
+    // 8. Warranty Badges
+    animateWarrantyBadges();
+
+    // 9. Client Logos
+    animateClientLogos();
+
+    // 10. Quote CTA
+    animateQuoteCTA();
+
+    // 11. Production Timeline (detail page)
     animateProductionTimeline();
 
-    // ─── 8. Related Products ───
+    // 12. Related Products (detail page)
     animateRelatedProducts();
+  }
+
+  // ═══════════════════════════════════════════
+  // 1. Section Headers — universal fade-up
+  // ═══════════════════════════════════════════
+  function animateSectionHeaders() {
+    const headers = document.querySelectorAll<HTMLElement>(
+      '.featured-bento__header, .new-arrivals__header, .process-timeline__header, .trust__header, .client-logos__container, .shop-products__controls',
+    );
+    if (!headers.length) return;
+
+    headers.forEach((header) => {
+      gsap.set(header, { opacity: 0, y: 30, force3D: true });
+      gsap.to(header, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+        force3D: true,
+        ...wcLifecycle(header),
+        scrollTrigger: {
+          trigger: header,
+          start: 'top 88%',
+          once: true,
+        },
+      });
+    });
   }
 
   // ═══════════════════════════════════════════
@@ -48,93 +130,168 @@
     const grid = document.querySelector('[data-bento-grid]');
     if (!grid) return;
 
-    const items = grid.querySelectorAll('[data-bento-item]');
+    const items = grid.querySelectorAll<HTMLElement>('[data-bento-item]');
     if (!items.length) return;
 
-    gsap.set(items, { opacity: 0, y: 40 });
+    gsap.set(items, { opacity: 0, y: 40, force3D: true });
     gsap.to(items, {
       opacity: 1,
       y: 0,
       duration: 0.7,
       ease: 'power2.out',
-      stagger: 0.15,
+      stagger: 0.12,
+      force3D: true,
+      ...wcLifecycle(items),
       scrollTrigger: {
         trigger: grid,
         start: 'top 80%',
+        once: true,
       },
     });
   }
 
   // ═══════════════════════════════════════════
-  // 3. Category Showcase
+  // 3. New Arrivals
+  // ═══════════════════════════════════════════
+  function animateNewArrivals() {
+    const section = document.querySelector('[data-new-arrivals]');
+    if (!section) return;
+
+    const cards = section.querySelectorAll<HTMLElement>('[data-new-arrival-card]');
+    if (!cards.length) return;
+
+    gsap.set(cards, { opacity: 0, x: 40, force3D: true });
+    gsap.to(cards, {
+      opacity: 1,
+      x: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+      stagger: 0.1,
+      force3D: true,
+      ...wcLifecycle(cards),
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 82%',
+        once: true,
+      },
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // 4. Category Showcase
   // ═══════════════════════════════════════════
   function animateCategoryShowcase() {
     const showcase = document.querySelector('[data-category-showcase]');
     if (!showcase) return;
 
-    const cards = showcase.querySelectorAll('[data-category-card]');
+    const cards = showcase.querySelectorAll<HTMLElement>('[data-category-card]');
     if (!cards.length) return;
 
-    gsap.set(cards, { opacity: 0, x: 60 });
+    gsap.set(cards, { opacity: 0, x: 60, force3D: true });
     gsap.to(cards, {
       opacity: 1,
       x: 0,
       duration: 0.7,
       ease: 'power2.out',
       stagger: 0.1,
+      force3D: true,
+      ...wcLifecycle(cards),
       scrollTrigger: {
         trigger: showcase,
         start: 'top 85%',
+        once: true,
       },
     });
   }
 
   // ═══════════════════════════════════════════
-  // 4. Process Timeline
+  // 5. Product Cards — ScrollTrigger.batch()
+  //    Single IntersectionObserver for ALL cards.
+  //    Cards entering viewport in the same frame
+  //    are grouped and staggered together.
+  // ═══════════════════════════════════════════
+  function animateProductCards() {
+    const cards = document.querySelectorAll<HTMLElement>('[data-product-card]');
+    if (!cards.length) return;
+
+    gsap.set(cards, { opacity: 0, y: 30, force3D: true });
+
+    ScrollTrigger.batch(cards, {
+      start: 'top 88%',
+      once: true,
+      onEnter: (batch) => {
+        batch.forEach((el) => {
+          (el as HTMLElement).style.willChange = 'transform, opacity';
+        });
+        gsap.to(batch, {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+          stagger: 0.06,
+          force3D: true,
+          onComplete() {
+            batch.forEach((el) => {
+              (el as HTMLElement).style.willChange = 'auto';
+            });
+          },
+        });
+      },
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // 6. Process Timeline
   // ═══════════════════════════════════════════
   function animateProcessTimeline() {
     const timeline = document.querySelector('[data-process-timeline]');
     if (!timeline) return;
 
-    const steps = timeline.querySelectorAll('[data-process-step]');
+    const steps = timeline.querySelectorAll<HTMLElement>('[data-process-step]');
     if (!steps.length) return;
 
-    gsap.set(steps, { opacity: 0, y: 30 });
+    gsap.set(steps, { opacity: 0, y: 30, force3D: true });
     gsap.to(steps, {
       opacity: 1,
       y: 0,
       duration: 0.7,
       ease: 'power2.out',
-      stagger: 0.2,
+      stagger: 0.15,
+      force3D: true,
+      ...wcLifecycle(steps),
       scrollTrigger: {
         trigger: timeline,
         start: 'top 75%',
+        once: true,
       },
     });
   }
 
   // ═══════════════════════════════════════════
-  // 5. Trust Indicators
+  // 7. Trust Indicators + counter animation
   // ═══════════════════════════════════════════
   function animateTrustSection() {
     const section = document.querySelector('[data-trust-section]');
     if (!section) return;
 
-    const cards = section.querySelectorAll('[data-trust-card]');
-    const numbers = section.querySelectorAll('[data-trust-number]');
+    const cards = section.querySelectorAll<HTMLElement>('[data-trust-card]');
+    const numbers = section.querySelectorAll<HTMLElement>('[data-trust-number]');
 
     // Cards fade-in
     if (cards.length) {
-      gsap.set(cards, { opacity: 0, y: 20 });
+      gsap.set(cards, { opacity: 0, y: 20, force3D: true });
       gsap.to(cards, {
         opacity: 1,
         y: 0,
         duration: 0.6,
         ease: 'power2.out',
         stagger: 0.1,
+        force3D: true,
+        ...wcLifecycle(cards),
         scrollTrigger: {
           trigger: section,
           start: 'top 80%',
+          once: true,
         },
       });
     }
@@ -143,19 +300,15 @@
     if (numbers.length) {
       numbers.forEach((el) => {
         const text = el.textContent?.trim() || '';
-        // Extract the numeric part (e.g., "15+" -> 15, "1,000+" -> 1000, "100%" -> 100, "24h" -> 24)
         const numericMatch = text.match(/[\d,]+/);
         if (!numericMatch) return;
 
         const targetNumber = parseInt(numericMatch[0].replace(/,/g, ''), 10);
         if (isNaN(targetNumber)) return;
 
-        // Determine prefix/suffix around the number
         const matchIndex = text.indexOf(numericMatch[0]);
         const prefix = text.substring(0, matchIndex);
         const suffix = text.substring(matchIndex + numericMatch[0].length);
-
-        // Determine if the original number had commas
         const hasComma = numericMatch[0].includes(',');
 
         const counter = { value: 0 };
@@ -168,6 +321,7 @@
           scrollTrigger: {
             trigger: section,
             start: 'top 80%',
+            once: true,
           },
           onUpdate: () => {
             const formatted = hasComma
@@ -181,75 +335,158 @@
   }
 
   // ═══════════════════════════════════════════
-  // 6. Product Grid Cards
+  // 8. Warranty Badges — GSAP scroll-triggered
+  //    (replaces old CSS keyframe animation)
   // ═══════════════════════════════════════════
-  function animateProductCards() {
-    const cards = document.querySelectorAll('[data-product-card]');
-    if (!cards.length) return;
+  function animateWarrantyBadges() {
+    const section = document.querySelector('[data-warranty-badges]');
+    if (!section) return;
 
-    gsap.set(cards, { opacity: 0, y: 30 });
-    gsap.to(cards, {
+    const badges = section.querySelectorAll<HTMLElement>('[data-badge]');
+    if (!badges.length) return;
+
+    gsap.set(badges, { opacity: 0, y: 24, scale: 0.96, force3D: true });
+    gsap.to(badges, {
       opacity: 1,
       y: 0,
+      scale: 1,
       duration: 0.6,
       ease: 'power2.out',
-      stagger: 0.08,
+      stagger: 0.1,
+      force3D: true,
+      ...wcLifecycle(badges),
       scrollTrigger: {
-        trigger: cards[0].parentElement,
-        start: 'top 85%',
+        trigger: section,
+        start: 'top 82%',
+        once: true,
       },
     });
   }
 
   // ═══════════════════════════════════════════
-  // 7. Production Timeline
+  // 9. Client Logos — fade the marquee track in
+  // ═══════════════════════════════════════════
+  function animateClientLogos() {
+    const section = document.querySelector('[data-client-logos]');
+    if (!section) return;
+
+    const track = section.querySelector('.client-logos__track-wrapper') as HTMLElement;
+    if (!track) return;
+
+    gsap.set(track, { opacity: 0, y: 20, force3D: true });
+    gsap.to(track, {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      ease: 'power2.out',
+      force3D: true,
+      ...wcLifecycle(track),
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 82%',
+        once: true,
+      },
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // 10. Quote CTA — staggered reveal
+  // ═══════════════════════════════════════════
+  function animateQuoteCTA() {
+    const section = document.querySelector('[data-quote-cta]');
+    if (!section) return;
+
+    const title = section.querySelector('.shop-quote-cta__title') as HTMLElement;
+    const desc = section.querySelector('.shop-quote-cta__desc') as HTMLElement;
+    const btn = section.querySelector('.shop-quote-cta__btn') as HTMLElement;
+
+    const children = [title, desc, btn].filter(Boolean) as HTMLElement[];
+    if (!children.length) return;
+
+    gsap.set(children, { opacity: 0, y: 24, force3D: true });
+    gsap.to(children, {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: 'power2.out',
+      stagger: 0.12,
+      force3D: true,
+      ...wcLifecycle(children),
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 82%',
+        once: true,
+      },
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // 11. Production Timeline (detail page)
   // ═══════════════════════════════════════════
   function animateProductionTimeline() {
     const timeline = document.querySelector('[data-production-timeline]');
     if (!timeline) return;
 
-    const steps = timeline.querySelectorAll('[data-production-step]');
+    const steps = timeline.querySelectorAll<HTMLElement>('[data-production-step]');
     if (!steps.length) return;
 
-    gsap.set(steps, { opacity: 0, x: -30 });
+    gsap.set(steps, { opacity: 0, x: -30, force3D: true });
     gsap.to(steps, {
       opacity: 1,
       x: 0,
       duration: 0.7,
       ease: 'power2.out',
       stagger: 0.15,
+      force3D: true,
+      ...wcLifecycle(steps),
       scrollTrigger: {
         trigger: timeline,
         start: 'top 80%',
+        once: true,
       },
     });
   }
 
   // ═══════════════════════════════════════════
-  // 8. Related Products
+  // 12. Related Products (detail page)
   // ═══════════════════════════════════════════
   function animateRelatedProducts() {
     const section = document.querySelector('[data-related-products]');
     if (!section) return;
 
-    const cards = section.querySelectorAll('[data-related-card]');
+    const cards = section.querySelectorAll<HTMLElement>('[data-related-card]');
     if (!cards.length) return;
 
-    gsap.set(cards, { opacity: 0, y: 30 });
+    gsap.set(cards, { opacity: 0, y: 30, force3D: true });
     gsap.to(cards, {
       opacity: 1,
       y: 0,
       duration: 0.6,
       ease: 'power2.out',
       stagger: 0.1,
+      force3D: true,
+      ...wcLifecycle(cards),
       scrollTrigger: {
         trigger: section,
         start: 'top 85%',
+        once: true,
       },
     });
   }
 
-  // Init on load and Astro page transitions
+  // ─── Lifecycle / Cleanup ───────────────────────────────
+  function cleanup() {
+    // Kill shop-section triggers only (hero triggers are managed by shop-hero-animations.ts)
+    ScrollTrigger.getAll().forEach((st) => {
+      const trigger = st.vars?.trigger;
+      if (!trigger) return;
+      const el = typeof trigger === 'string' ? document.querySelector(trigger) : trigger;
+      if (el && (el as HTMLElement).closest?.('[data-shop-hero]')) return;
+      st.kill();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', initShopAnimations);
   document.addEventListener('astro:page-load', initShopAnimations);
+  document.addEventListener('astro:before-swap', cleanup);
 </script>
