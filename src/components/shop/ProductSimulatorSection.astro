@@ -64,6 +64,10 @@ import ProductSimulator from './ProductSimulator';
     color: var(--text-muted);
   }
 
+  :global(.product-simulator__tips-mobile) {
+    display: none;
+  }
+
   :global(.product-simulator__tips-divider) {
     color: var(--border);
   }
@@ -72,6 +76,14 @@ import ProductSimulator from './ProductSimulator';
     :global(.product-simulator__tips) {
       flex-direction: column;
       gap: var(--space-xs);
+    }
+
+    :global(.product-simulator__tips-desktop) {
+      display: none;
+    }
+
+    :global(.product-simulator__tips-mobile) {
+      display: inline;
     }
 
     :global(.product-simulator__tips-divider) {

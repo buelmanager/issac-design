@@ -964,7 +964,8 @@ export default function ProductSimulator() {
               LED 조명, 백보드 색상 등 세부 설정도 자유롭게 조절해보세요.
             </p>
             <div className="product-simulator__tips">
-              <span>마우스 드래그로 회전 · 스크롤로 확대/축소</span>
+              <span className="product-simulator__tips-desktop">마우스 드래그로 회전 · 스크롤로 확대/축소</span>
+              <span className="product-simulator__tips-mobile">한 손가락으로 회전 · 두 손가락으로 이동/확대</span>
               <span className="product-simulator__tips-divider">|</span>
               <span>AR 모드로 실제 설치 장소에서 미리 확인</span>
             </div>
