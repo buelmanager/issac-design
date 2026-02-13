@@ -14,7 +14,7 @@
       <img
         class="shop-hero__poster"
         src="/videos/hero1-poster.jpg"
-        alt=""
+        alt="쇼핑몰 히어로 배경"
         loading="eager"
         decoding="async"
         data-shop-hero-fallback
@@ -160,11 +160,11 @@
   </div>
 
   <!-- LAYER 3: Scroll Indicator -->
-  <div class="shop-hero__scroll" data-shop-hero-scroll role="button" aria-label="다음 섹션으로 스크롤" tabindex="0">
+  <button class="shop-hero__scroll" data-shop-hero-scroll aria-label="다음 섹션으로 스크롤" type="button">
     <div class="shop-hero__scroll-line">
       <div class="shop-hero__scroll-dot"></div>
     </div>
-  </div>
+  </button>
 </section>
 
 <style>
@@ -333,7 +333,6 @@
   .shop-hero__headline-text :global(.char) {
     display: inline-block;
     opacity: 0;
-    will-change: transform, opacity;
   }
 
   .shop-hero__headline-text :global(.char-space) {
@@ -448,6 +447,17 @@
     opacity: 0;
     cursor: pointer;
     transition: opacity var(--transition-base);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    outline: none;
+  }
+
+  .shop-hero__scroll:focus-visible {
+    outline: 2px solid var(--primary-light, #4caf50);
+    outline-offset: 4px;
+    border-radius: 2px;
   }
 
   .shop-hero__scroll:hover {
@@ -574,6 +584,7 @@
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let shopHeroInitialized = false;
+  let activeAbortController: AbortController | null = null;
 
   function initShopHero() {
     if (shopHeroInitialized) return;
@@ -601,10 +612,16 @@
 
     const SLIDE_COUNT = slides.length;
     const AUTO_PLAY_INTERVAL = 5000;
+    const VIDEO_FADE_DURATION = 1200;
     let currentSlide = 0;
     let progressTween: gsap.core.Tween | null = null;
     let isTransitioning = false;
     let initialAnimationDone = false;
+
+    // AbortController로 이벤트 리스너 일괄 관리
+    const abortController = new AbortController();
+    const { signal } = abortController;
+    activeAbortController = abortController;
 
     // =====================
     // SPLIT TEXT SETUP
@@ -711,14 +728,16 @@
       heroVideos.forEach((video, i) => {
         if (i === index) {
           video.classList.add('is-active');
-          video.play().catch(() => {});
+          video.play().catch((err) => {
+            console.debug(`[ShopHero] Video ${i} autoplay failed:`, err.message);
+          });
         } else {
           video.classList.remove('is-active');
           setTimeout(() => {
             if (!video.classList.contains('is-active')) {
               video.pause();
             }
-          }, 1300);
+          }, VIDEO_FADE_DURATION + 100);
         }
       });
 
@@ -811,14 +830,15 @@
         if (i !== currentSlide && !isTransitioning) {
           goToSlide(i);
         }
-      });
+      }, { signal });
     });
 
     // Pause on hover
-    hero.addEventListener('mouseenter', pauseAutoPlay);
-    hero.addEventListener('mouseleave', () => {
+    function handleHeroMouseLeave() {
       if (initialAnimationDone) resumeAutoPlay();
-    });
+    }
+    hero.addEventListener('mouseenter', pauseAutoPlay, { signal });
+    hero.addEventListener('mouseleave', handleHeroMouseLeave, { signal });
 
     // =====================
     // MAGNETIC BUTTON
@@ -833,10 +853,10 @@
           y: (e.clientY - rect.top - rect.height / 2) * 0.2,
           duration: 0.3, ease: 'power2.out',
         });
-      });
+      }, { signal });
       button.addEventListener('mouseleave', () => {
         gsap.to(button, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
-      });
+      }, { signal });
     });
 
     // =====================
@@ -917,18 +937,19 @@
     // =====================
     // SCROLL INDICATOR CLICK
     // =====================
-    scrollEl?.addEventListener('click', () => {
+    function scrollToProducts() {
       const productsSection = document.querySelector('#products');
       if (productsSection) productsSection.scrollIntoView({ behavior: 'smooth' });
-    });
+    }
+
+    scrollEl?.addEventListener('click', scrollToProducts, { signal });
 
     scrollEl?.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        const productsSection = document.querySelector('#products');
-        if (productsSection) productsSection.scrollIntoView({ behavior: 'smooth' });
+        scrollToProducts();
       }
-    });
+    }, { signal });
   }
 
   // Cleanup
@@ -936,6 +957,12 @@
     shopHeroInitialized = false;
     const hero = document.querySelector('[data-shop-hero]') as HTMLElement;
     if (!hero) return;
+
+    // 모든 이벤트 리스너 일괄 제거
+    if (activeAbortController) {
+      activeAbortController.abort();
+      activeAbortController = null;
+    }
 
     ScrollTrigger.getAll().forEach(trigger => {
       const triggerEl = trigger.vars?.trigger;
