@@ -72,7 +72,7 @@ const logos = [
       {logos.map((logo) => (
         <div class="client-logos__item">
           <div class="client-logos__image">
-            <img src={logo.image} alt={logo.name} loading="lazy" />
+            <img src={logo.image} alt={logo.name} loading="lazy" decoding="async" width="400" height="300" />
           </div>
           <span class="client-logos__icon" set:html={logo.icon} />
           <span class="client-logos__name">{logo.name}</span>
@@ -82,7 +82,7 @@ const logos = [
       {logos.map((logo) => (
         <div class="client-logos__item">
           <div class="client-logos__image">
-            <img src={logo.image} alt={logo.name} loading="lazy" />
+            <img src={logo.image} alt={logo.name} loading="lazy" decoding="async" width="400" height="300" />
           </div>
           <span class="client-logos__icon" set:html={logo.icon} />
           <span class="client-logos__name">{logo.name}</span>

@@ -31,6 +31,10 @@ const featured = productsData.products.filter(p => p.isFeatured);
             alt={product.name}
             class="featured-bento__image"
             loading={index === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchpriority={index === 0 ? 'high' : undefined}
+            width="800"
+            height="600"
           />
 
           <!-- Glassmorphism Overlay -->

@@ -539,7 +539,7 @@ const searchProducts = products.map(p => ({
       grid.innerHTML = results.map(p => `
         <a href="/shop/${p.slug}" class="search-result-card">
           <div class="search-result-card__image">
-            <img src="${p.thumbnail}" alt="${p.name}" loading="lazy" />
+            <img src="${p.thumbnail}" alt="${p.name}" loading="lazy" decoding="async" width="400" height="264" />
           </div>
           <div class="search-result-card__body">
             <span class="search-result-card__category">${p.categoryName}</span>

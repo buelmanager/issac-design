@@ -122,10 +122,14 @@ const signageTypes = [
                <div class="appliance-image">
                  <div class="appliance-image-inner">
                    <!-- Product Image -->
-                   <img 
-                     src={item.image} 
+                   <img
+                     src={item.image}
                      alt={item.title}
                      class="appliance-image-bg"
+                     loading="lazy"
+                     decoding="async"
+                     width="800"
+                     height="600"
                    />
                    
                    <!-- Dark Overlay for Icon Visibility -->

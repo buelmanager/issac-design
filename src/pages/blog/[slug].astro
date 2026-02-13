@@ -52,6 +52,11 @@ const { Content } = await render(post);
           <img
             src={post.data.heroImage?.src || post.data.thumbnail}
             alt={post.data.heroImage?.alt || post.data.title}
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            width="800"
+            height="450"
           />
           {post.data.heroImage?.credit && (
             <p class="image-credit">

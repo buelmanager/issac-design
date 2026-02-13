@@ -980,6 +980,9 @@ export default function ProductSimulator() {
                 className="sim-bg-image"
                 src={customBgUrl || '/images/bg_sample.png'}
                 alt=""
+                decoding="async"
+                width="1200"
+                height="800"
                 draggable={false}
               />
             )}

@@ -60,8 +60,9 @@ function ProductCardItem({ product }: { product: ProductCard }) {
           src={`${product.thumbnail}&w=120&q=60`}
           alt={product.name}
           loading="lazy"
-          width="60"
-          height="45"
+          decoding="async"
+          width="120"
+          height="90"
         />
       </div>
       <div className="cb-product-card__info">

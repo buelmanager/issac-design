@@ -91,10 +91,14 @@ const portfolioItems = [
               >
                 <!-- Product Image -->
                 <div class="product-card__image">
-                  <img 
-                    src={product.image} 
+                  <img
+                    src={product.image}
                     alt={product.title}
                     class="product-card__img"
+                    loading="lazy"
+                    decoding="async"
+                    width="600"
+                    height="400"
                   />
                   <div class="product-card__image-content">
                     <svg class="product-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

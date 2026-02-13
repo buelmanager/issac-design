@@ -34,6 +34,9 @@ const posts = (await getCollection('blog'))
                       src={post.data.heroImage?.src || post.data.thumbnail}
                       alt={post.data.heroImage?.alt || post.data.title}
                       loading="lazy"
+                      decoding="async"
+                      width="600"
+                      height="340"
                     />
                   </div>
                 )}

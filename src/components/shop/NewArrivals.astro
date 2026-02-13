@@ -27,6 +27,9 @@ const newProducts = productsData.products.filter(p => p.isNew);
                 src={product.thumbnail}
                 alt={product.name}
                 loading="lazy"
+                decoding="async"
+                width="400"
+                height="300"
               />
               <span class="new-arrivals__badge">NEW</span>
             </div>

@@ -7,6 +7,12 @@ import react from '@astrojs/react';
 export default defineConfig({
   base: '/',
 
+  image: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+    ],
+  },
+
   devToolbar: {
     enabled: false
   },

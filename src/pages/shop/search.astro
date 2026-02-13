@@ -743,7 +743,7 @@ const searchProducts = products.map(p => ({
       grid.innerHTML = results.map((p, i) => `
         <a href="/shop/${p.slug}" class="search-result__card" style="animation-delay: ${i * 0.05}s">
           <div class="search-result__card-image">
-            <img src="${p.thumbnail}" alt="${p.name}" loading="lazy" />
+            <img src="${p.thumbnail}" alt="${p.name}" loading="lazy" decoding="async" width="400" height="300" />
           </div>
           <div class="search-result__card-body">
             <span class="search-result__card-category">${p.categoryName}</span>

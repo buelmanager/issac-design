@@ -47,6 +47,9 @@ const { product, index = 0 } = Astro.props;
         alt={product.name}
         class="product-card__image"
         loading="lazy"
+        decoding="async"
+        width="400"
+        height="300"
       />
       <div class="product-card__overlay">
         <span class="product-card__view-btn">상세보기</span>

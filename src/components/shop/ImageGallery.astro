@@ -115,6 +115,10 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
       src={images[0]}
       alt={productName}
       class="image-gallery__main-img"
+      loading="eager"
+      decoding="async"
+      width="800"
+      height="600"
       data-gallery-main-img
     />
   </div>
@@ -133,6 +137,9 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
             src={img}
             alt={`${productName} - ${i + 1}`}
             loading="lazy"
+            decoding="async"
+            width="200"
+            height="150"
           />
         </button>
       ))}

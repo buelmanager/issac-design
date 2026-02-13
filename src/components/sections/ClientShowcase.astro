@@ -89,10 +89,14 @@ const filterTabs = [
              <!-- Image Area -->
              <div class="brand-card-image">
                <!-- Product Image -->
-               <img 
-                 src={product.image} 
+               <img
+                 src={product.image}
                  alt={product.name}
                  class="brand-card-img"
+                 loading="lazy"
+                 decoding="async"
+                 width="500"
+                 height="375"
                />
                <!-- Dark Overlay for Text Contrast -->
                <div class="brand-card-image-overlay"></div>
