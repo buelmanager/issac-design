@@ -1,0 +1,2 @@
+-- Seed data is included in migration 004_seed.sql
+-- This file is intentionally left minimal.
