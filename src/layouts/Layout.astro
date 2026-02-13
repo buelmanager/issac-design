@@ -184,7 +184,7 @@ const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
         if (sessionStorage.getItem('kakao-popup-dismissed')) return;
 
         var isIOS = /iPhone|iPad|iPod/i.test(ua);
-        var url = location.href;
+        var url = location.origin;
         var browserName = isIOS ? 'Safari' : 'Chrome';
 
         var overlay = document.createElement('div');
