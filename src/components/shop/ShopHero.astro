@@ -708,13 +708,28 @@ const heroSlides = [
     }
 
     .shop-hero__cta {
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: wrap;
       width: 100%;
       padding: 0 var(--space-md);
+      gap: var(--space-sm);
+      margin-top: var(--space-2xl);
     }
 
     .shop-hero__cta-btn {
-      width: 100%;
+      padding: var(--space-sm) var(--space-lg);
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.02em;
+    }
+
+    .shop-hero__cta-btn--primary {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+
+    .shop-hero__cta-btn--secondary,
+    .shop-hero__cta-btn--chat {
+      flex: 1 1 0;
       justify-content: center;
     }
 
