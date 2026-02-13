@@ -29,6 +29,10 @@ const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
     <meta name="keywords" content="LED 간판, 채널간판, 네온사인, 옥외광고, 간판제작, 간판시공, LED Signage, Neon Sign, Channel Letters, issac.design" />
     <meta name="author" content="issac.design" />
     <meta name="theme-color" content="#1A4D2E" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="issac.design" />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <!-- Canonical URL -->
@@ -169,6 +173,15 @@ const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
         lenis.destroy();
         ScrollTrigger.getAll().forEach(st => st.kill());
       });
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
     </script>
   </body>
 </html>
