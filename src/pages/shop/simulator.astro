@@ -158,14 +158,6 @@ const breadcrumbs = [
     transform: translateY(0);
   }
 
-  /* PWA safe-area */
-  @supports (padding-top: env(safe-area-inset-top)) {
-    .simulator-page {
-      padding-left: env(safe-area-inset-left, 0px);
-      padding-right: env(safe-area-inset-right, 0px);
-    }
-  }
-
   /* Responsive */
   @media (max-width: 719px) {
     .simulator-page {
@@ -178,7 +170,6 @@ const breadcrumbs = [
 
     .simulator-page__cta {
       padding: var(--space-2xl) 0;
-      padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
     }
 
     .simulator-page__cta-title {

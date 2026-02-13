@@ -395,7 +395,7 @@ function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgC
       <directionalLight position={[-3, 3, -3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.4} color={lightColor} />
       <directionalLight position={[0, -2, 3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.2} color={lightColor} />
 
-      <group position={[0, signPositionY, 0]}>
+      <group position={[0, signPositionY, 0]} rotation={[0.08, 0, 0]}>
         <ExtrudedMesh shapes={shapes} shapeResult={shapeResult} {...meshProps} />
       </group>
 

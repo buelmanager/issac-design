@@ -413,11 +413,6 @@ import ProductSimulator from './ProductSimulator';
     border: none !important;
     overflow: visible !important;
     transform: none !important;
-    /* PWA safe-area for notch/home indicator */
-    padding-top: env(safe-area-inset-top, 0px) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-    padding-left: env(safe-area-inset-left, 0px) !important;
-    padding-right: env(safe-area-inset-right, 0px) !important;
   }
 
   /* AR 모드일 때 부모 요소들이 fixed를 방해하지 않도록 */
@@ -717,8 +712,7 @@ import ProductSimulator from './ProductSimulator';
   /* Mobile */
   @media (max-width: 719px) {
     .simulator-section {
-      padding: var(--space-xl) 0;
-      padding-bottom: calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
+      padding: var(--space-lg) 0;
     }
 
     :global(.product-simulator__container) {
@@ -748,8 +742,7 @@ import ProductSimulator from './ProductSimulator';
     }
 
     :global(.product-simulator__canvas) {
-      height: calc(100vh - 160px);
-      height: calc(100dvh - 160px);
+      height: 70vh;
       min-height: 300px;
       max-height: none;
       border-radius: var(--radius-md);
@@ -764,15 +757,6 @@ import ProductSimulator from './ProductSimulator';
     :global(.sim-ar-btn) {
       width: 32px;
       height: 32px;
-    }
-  }
-
-  /* Small mobile */
-  @media (max-width: 420px) {
-    :global(.product-simulator__canvas) {
-      height: calc(100vh - 140px);
-      height: calc(100dvh - 140px);
-      min-height: 260px;
     }
   }
 
