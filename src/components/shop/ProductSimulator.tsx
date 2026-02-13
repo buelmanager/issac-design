@@ -524,16 +524,125 @@ export default function ProductSimulator() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const originalParentRef = useRef<HTMLElement | null>(null);
-  const placeholderRef = useRef<HTMLDivElement | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
 
   const downsample = TEXTURE_PRESETS[textureQuality].downsample;
   const simplify = TEXTURE_PRESETS[textureQuality].simplify;
 
+  // ─── Debug Logger ───
+  const debugLogsRef = useRef<string[]>([]);
+  const [debugVisible, setDebugVisible] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+
+  const dbg = useCallback((msg: string) => {
+    const ts = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const entry = `[${ts}] ${msg}`;
+    console.log('[SIM-DBG]', msg);
+    debugLogsRef.current = [...debugLogsRef.current.slice(-29), entry];
+    setDebugLogs([...debugLogsRef.current]);
+  }, []);
+
+  // 부모 요소들의 stacking context를 제거하여 position:fixed가 정상 동작하도록
+  const savedStyles = useRef<{ el: HTMLElement; styles: Record<string, string> }[]>([]);
+
+  const clearAncestorStyles = useCallback((el: HTMLElement) => {
+    dbg('clearAncestorStyles: 시작');
+    const saved: { el: HTMLElement; styles: Record<string, string> }[] = [];
+    let parent = el.parentElement;
+    let depth = 0;
+    while (parent && parent !== document.body) {
+      const computed = getComputedStyle(parent);
+      const stylesToReset: Record<string, string> = {};
+      const tag = `${parent.tagName}.${parent.className?.split?.(' ')?.[0] || 'no-class'}`;
+      if (computed.transform !== 'none') {
+        stylesToReset.transform = parent.style.transform;
+        parent.style.transform = 'none';
+        dbg(`  [${depth}] ${tag}: transform=${computed.transform} → none`);
+      }
+      if (computed.backdropFilter && computed.backdropFilter !== 'none') {
+        stylesToReset.backdropFilter = parent.style.backdropFilter;
+        (parent.style as any).backdropFilter = 'none';
+        (parent.style as any).webkitBackdropFilter = 'none';
+        dbg(`  [${depth}] ${tag}: backdropFilter → none`);
+      }
+      if (computed.filter && computed.filter !== 'none') {
+        stylesToReset.filter = parent.style.filter;
+        parent.style.filter = 'none';
+        dbg(`  [${depth}] ${tag}: filter → none`);
+      }
+      if (computed.willChange && computed.willChange !== 'auto') {
+        stylesToReset.willChange = parent.style.willChange;
+        parent.style.willChange = 'auto';
+        dbg(`  [${depth}] ${tag}: willChange → auto`);
+      }
+      if (computed.contain && computed.contain !== 'none') {
+        stylesToReset.contain = parent.style.contain;
+        parent.style.contain = 'none';
+        dbg(`  [${depth}] ${tag}: contain → none`);
+      }
+      if (computed.overflow !== 'visible') {
+        stylesToReset.overflow = parent.style.overflow;
+        parent.style.overflow = 'visible';
+        dbg(`  [${depth}] ${tag}: overflow=${computed.overflow} → visible`);
+      }
+      if (Object.keys(stylesToReset).length > 0) {
+        saved.push({ el: parent, styles: stylesToReset });
+      }
+      parent = parent.parentElement;
+      depth++;
+    }
+    savedStyles.current = saved;
+    dbg(`clearAncestorStyles: 완료 (${saved.length}개 요소 수정)`);
+  }, [dbg]);
+
+  const restoreAncestorStyles = useCallback(() => {
+    dbg(`restoreAncestorStyles: ${savedStyles.current.length}개 요소 복원`);
+    savedStyles.current.forEach(({ el, styles }) => {
+      const tag = `${el.tagName}.${el.className?.split?.(' ')?.[0] || ''}`;
+      Object.entries(styles).forEach(([prop, val]) => {
+        dbg(`  ${tag}: ${prop} → "${val || '(빈값)'}"`);
+        (el.style as any)[prop] = val;
+      });
+    });
+    savedStyles.current = [];
+    dbg('restoreAncestorStyles: 완료');
+  }, [dbg]);
+
+  // 풀스크린 인라인 스타일 (CSS 클래스 대신 JS로 직접 적용)
+  const savedCanvasStyle = useRef<string>('');
+
+  const applyFullscreenStyles = useCallback((el: HTMLElement) => {
+    savedCanvasStyle.current = el.style.cssText;
+    el.style.position = 'fixed';
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.right = '0';
+    el.style.bottom = '0';
+    el.style.zIndex = '9999';
+    el.style.width = '100vw';
+    el.style.height = '100vh';
+    el.style.maxWidth = 'none';
+    el.style.maxHeight = 'none';
+    el.style.minHeight = '0';
+    el.style.borderRadius = '0';
+    el.style.background = '#000';
+    el.style.border = 'none';
+    el.style.overflow = 'visible';
+    el.style.transform = 'none';
+    dbg('applyFullscreenStyles: 인라인 스타일 적용 완료');
+  }, [dbg]);
+
+  const removeFullscreenStyles = useCallback((el: HTMLElement) => {
+    el.style.cssText = savedCanvasStyle.current;
+    savedCanvasStyle.current = '';
+    dbg('removeFullscreenStyles: 원래 스타일 복원');
+  }, [dbg]);
+
   // Stop AR helper
   const stopAR = useCallback(() => {
+    dbg('stopAR: 시작');
     if (streamRef.current) {
+      dbg('stopAR: 카메라 스트림 정지');
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
@@ -543,25 +652,31 @@ export default function ProductSimulator() {
     // 전체화면 종료
     try {
       if (document.fullscreenElement) {
+        dbg('stopAR: Fullscreen API 종료');
         document.exitFullscreen().catch(() => {});
       } else if ((document as any).webkitFullscreenElement) {
+        dbg('stopAR: webkit Fullscreen 종료');
         (document as any).webkitExitFullscreen();
       }
-    } catch {}
-
-    // body에서 원래 위치로 복귀
-    const el = canvasContainerRef.current;
-    if (el && originalParentRef.current && placeholderRef.current) {
-      el.classList.remove('ar-fullscreen');
-      originalParentRef.current.replaceChild(el, placeholderRef.current);
-      originalParentRef.current = null;
-      placeholderRef.current = null;
-    } else if (el) {
-      el.classList.remove('ar-fullscreen');
+    } catch (e) {
+      dbg(`stopAR: fullscreen 종료 에러: ${e}`);
     }
+
+    const el = canvasContainerRef.current;
+    if (el) {
+      const hadClass = el.classList.contains('ar-fullscreen');
+      el.classList.remove('ar-fullscreen');
+      removeFullscreenStyles(el);
+      dbg(`stopAR: 풀스크린 스타일 제거 (클래스 있었음: ${hadClass})`);
+    } else {
+      dbg('stopAR: canvasContainerRef가 null!');
+    }
+    // 부모 스타일 복원
+    restoreAncestorStyles();
     document.body.style.overflow = '';
     setIsAR(false);
-  }, []);
+    dbg('stopAR: 완료');
+  }, [restoreAncestorStyles, removeFullscreenStyles, dbg]);
 
   // Start camera with given facing mode (triple fallback)
   const startCamera = useCallback(async (mode: 'environment' | 'user') => {
@@ -601,62 +716,91 @@ export default function ProductSimulator() {
   // 전체화면 진입
   const enterFullscreen = useCallback(async () => {
     const el = canvasContainerRef.current;
-    if (!el) return;
+    if (!el) {
+      dbg('enterFullscreen: canvasContainerRef가 null!');
+      return;
+    }
+    dbg(`enterFullscreen: 시작 (el=${el.tagName}.${el.className})`);
+
+    // 캔버스 위치 정보 로깅
+    const rect = el.getBoundingClientRect();
+    dbg(`enterFullscreen: 캔버스 위치 top=${rect.top.toFixed(0)} left=${rect.left.toFixed(0)} w=${rect.width.toFixed(0)} h=${rect.height.toFixed(0)}`);
+
     // 1차: Fullscreen API (데스크탑/Android)
     try {
       if (el.requestFullscreen) {
+        dbg('enterFullscreen: Fullscreen API 사용');
         await el.requestFullscreen();
         return;
       }
       if ((el as any).webkitRequestFullscreen) {
+        dbg('enterFullscreen: webkit Fullscreen API 사용');
         await (el as any).webkitRequestFullscreen();
         return;
       }
-    } catch {}
-    // 2차: DOM을 body로 이동 + CSS fullscreen (iOS/모바일)
-    // parent transform/backdrop-filter가 position:fixed를 깨뜨리므로 body로 이동
-    const parent = el.parentElement;
-    if (parent) {
-      originalParentRef.current = parent;
-      const placeholder = document.createElement('div');
-      placeholder.style.display = 'none';
-      placeholder.setAttribute('data-simulator-placeholder', '');
-      parent.insertBefore(placeholder, el);
-      placeholderRef.current = placeholder;
-      document.body.appendChild(el);
+    } catch (e) {
+      dbg(`enterFullscreen: Fullscreen API 실패: ${e}`);
     }
-    el.classList.add('ar-fullscreen');
+    // 2차: JS 인라인 스타일로 풀스크린 (iOS/모바일)
+    dbg('enterFullscreen: JS 인라인 스타일 폴백 사용');
+    clearAncestorStyles(el);
+    applyFullscreenStyles(el);
+    el.classList.add('ar-fullscreen'); // :has() 셀렉터용
     document.body.style.overflow = 'hidden';
-  }, []);
+
+    // 적용 후 위치 확인
+    requestAnimationFrame(() => {
+      const newRect = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      dbg(`enterFullscreen: 적용 후 pos=${cs.position} top=${newRect.top.toFixed(0)} left=${newRect.left.toFixed(0)} w=${newRect.width.toFixed(0)} h=${newRect.height.toFixed(0)}`);
+    });
+  }, [clearAncestorStyles, applyFullscreenStyles, dbg]);
 
   // 전체화면 종료
   const exitFullscreen = useCallback(() => {
+    dbg('exitFullscreen: 시작');
     try {
       if (document.fullscreenElement) {
+        dbg('exitFullscreen: Fullscreen API 종료');
         document.exitFullscreen().catch(() => {});
       } else if ((document as any).webkitFullscreenElement) {
+        dbg('exitFullscreen: webkit Fullscreen 종료');
         (document as any).webkitExitFullscreen();
       }
-    } catch {}
-    canvasContainerRef.current?.classList.remove('ar-fullscreen');
+    } catch (e) {
+      dbg(`exitFullscreen: 에러: ${e}`);
+    }
+    const el = canvasContainerRef.current;
+    if (el) {
+      el.classList.remove('ar-fullscreen');
+      removeFullscreenStyles(el);
+    }
+    restoreAncestorStyles();
     document.body.style.overflow = '';
-  }, []);
+    dbg('exitFullscreen: 완료');
+  }, [restoreAncestorStyles, removeFullscreenStyles, dbg]);
 
   // AR camera toggle
   const toggleAR = useCallback(async () => {
+    dbg(`toggleAR: isAR=${isAR}`);
     if (isAR) {
+      dbg('toggleAR: AR 종료');
       stopAR();
     } else {
       setError(null);
+      dbg('toggleAR: AR 시작 → enterFullscreen');
       // 먼저 전체화면 전환
       await enterFullscreen();
       setIsAR(true);
+      dbg('toggleAR: isAR=true 설정, 카메라 시작 시도');
 
       // 카메라 시도 (실패해도 전체화면 유지)
       try {
         await startCamera(facingMode);
+        dbg(`toggleAR: 카메라 시작 성공 (${facingMode})`);
       } catch (err: any) {
         const msg = err?.message || '';
+        dbg(`toggleAR: 카메라 에러: ${msg}`);
         if (msg.includes('지원하지')) {
           setError(msg);
         } else if (msg.includes('NotAllowed') || msg.includes('Permission')) {
@@ -670,7 +814,7 @@ export default function ProductSimulator() {
         }
       }
     }
-  }, [isAR, stopAR, startCamera, facingMode, enterFullscreen]);
+  }, [isAR, stopAR, startCamera, facingMode, enterFullscreen, dbg]);
 
   // Flip camera
   const flipCamera = useCallback(async () => {
@@ -717,6 +861,18 @@ export default function ProductSimulator() {
       }
     };
   }, []);
+
+  // Mount logging
+  useEffect(() => {
+    dbg('컴포넌트 마운트');
+    const el = canvasContainerRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      dbg(`캔버스 초기 위치: top=${rect.top.toFixed(0)} h=${rect.height.toFixed(0)} bottom=${rect.bottom.toFixed(0)}`);
+      dbg(`window: ${window.innerWidth}x${window.innerHeight}, UA: ${navigator.userAgent.slice(0, 60)}`);
+    }
+    return () => dbg('컴포넌트 언마운트');
+  }, [dbg]);
 
   const processImage = useCallback(
     (url: string) => {
@@ -1061,6 +1217,57 @@ export default function ProductSimulator() {
 
         </div>
       </div>
+
+      {/* Debug Panel */}
+      <button
+        onClick={() => setDebugVisible(!debugVisible)}
+        type="button"
+        style={{
+          position: 'fixed', bottom: 8, right: 8, zIndex: 99999,
+          width: 36, height: 36, borderRadius: '50%',
+          background: debugVisible ? '#f44' : 'rgba(0,0,0,0.6)',
+          color: '#fff', border: 'none', fontSize: 14, fontWeight: 700,
+          cursor: 'pointer',
+        }}
+      >
+        {debugVisible ? 'X' : 'D'}
+      </button>
+      {debugVisible && (
+        <div style={{
+          position: 'fixed', bottom: 48, left: 4, right: 4, zIndex: 99999,
+          maxHeight: '40vh', overflow: 'auto',
+          background: 'rgba(0,0,0,0.92)', color: '#0f0',
+          fontFamily: 'monospace', fontSize: 10, lineHeight: 1.4,
+          padding: 8, borderRadius: 8, border: '1px solid #333',
+        }}>
+          <div style={{ marginBottom: 4, color: '#ff0', fontWeight: 700 }}>
+            SIM DEBUG ({debugLogs.length} logs)
+            <button onClick={() => {
+              const el = canvasContainerRef.current;
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                const cs = getComputedStyle(el);
+                dbg(`NOW: top=${rect.top.toFixed(0)} h=${rect.height.toFixed(0)} pos=${cs.position} display=${cs.display}`);
+                // 부모 체인 덤프
+                let p = el.parentElement;
+                let d = 0;
+                while (p && p !== document.body && d < 8) {
+                  const pr = p.getBoundingClientRect();
+                  const pc = getComputedStyle(p);
+                  dbg(`  P[${d}] ${p.tagName}.${(p.className||'').split(' ')[0]}: top=${pr.top.toFixed(0)} h=${pr.height.toFixed(0)} pos=${pc.position} ovf=${pc.overflow} tf=${pc.transform?.slice(0,20)}`);
+                  p = p.parentElement;
+                  d++;
+                }
+              }
+            }} type="button" style={{ marginLeft: 8, padding: '2px 6px', fontSize: 9, background: '#333', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+              위치체크
+            </button>
+          </div>
+          {debugLogs.map((log, i) => (
+            <div key={i} style={{ borderBottom: '1px solid #222', padding: '1px 0' }}>{log}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
