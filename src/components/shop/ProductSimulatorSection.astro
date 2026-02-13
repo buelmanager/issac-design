@@ -35,7 +35,7 @@ import ProductSimulator from './ProductSimulator';
   /* Header */
   :global(.product-simulator__header) {
     text-align: center;
-    margin-bottom: var(--space-3xl);
+    margin-bottom: 0;
   }
 
   :global(.product-simulator__title) {
@@ -54,23 +54,341 @@ import ProductSimulator from './ProductSimulator';
     margin: 0 auto;
   }
 
-  /* Content Grid */
+  :global(.product-simulator__tips) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  :global(.product-simulator__tips-divider) {
+    color: var(--border);
+  }
+
+  @media (max-width: 719px) {
+    :global(.product-simulator__tips) {
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    :global(.product-simulator__tips-divider) {
+      display: none;
+    }
+  }
+
+  /* Topbar: title centered, upload top-right */
+  :global(.product-simulator__topbar) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  :global(.product-simulator__upload-bar) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  :global(.sim-upload-btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  :global(.sim-upload-btn:hover) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--primary-light);
+    color: var(--text-primary);
+  }
+
+  :global(.sim-upload-btn--sample) {
+    background: rgba(26, 77, 46, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
+    color: var(--primary-light);
+  }
+
+  :global(.sim-upload-btn--sample:hover) {
+    background: rgba(26, 77, 46, 0.25);
+    border-color: var(--primary-light);
+  }
+
+  /* Content - Full Width */
   :global(.product-simulator__content) {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: var(--space-3xl);
-    align-items: start;
+    display: block;
   }
 
   /* Canvas */
   :global(.product-simulator__canvas) {
     position: relative;
     width: 100%;
-    height: 600px;
+    height: 70vh;
+    min-height: 500px;
+    max-height: 800px;
     border-radius: var(--radius-lg);
     overflow: hidden;
     background: #1a1a2e;
     border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Canvas Overlay Buttons (shared) */
+  :global(.sim-canvas-btn),
+  :global(.sim-daynight-btn) {
+    position: absolute;
+    z-index: 5;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+
+  :global(.sim-canvas-btn:hover),
+  :global(.sim-daynight-btn:hover) {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+
+  :global(.sim-canvas-btn.active) {
+    background: rgba(76, 175, 80, 0.5);
+    border-color: rgba(76, 175, 80, 0.8);
+  }
+
+  /* Day/Night Button - top right */
+  :global(.sim-daynight-btn) {
+    top: var(--space-md);
+    right: var(--space-md);
+  }
+
+  :global(.sim-daynight-btn.day) {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.15);
+    color: #333;
+  }
+
+  :global(.sim-daynight-btn.day:hover) {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.25);
+  }
+
+  /* Wireframe Button - below day/night */
+  :global(.sim-wireframe-btn) {
+    top: calc(var(--space-md) + 44px);
+    right: var(--space-md);
+  }
+
+  /* Backboard Button - below wireframe */
+  :global(.sim-backboard-btn) {
+    top: calc(var(--space-md) + 88px);
+    right: var(--space-md);
+  }
+
+  /* Board Settings Button - top left */
+  :global(.sim-board-settings-btn) {
+    top: var(--space-md);
+    left: var(--space-md);
+    right: auto;
+  }
+
+  /* Board Settings Popover */
+  :global(.sim-board-popover) {
+    position: absolute;
+    top: var(--space-md);
+    left: calc(var(--space-md) + 44px);
+    z-index: 10;
+    width: 220px;
+    background: rgba(15, 15, 20, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+  }
+
+  :global(.sim-board-popover__header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+  }
+
+  :global(.sim-board-popover__header span) {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+  }
+
+  :global(.sim-board-popover__close) {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+
+  :global(.sim-board-popover__close:hover) {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  :global(.sim-board-popover__divider) {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: var(--space-sm) 0;
+  }
+
+
+  /* AR Video Feed */
+  :global(.sim-ar-video) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  :global(.product-simulator__canvas canvas) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* AR Fullscreen */
+  :global(.product-simulator__canvas:fullscreen),
+  :global(.product-simulator__canvas:-webkit-full-screen) {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background: #000;
+  }
+
+  :global(.product-simulator__canvas.ar-active:fullscreen),
+  :global(.product-simulator__canvas.ar-active:-webkit-full-screen) {
+    background: transparent;
+  }
+
+  /* AR Button - mobile only */
+  :global(.sim-ar-btn) {
+    display: flex;
+    position: absolute;
+    top: calc(var(--space-md) + 132px);
+    right: var(--space-md);
+    z-index: 5;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+
+  :global(.sim-ar-btn:hover) {
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+
+  :global(.sim-ar-btn.active) {
+    background: rgba(244, 67, 54, 0.7);
+    border-color: rgba(244, 67, 54, 0.9);
+  }
+
+  :global(.sim-ar-btn.active:hover) {
+    background: rgba(244, 67, 54, 0.9);
+  }
+
+  /* AR CTA */
+  :global(.sim-ar-cta) {
+    position: absolute;
+    bottom: var(--space-xl);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    padding: var(--space-sm) var(--space-xl);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-full, 999px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    animation: sim-ar-cta-pulse 2s ease-in-out infinite;
+  }
+
+  :global(.sim-ar-cta span) {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  @keyframes sim-ar-cta-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* AR Flip Camera */
+  :global(.sim-ar-flip) {
+    position: absolute;
+    bottom: var(--space-xl);
+    right: var(--space-lg);
+    z-index: 5;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  :global(.sim-ar-flip:hover) {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+  }
+
+  :global(.sim-ar-flip:active) {
+    transform: scale(0.95);
   }
 
   /* Loading State */
@@ -124,7 +442,7 @@ import ProductSimulator from './ProductSimulator';
   :global(.product-simulator__controls) {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2xl);
+    gap: 2px;
   }
 
   :global(.simulator-control) {
@@ -256,13 +574,9 @@ import ProductSimulator from './ProductSimulator';
 
   /* Tablet */
   @media (max-width: 1023px) {
-    :global(.product-simulator__content) {
-      grid-template-columns: 1fr;
-      gap: var(--space-2xl);
-    }
-
     :global(.product-simulator__canvas) {
-      height: 500px;
+      height: 60vh;
+      min-height: 400px;
     }
   }
 
@@ -272,8 +586,18 @@ import ProductSimulator from './ProductSimulator';
       padding: var(--space-3xl) 0;
     }
 
+    :global(.product-simulator__topbar) {
+      padding-top: calc(var(--space-3xl) + var(--space-sm));
+    }
+
+    :global(.product-simulator__upload-bar) {
+      position: relative;
+      top: auto;
+      right: auto;
+    }
+
     :global(.product-simulator__header) {
-      margin-bottom: var(--space-2xl);
+      margin-bottom: 0;
     }
 
     :global(.product-simulator__title) {
@@ -281,18 +605,310 @@ import ProductSimulator from './ProductSimulator';
     }
 
     :global(.product-simulator__canvas) {
-      height: 400px;
+      height: 50vh;
+      min-height: 350px;
     }
+  }
 
-    :global(.simulator-presets) {
-      grid-template-columns: 1fr;
-    }
+  /* Empty state */
+  :global(.product-simulator__empty) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-md);
+    opacity: 0.4;
+    color: var(--text-secondary);
+  }
 
-    :global(.simulator-preset) {
-      flex-direction: row;
-      justify-content: center;
-      padding: var(--space-md);
-    }
+  :global(.product-simulator__empty p) {
+    font-size: var(--font-size-base);
+    text-align: center;
+    padding: 0 var(--space-lg);
+  }
+
+  /* ─── Collapsible Sections ─── */
+
+  :global(.sim-section) {
+    margin-bottom: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  :global(.sim-section__header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: background 0.15s;
+  }
+
+  :global(.sim-section__header:hover) {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  :global(.sim-section__title) {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+  }
+
+  :global(.sim-section__arrow) {
+    transition: transform 0.2s;
+    color: var(--text-muted);
+  }
+
+  :global(.sim-section__arrow.open) {
+    transform: rotate(180deg);
+  }
+
+  :global(.sim-section__body) {
+    padding: var(--space-md);
+  }
+
+  /* ─── Stepper ─── */
+
+  :global(.sim-stepper) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+  }
+
+  :global(.sim-stepper__label) {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  :global(.sim-stepper__controls) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  :global(.sim-stepper__btn) {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+
+  :global(.sim-stepper__btn:hover) {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  :global(.sim-stepper__value) {
+    min-width: 48px;
+    text-align: center;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-primary);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+  }
+
+  /* ─── Toggle ─── */
+
+  :global(.sim-toggle) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: var(--space-sm);
+  }
+
+  :global(.sim-toggle__label) {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  :global(.sim-toggle__track) {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    position: relative;
+    transition: background 0.2s;
+  }
+
+  :global(.sim-toggle__track.active) {
+    background: var(--primary);
+  }
+
+  :global(.sim-toggle__thumb) {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s;
+  }
+
+  :global(.sim-toggle__track.active .sim-toggle__thumb) {
+    left: 18px;
+  }
+
+  /* ─── Color Picker ─── */
+
+  :global(.sim-color) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  :global(.sim-color__label) {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  :global(.sim-color__input-wrap) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  :global(.sim-color__value) {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: monospace;
+  }
+
+  :global(.sim-color__input) {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: none;
+    padding: 0;
+  }
+
+  /* ─── Samples ─── */
+
+  :global(.sim-samples) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+
+  :global(.sim-samples__row) {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  :global(.sim-sample-btn) {
+    flex: 1;
+    padding: var(--space-sm);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  :global(.sim-sample-btn:hover) {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(76, 175, 80, 0.3);
+    color: var(--text-primary);
+  }
+
+  :global(.sim-sample-btn--featured) {
+    background: rgba(26, 77, 46, 0.15);
+    border-color: rgba(76, 175, 80, 0.3);
+    color: var(--primary-light);
+    font-weight: 600;
+  }
+
+  :global(.sim-sample-btn--featured:hover) {
+    background: rgba(26, 77, 46, 0.25);
+    border-color: var(--primary-light);
+  }
+
+  /* ─── Quality Buttons ─── */
+
+  :global(.sim-quality) {
+    margin-bottom: var(--space-sm);
+  }
+
+  :global(.sim-quality__label) {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+  }
+
+  :global(.sim-quality__btns) {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  :global(.sim-quality__btn) {
+    flex: 1;
+    padding: var(--space-xs) 0;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  :global(.sim-quality__btn.active) {
+    border-color: var(--primary-light);
+    background: rgba(26, 77, 46, 0.2);
+    color: var(--primary-light);
+    font-weight: 600;
+  }
+
+  /* ─── Hint & Status ─── */
+
+  :global(.sim-hint) {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: var(--space-sm);
+  }
+
+  :global(.sim-status) {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    margin-top: var(--space-sm);
+  }
+
+  :global(.sim-status--success) {
+    background: rgba(76, 175, 80, 0.12);
+    color: #6bff8a;
+    border: 1px solid rgba(76, 175, 80, 0.2);
   }
 
   /* Reduced Motion */

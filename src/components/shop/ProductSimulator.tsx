@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { marchingSquaresTrace } from '../simulator/lib/marchingSquares';
 import { processContoursToShapes } from '../simulator/lib/contourUtils';
 
 /**
- * ProductSimulator - Simplified 3D signage preview for product pages
- * Features material presets and streamlined UI
+ * ProductSimulator - Full-featured 3D signage simulator
+ * Ported from PngTo3DExtruder with shop theme integration
  */
 
 // ─── Types ───
@@ -21,61 +21,16 @@ interface ShapeResult {
   scale: number;
 }
 
-type MaterialPreset = 'metal-channel' | 'neon-sign' | 'acrylic';
 
-interface MaterialConfig {
-  label: string;
-  icon: string;
-  color: string;
-  metalness: number;
-  roughness: number;
-  depth: number;
-  ledIntensity: number;
-  ledColor: string;
-  backboardColor: string;
-  lightIntensity: number;
-}
+// ─── Texture Quality ───
 
-// ─── Material Presets ───
-
-const MATERIAL_PRESETS: Record<MaterialPreset, MaterialConfig> = {
-  'metal-channel': {
-    label: '금속 채널',
-    icon: '🔩',
-    color: '#c0c0c0',
-    metalness: 0.9,
-    roughness: 0.2,
-    depth: 2.5,
-    ledIntensity: 2.5,
-    ledColor: '#ffffff',
-    backboardColor: '#2a2a2a',
-    lightIntensity: 2.0,
-  },
-  'neon-sign': {
-    label: '네온 사인',
-    icon: '✨',
-    color: '#ff3366',
-    metalness: 0.3,
-    roughness: 0.7,
-    depth: 1.0,
-    ledIntensity: 4.0,
-    ledColor: '#ff0080',
-    backboardColor: '#1a1a1a',
-    lightIntensity: 1.5,
-  },
-  'acrylic': {
-    label: '아크릴',
-    icon: '💎',
-    color: '#ffffff',
-    metalness: 0.1,
-    roughness: 0.15,
-    depth: 1.5,
-    ledIntensity: 3.0,
-    ledColor: '#4CAF50',
-    backboardColor: '#222222',
-    lightIntensity: 2.5,
-  },
+type TextureQuality = 'low' | 'mid' | 'high';
+const TEXTURE_PRESETS: Record<TextureQuality, { downsample: number; simplify: number; label: string }> = {
+  low:  { downsample: 4, simplify: 3,   label: '하' },
+  mid:  { downsample: 2, simplify: 1.5, label: '중' },
+  high: { downsample: 1, simplify: 0.8, label: '상' },
 };
+
 
 // ─── Image Processing ───
 
@@ -117,141 +72,324 @@ function downsampleMask(mask: boolean[][], factor: number): boolean[][] {
   return result;
 }
 
-function pngToShapes(imageData: ImageData, scale: number = 0.02): ShapeResult {
+function pngToShapes(
+  imageData: ImageData,
+  scale: number = 0.02,
+  downsampleFactor: number = 2,
+  simplifyEpsilon: number = 1.5,
+): ShapeResult {
   const rawMask = extractAlphaMask(imageData, 128);
-  const mask = downsampleMask(rawMask, 2);
+  const mask = downsampleFactor > 1 ? downsampleMask(rawMask, downsampleFactor) : rawMask;
   const h = mask.length;
   const w = mask[0].length;
-
   const contours = marchingSquaresTrace(mask);
-  const shapes = processContoursToShapes(contours, w, h, scale, 1.5);
+  const shapes = processContoursToShapes(contours, w, h, scale, simplifyEpsilon);
+  return { shapes, imageWidth: imageData.width, imageHeight: imageData.height, maskWidth: w, maskHeight: h, scale };
+}
 
-  return {
-    shapes,
-    imageWidth: imageData.width,
-    imageHeight: imageData.height,
-    maskWidth: w,
-    maskHeight: h,
-    scale
-  };
+// ─── Sample PNG Generator ───
+
+function generateSamplePng(type: 'star' | 'logo' | 'text'): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, 256, 256);
+
+  if (type === 'star') {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    const cx = 128, cy = 128, outerR = 100, innerR = 40, points = 5;
+    for (let i = 0; i < points * 2; i++) {
+      const r = i % 2 === 0 ? outerR : innerR;
+      const angle = (Math.PI / points) * i - Math.PI / 2;
+      if (i === 0) ctx.moveTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+      else ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+    }
+    ctx.closePath();
+    ctx.fill();
+  } else if (type === 'logo') {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(128, 100, 60, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(128, 170); ctx.lineTo(60, 240); ctx.lineTo(196, 240); ctx.closePath(); ctx.fill();
+  } else {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 140px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('3D', 128, 128);
+  }
+
+  return canvas.toDataURL('image/png');
 }
 
 // ─── 3D Components ───
 
 interface ExtrudedMeshProps {
   shapes: THREE.Shape[];
-  config: MaterialConfig;
+  shapeResult: ShapeResult | null;
+  depth: number;
+  color: string;
+  metalness: number;
+  roughness: number;
+  wireframe: boolean;
   texture: THREE.Texture | null;
+  backboardColor: string;
+  ledColor: string;
+  ledIntensity: number;
+  standoffDistance: number;
+  ledSpread: number;
+  boardPaddingX: number;
+  boardPaddingY: number;
+  boardDepth: number;
+  ledSpacing: number;
+  showBackboard: boolean;
 }
 
-function ExtrudedMesh({ shapes, config, texture }: ExtrudedMeshProps) {
-  const extrudeSettings = {
-    depth: config.depth,
-    bevelEnabled: true,
-    bevelThickness: 0.05,
-    bevelSize: 0.03,
-    bevelSegments: 3,
-    steps: 1,
-  };
+function ExtrudedMesh({
+  shapes, shapeResult, depth, color, metalness, roughness, wireframe, texture,
+  backboardColor, ledColor, ledIntensity, standoffDistance, ledSpread,
+  boardPaddingX, boardPaddingY, boardDepth, ledSpacing, showBackboard,
+}: ExtrudedMeshProps) {
+  const glowRef = useRef<THREE.Mesh>(null);
 
-  const geometry = new THREE.ExtrudeGeometry(shapes, extrudeSettings);
-  geometry.computeVertexNormals();
-  geometry.computeBoundingBox();
+  useFrame((state) => {
+    if (glowRef.current && glowRef.current.material instanceof THREE.ShaderMaterial) {
+      glowRef.current.material.uniforms.uTime.value = state.clock.elapsedTime;
+    }
+  });
 
-  const box = geometry.boundingBox!;
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  const maxDim = Math.max(size.x, size.y, size.z);
-  const targetSize = 4;
-  const autoScale = maxDim > 0 ? targetSize / maxDim : 1;
+  const extrudeSettings = useMemo(
+    () => ({ depth, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.03, bevelSegments: 5, steps: 2 }),
+    [depth],
+  );
 
-  const center = new THREE.Vector3();
-  box.getCenter(center);
+  const computed = useMemo(() => {
+    if (shapes.length === 0) return null;
 
-  // Backboard
-  const boardWidth = size.x * autoScale + 1.0;
-  const boardHeight = size.y * autoScale + 0.8;
-  const standoffDistance = 0.3;
+    const geo = new THREE.ExtrudeGeometry(shapes, extrudeSettings);
+    geo.computeVertexNormals();
+    geo.computeBoundingBox();
+    const box = geo.boundingBox!;
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const targetSize = 4;
+    const s = maxDim > 0 ? targetSize / maxDim : 1;
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    if (shapeResult) {
+      const uvAttr = geo.getAttribute('uv');
+      const posAttr = geo.getAttribute('position');
+      const geoScale = shapeResult.scale;
+      const mw = shapeResult.maskWidth;
+      const mh = shapeResult.maskHeight;
+      if (uvAttr && posAttr) {
+        for (let i = 0; i < uvAttr.count; i++) {
+          const gx = posAttr.getX(i);
+          const gy = posAttr.getY(i);
+          const maskX = gx / geoScale + mw / 2;
+          const maskY = -(gy / geoScale) + mh / 2;
+          uvAttr.setXY(i, maskX / mw, maskY / mh);
+        }
+        uvAttr.needsUpdate = true;
+      }
+    }
+
+    const glowGeo = new THREE.ExtrudeGeometry(shapes, {
+      depth: 0.01, bevelEnabled: true, bevelThickness: 0,
+      bevelSize: ledSpread / s, bevelSegments: 8, steps: 1,
+    });
+    glowGeo.computeBoundingBox();
+
+    return { geometry: geo, glowGeometry: glowGeo, scale: s, offset: center, size };
+  }, [shapes, shapeResult, extrudeSettings, ledSpread]);
+
+  const glowMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      transparent: true, side: THREE.DoubleSide, depthWrite: false,
+      uniforms: {
+        uColor: { value: new THREE.Color(ledColor) },
+        uIntensity: { value: ledIntensity },
+        uTime: { value: 0 },
+      },
+      vertexShader: `
+        varying vec3 vNormal; varying vec3 vPosition;
+        void main() {
+          vNormal = normalize(normalMatrix * normal); vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uColor; uniform float uIntensity; uniform float uTime;
+        varying vec3 vNormal; varying vec3 vPosition;
+        void main() {
+          float facingAway = 1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0)));
+          float glow = pow(facingAway, 1.5) * uIntensity;
+          glow *= 0.9 + 0.1 * sin(uTime * 1.5);
+          gl_FragColor = vec4(uColor * glow, glow * 0.8);
+        }
+      `,
+    });
+  }, [ledColor, ledIntensity]);
+
+  useEffect(() => {
+    glowMaterial.uniforms.uColor.value.set(ledColor);
+    glowMaterial.uniforms.uIntensity.value = ledIntensity;
+  }, [ledColor, ledIntensity, glowMaterial]);
+
+  if (!computed) return null;
+
+  const { geometry, glowGeometry, scale: autoScale, offset, size } = computed;
+  const boardWidth = size.x * autoScale + boardPaddingX * 2;
+  const boardHeight = size.y * autoScale + boardPaddingY * 2;
+
+  const pointLights = useMemo(() => {
+    const lights: { position: [number, number, number]; intensity: number }[] = [];
+    if (ledSpacing <= 0) return lights;
+    const usableWidth = boardWidth * 0.8;
+    const usableHeight = boardHeight * 0.8;
+    const cols = Math.max(1, Math.round(usableWidth / ledSpacing));
+    const rows = Math.max(1, Math.round(usableHeight / ledSpacing));
+    const dx = cols > 1 ? usableWidth / (cols - 1) : 0;
+    const dy = rows > 1 ? usableHeight / (rows - 1) : 0;
+    const zPos = -(standoffDistance * 0.6);
+    const totalLeds = cols * rows;
+    const perLedIntensity = ledIntensity * (3 / Math.sqrt(totalLeds));
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = cols > 1 ? -usableWidth / 2 + col * dx : 0;
+        const y = rows > 1 ? -usableHeight / 2 + row * dy : 0;
+        lights.push({ position: [x, y, zPos], intensity: perLedIntensity });
+      }
+    }
+    return lights;
+  }, [boardWidth, boardHeight, ledSpacing, standoffDistance, ledIntensity]);
 
   return (
     <group>
       {/* Backboard */}
-      <mesh
-        receiveShadow
-        position={[0, 0, -(standoffDistance + config.depth * autoScale + 0.05)]}
-      >
-        <boxGeometry args={[boardWidth, boardHeight, 0.2]} />
-        <meshStandardMaterial
-          color={config.backboardColor}
-          metalness={0.1}
-          roughness={0.8}
-        />
-      </mesh>
+      {showBackboard && (
+        <mesh receiveShadow position={[0, 0, -(standoffDistance + depth * autoScale + 0.05)]}>
+          <boxGeometry args={[boardWidth, boardHeight, boardDepth]} />
+          <meshStandardMaterial color={backboardColor} metalness={0.1} roughness={0.8} />
+        </mesh>
+      )}
 
       {/* LED Glow */}
-      {config.ledIntensity > 0 && (
-        <pointLight
-          color={config.ledColor}
-          intensity={config.ledIntensity}
-          distance={4}
-          decay={2}
-          position={[0, 0, -standoffDistance * 0.6]}
-        />
+      {ledIntensity > 0 && (
+        <>
+          <mesh ref={glowRef} geometry={glowGeometry} material={glowMaterial}
+            scale={[autoScale, autoScale, autoScale]}
+            position={[-offset.x * autoScale, -offset.y * autoScale, -(standoffDistance * 0.5) - offset.z * autoScale]}
+          />
+          {pointLights.map((light, idx) => (
+            <pointLight key={idx} color={ledColor} intensity={light.intensity}
+              distance={standoffDistance * 4 + 2} decay={2} position={light.position}
+            />
+          ))}
+        </>
       )}
 
       {/* Main Mesh */}
-      <mesh
-        castShadow
-        receiveShadow
-        geometry={geometry}
+      <mesh castShadow receiveShadow geometry={geometry}
         scale={[autoScale, autoScale, autoScale]}
-        position={[-center.x * autoScale, -center.y * autoScale, -center.z * autoScale]}
+        position={[-offset.x * autoScale, -offset.y * autoScale, -offset.z * autoScale]}
       >
-        <meshStandardMaterial
-          color={config.color}
-          metalness={config.metalness}
-          roughness={config.roughness}
-          map={texture}
-          side={THREE.FrontSide}
+        <meshStandardMaterial color={color} metalness={metalness} roughness={roughness}
+          wireframe={wireframe} map={texture} side={THREE.FrontSide}
         />
       </mesh>
     </group>
   );
 }
 
-function Scene({ shapes, config, texture }: { shapes: THREE.Shape[]; config: MaterialConfig; texture: THREE.Texture | null }) {
+function Scene({ shapes, shapeResult, meshProps, lightColor, lightIntensity, bgColor, isNight, isAR }: {
+  shapes: THREE.Shape[];
+  shapeResult: ShapeResult | null;
+  meshProps: Omit<ExtrudedMeshProps, 'shapes' | 'shapeResult'>;
+  lightColor: string;
+  lightIntensity: number;
+  bgColor: string;
+  isNight: boolean;
+  isAR: boolean;
+}) {
   if (shapes.length === 0) return null;
+
+  const ambientIntensity = isAR ? 0.8 : isNight ? 0.08 : 0.5;
+  const envPreset = isNight ? 'night' as const : 'city' as const;
 
   return (
     <>
-      <ambientLight intensity={0.4} />
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={config.lightIntensity}
-        castShadow
-      />
-      <directionalLight
-        position={[-3, 3, -3]}
-        intensity={config.lightIntensity * 0.4}
-      />
+      <ambientLight intensity={ambientIntensity} color={lightColor} />
+      <directionalLight position={[5, 5, 5]} intensity={isAR ? 2.0 : lightIntensity} color={lightColor} castShadow />
+      <directionalLight position={[-3, 3, -3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.4} color={lightColor} />
+      <directionalLight position={[0, -2, 3]} intensity={(isAR ? 2.0 : lightIntensity) * 0.2} color={lightColor} />
 
-      <ExtrudedMesh shapes={shapes} config={config} texture={texture} />
+      <group position={isAR ? [0, 1.25, 0] : [0, 0, 0]}>
+        <ExtrudedMesh shapes={shapes} shapeResult={shapeResult} {...meshProps} />
+      </group>
 
-      <ContactShadows
-        position={[0, -3, 0]}
-        opacity={0.4}
-        scale={12}
-        blur={2.5}
-        far={5}
-      />
-      <Environment preset="city" />
-      <OrbitControls
-        enableDamping
-        dampingFactor={0.05}
-        minDistance={2}
-        maxDistance={15}
-      />
+      {!isAR && <ContactShadows position={[0, -3, 0]} opacity={isNight ? 0.2 : 0.5} scale={15} blur={2} far={6} resolution={512} />}
+      {!isAR && <Environment preset={envPreset} resolution={512} />}
+      <OrbitControls enableDamping dampingFactor={0.05} minDistance={2} maxDistance={20} />
     </>
+  );
+}
+
+// ─── UI Sub-components ───
+
+function Section({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="sim-section">
+      <button className="sim-section__header" onClick={() => setOpen(!open)} type="button">
+        <span className="sim-section__title">{title}</span>
+        <svg className={`sim-section__arrow ${open ? 'open' : ''}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M3 4.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && <div className="sim-section__body">{children}</div>}
+    </div>
+  );
+}
+
+function Stepper({ label, value, min, max, step, onChange }: {
+  label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void;
+}) {
+  return (
+    <div className="sim-stepper">
+      <span className="sim-stepper__label">{label}</span>
+      <div className="sim-stepper__controls">
+        <button className="sim-stepper__btn" type="button"
+          onClick={() => onChange(Math.max(min, parseFloat((value - step).toFixed(4))))}>-</button>
+        <span className="sim-stepper__value">{value.toFixed(step < 1 ? 2 : 0)}</span>
+        <button className="sim-stepper__btn" type="button"
+          onClick={() => onChange(Math.min(max, parseFloat((value + step).toFixed(4))))}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="sim-toggle" onClick={() => onChange(!value)}>
+      <span className="sim-toggle__label">{label}</span>
+      <div className={`sim-toggle__track ${value ? 'active' : ''}`}>
+        <div className="sim-toggle__thumb" />
+      </div>
+    </div>
+  );
+}
+
+function ColorPicker({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="sim-color">
+      <span className="sim-color__label">{label}</span>
+      <div className="sim-color__input-wrap">
+        <span className="sim-color__value">{value}</span>
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="sim-color__input" />
+      </div>
+    </div>
   );
 }
 
@@ -260,107 +398,428 @@ function Scene({ shapes, config, texture }: { shapes: THREE.Shape[]; config: Mat
 export default function ProductSimulator() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [shapes, setShapes] = useState<THREE.Shape[]>([]);
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [shapeResult, setShapeResult] = useState<ShapeResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [preset, setPreset] = useState<MaterialPreset>('metal-channel');
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
-  const config = MATERIAL_PRESETS[preset];
+  // Shape controls
+  const depth = 2;
+  const [color, setColor] = useState('#c0c0c0');
+  const [wireframe, setWireframe] = useState(false);
+  const [showBackboard, setShowBackboard] = useState(true);
+  const [showBoardSettings, setShowBoardSettings] = useState(false);
+  const textureQuality: TextureQuality = 'mid';
 
-  const processImage = useCallback((url: string) => {
-    setLoading(true);
-    setError(null);
+  // Backboard controls
+  const [backboardColor, setBackboardColor] = useState('#2a2a2a');
+  const [boardPaddingX, setBoardPaddingX] = useState(0.6);
+  const [boardPaddingY, setBoardPaddingY] = useState(0.5);
+  const boardDepth = 0.3;
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
+  // LED controls
+  const [ledColor, setLedColor] = useState('#ffffff');
+  const ledIntensity = 3;
+  const [ledSpacing, setLedSpacing] = useState(0.8);
+  const standoffDistance = 0.3;
+  const ledSpread = 0.15;
 
-    img.onload = () => {
+  // Lighting controls
+  const lightColor = '#ffffff';
+  const lightIntensity = 2.5;
+
+  // Scene controls
+  const [bgColor, setBgColor] = useState('#0a0a1a');
+  const [isNight, setIsNight] = useState(true);
+
+  // AR mode
+  const [isAR, setIsAR] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+
+  const downsample = TEXTURE_PRESETS[textureQuality].downsample;
+  const simplify = TEXTURE_PRESETS[textureQuality].simplify;
+
+  // Stop AR helper
+  const stopAR = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    setIsAR(false);
+  }, []);
+
+  // Start camera with given facing mode (fallback to any camera)
+  const startCamera = useCallback(async (mode: 'environment' | 'user') => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: mode } },
+      });
+    } catch {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode === 'environment' ? 'user' : 'environment' },
+      });
+    }
+    streamRef.current = stream;
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play();
+    }
+  }, []);
+
+  // AR camera toggle
+  const toggleAR = useCallback(async () => {
+    if (isAR) {
+      stopAR();
+    } else {
       try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+        await startCamera(facingMode);
+        if (canvasContainerRef.current?.requestFullscreen) {
+          await canvasContainerRef.current.requestFullscreen();
+        }
+        setIsAR(true);
+      } catch (err) {
+        console.error('Camera access denied:', err);
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+      }
+    }
+  }, [isAR, stopAR, startCamera, facingMode]);
 
-        const result = pngToShapes(imageData, 0.02);
+  // Flip camera
+  const flipCamera = useCallback(async () => {
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    try {
+      await startCamera(nextMode);
+      setFacingMode(nextMode);
+    } catch (err) {
+      console.error('Camera switch failed:', err);
+    }
+  }, [facingMode, startCamera]);
 
-        if (result.shapes.length === 0) {
-          setError('투명 배경이 있는 PNG 파일을 업로드해주세요.');
-          setShapes([]);
-        } else {
-          setShapes(result.shapes);
+  // Handle fullscreen exit (system back gesture / swipe)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isAR) {
+        stopAR();
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [isAR, stopAR]);
 
-          // Load texture
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const processImage = useCallback(
+    (url: string) => {
+      setLoading(true);
+      setError(null);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const result = pngToShapes(imageData, 0.02, downsample, simplify);
+          if (result.shapes.length === 0) {
+            setError('투명 배경이 있는 PNG 파일을 업로드해주세요.');
+            setShapes([]);
+            setShapeResult(null);
+          } else {
+            setShapes(result.shapes);
+            setShapeResult(result);
+            setError(null);
+          }
           const tex = new THREE.TextureLoader().load(url, (loadedTex) => {
             loadedTex.colorSpace = THREE.SRGBColorSpace;
             loadedTex.flipY = false;
             loadedTex.wrapS = THREE.ClampToEdgeWrapping;
             loadedTex.wrapT = THREE.ClampToEdgeWrapping;
+            loadedTex.minFilter = THREE.LinearFilter;
+            loadedTex.magFilter = THREE.LinearFilter;
             loadedTex.needsUpdate = true;
           });
           setTexture(tex);
-          setError(null);
+        } catch (e) {
+          setError(`처리 오류: ${(e as Error).message}`);
+        } finally {
+          setLoading(false);
         }
-      } catch (e) {
-        setError(`처리 오류: ${(e as Error).message}`);
-      } finally {
+      };
+      img.onerror = () => {
+        setError('이미지 로드 실패');
         setLoading(false);
-      }
-    };
-
-    img.onerror = () => {
-      setError('이미지 로드 실패');
-      setLoading(false);
-    };
-
-    img.src = url;
-  }, []);
+      };
+      img.src = url;
+    },
+    [downsample, simplify],
+  );
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith('image/')) {
       setError('이미지 파일만 업로드 가능합니다');
       return;
     }
-
     const url = URL.createObjectURL(file);
     setImageUrl(url);
   }, []);
 
-  useEffect(() => {
-    if (imageUrl) {
-      processImage(imageUrl);
-    }
-  }, [imageUrl, processImage]);
+  const handleSample = useCallback((type: 'star' | 'logo' | 'text') => {
+    const url = generateSamplePng(type);
+    setImageUrl(url);
+  }, []);
 
-  // Load default placeholder
+  const handleLoadTestPng = useCallback(() => {
+    setImageUrl('/images/test.png');
+  }, []);
+
+  // Load default on mount
   useEffect(() => {
     setImageUrl('/images/test.png');
   }, []);
 
+  // Process image
+  useEffect(() => {
+    if (imageUrl) processImage(imageUrl);
+  }, [imageUrl, processImage]);
+
+  const meshProps = {
+    depth, color, metalness: 0.5, roughness: 0.3, wireframe, texture,
+    backboardColor, ledColor, ledIntensity, standoffDistance, ledSpread,
+    boardPaddingX, boardPaddingY, boardDepth, ledSpacing, showBackboard,
+  };
+
   return (
     <div className="product-simulator">
       <div className="product-simulator__container">
-        {/* Header */}
-        <div className="product-simulator__header">
-          <h3 className="product-simulator__title">3D 시뮬레이터로 미리보기</h3>
-          <p className="product-simulator__description">
-            로고를 업로드하고 실제 간판 모습을 미리 확인해보세요
-          </p>
+        {/* Header + Image Source */}
+        <div className="product-simulator__topbar">
+          <div className="product-simulator__header">
+            <h3 className="product-simulator__title">3D 시뮬레이터로 미리보기</h3>
+            <p className="product-simulator__description">
+              로고나 텍스트 이미지를 업로드하면 실제 간판 형태를 3D로 미리 확인할 수 있습니다.
+              배경이 투명한 PNG 파일을 사용하면 가장 정확한 결과를 얻을 수 있으며,
+              LED 조명, 백보드 색상 등 세부 설정도 자유롭게 조절해보세요.
+            </p>
+            <div className="product-simulator__tips">
+              <span>마우스 드래그로 회전 · 스크롤로 확대/축소</span>
+              <span className="product-simulator__tips-divider">|</span>
+              <span>AR 모드로 실제 설치 장소에서 미리 확인</span>
+            </div>
+          </div>
+          <div className="product-simulator__upload-bar">
+            <label className="sim-upload-btn">
+              <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span>이미지 업로드</span>
+            </label>
+            <button className="sim-upload-btn sim-upload-btn--sample" onClick={handleLoadTestPng} type="button">
+              샘플 (test.png)
+            </button>
+          </div>
         </div>
 
+        {/* 3D Canvas - Full Width */}
         <div className="product-simulator__content">
-          {/* Canvas */}
-          <div className="product-simulator__canvas">
-            <Canvas
-              camera={{ position: [0, 0, 8], fov: 50 }}
-              style={{ background: '#1a1a2e', borderRadius: '12px' }}
+          <div className={`product-simulator__canvas ${isAR ? 'ar-active' : ''}`} ref={canvasContainerRef}>
+            {/* AR Camera Feed */}
+            <video
+              ref={videoRef}
+              className="sim-ar-video"
+              autoPlay
+              playsInline
+              muted
+              style={{ display: isAR ? 'block' : 'none' }}
+            />
+
+            {shapes.length === 0 && !loading ? (
+              <div className="product-simulator__empty">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17,8 12,3 7,8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <p>PNG 파일을 업로드하거나 샘플을 선택하세요</p>
+              </div>
+            ) : (
+              <Canvas shadows
+                dpr={[1, 2]}
+                gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}
+                camera={{ position: [0, 2, 6], fov: 50 }}
+                style={{ background: isAR ? 'transparent' : bgColor }}>
+                <Scene shapes={shapes} shapeResult={shapeResult} meshProps={meshProps}
+                  lightColor={lightColor} lightIntensity={lightIntensity} bgColor={bgColor} isNight={isNight} isAR={isAR} />
+              </Canvas>
+            )}
+
+            {/* Day/Night Toggle */}
+            <button
+              className={`sim-daynight-btn ${isNight ? 'night' : 'day'}`}
+              onClick={() => {
+                const next = !isNight;
+                setIsNight(next);
+                setBgColor(next ? '#0a0a1a' : '#e8e8e8');
+                setLightIntensity(next ? 1.5 : 2.5);
+              }}
+              type="button"
+              title={isNight ? '낮 모드로 전환' : '밤 모드로 전환'}
             >
-              <Scene shapes={shapes} config={config} texture={texture} />
-            </Canvas>
+              {isNight ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              )}
+            </button>
+
+            {/* Wireframe Toggle */}
+            <button
+              className={`sim-canvas-btn sim-wireframe-btn ${wireframe ? 'active' : ''}`}
+              onClick={() => setWireframe(!wireframe)}
+              type="button"
+              title={wireframe ? '와이어프레임 끄기' : '와이어프레임'}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </button>
+
+            {/* Backboard Toggle */}
+            <button
+              className={`sim-canvas-btn sim-backboard-btn ${showBackboard ? 'active' : ''}`}
+              onClick={() => setShowBackboard(!showBackboard)}
+              type="button"
+              title={showBackboard ? '백보드 숨기기' : '백보드 보이기'}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                {!showBackboard && <line x1="3" y1="3" x2="21" y2="21"/>}
+              </svg>
+            </button>
+
+            {/* Board Settings Button + Popover */}
+            <button
+              className={`sim-canvas-btn sim-board-settings-btn ${showBoardSettings ? 'active' : ''}`}
+              onClick={() => setShowBoardSettings(!showBoardSettings)}
+              type="button"
+              title="간판 설정"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+            {showBoardSettings && (
+              <div className="sim-board-popover">
+                <div className="sim-board-popover__header">
+                  <span>간판 설정</span>
+                  <button className="sim-board-popover__close" onClick={() => setShowBoardSettings(false)} type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </div>
+                <ColorPicker label="간판 색상" value={backboardColor} onChange={setBackboardColor} />
+                <div className="sim-board-popover__divider" />
+                <Stepper label="크기 (좌우)" value={boardPaddingX} min={-2} max={3} step={0.2} onChange={setBoardPaddingX} />
+                <Stepper label="크기 (상하)" value={boardPaddingY} min={-2} max={3} step={0.2} onChange={setBoardPaddingY} />
+                <div className="sim-board-popover__divider" />
+                <ColorPicker label="LED 색상" value={ledColor} onChange={setLedColor} />
+                <Stepper label="LED 간격" value={ledSpacing} min={0.3} max={3} step={0.1} onChange={setLedSpacing} />
+              </div>
+            )}
+
+            {/* AR Mode Button */}
+            <button
+              className={`sim-ar-btn ${isAR ? 'active' : ''}`}
+              onClick={toggleAR}
+              type="button"
+              title={isAR ? 'AR 모드 끄기' : 'AR 모드'}
+            >
+              {isAR ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 7l4-4h4"/>
+                  <path d="M14 3h4l4 4"/>
+                  <path d="M22 17l-4 4h-4"/>
+                  <path d="M10 21H6l-4-4"/>
+                  <rect x="7" y="7" width="10" height="10" rx="1"/>
+                  <path d="M12 10v4"/>
+                  <path d="M10 12h4"/>
+                </svg>
+              )}
+            </button>
+
+            {/* AR CTA + Flip Camera */}
+            {isAR && (
+              <>
+                <div className="sim-ar-cta">
+                  <span>설치할 곳에 간판을 올려보세요</span>
+                </div>
+                <button
+                  className="sim-ar-flip"
+                  onClick={flipCamera}
+                  type="button"
+                  title="카메라 전환"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <polyline points="16 11 12 15 8 11"/>
+                    <polyline points="8 13 12 9 16 13"/>
+                  </svg>
+                </button>
+              </>
+            )}
 
             {loading && (
               <div className="product-simulator__loading">
@@ -374,62 +833,6 @@ export default function ProductSimulator() {
             )}
           </div>
 
-          {/* Controls */}
-          <div className="product-simulator__controls">
-            {/* File Upload */}
-            <div className="simulator-control">
-              <label className="simulator-control__label">로고 업로드</label>
-              <label className="simulator-upload">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                />
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                <span>PNG / JPG 업로드</span>
-              </label>
-              <p className="simulator-control__hint">
-                투명 배경 PNG 권장
-              </p>
-            </div>
-
-            {/* Material Presets */}
-            <div className="simulator-control">
-              <label className="simulator-control__label">소재 선택</label>
-              <div className="simulator-presets">
-                {(Object.keys(MATERIAL_PRESETS) as MaterialPreset[]).map((key) => {
-                  const mat = MATERIAL_PRESETS[key];
-                  return (
-                    <button
-                      key={key}
-                      className={`simulator-preset ${preset === key ? 'active' : ''}`}
-                      onClick={() => setPreset(key)}
-                    >
-                      <span className="simulator-preset__icon">{mat.icon}</span>
-                      <span className="simulator-preset__label">{mat.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="simulator-info">
-              <div className="simulator-info__item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="16" x2="12" y2="12"/>
-                  <line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-                <span>마우스로 회전 및 확대/축소 가능</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
