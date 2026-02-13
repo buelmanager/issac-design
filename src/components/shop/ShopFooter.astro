@@ -21,7 +21,7 @@ const currentYear = new Date().getFullYear();
           <span class="shop-footer__logo-sub">Shop</span>
         </a>
         <p class="shop-footer__tagline">
-          15년 전통의 프리미엄 사이니지 전문 기업.<br />
+          감각적인 디자인으로 브랜드를 빛내는 사이니지 스튜디오.<br />
           LED 채널간판부터 네온사인까지, 맞춤 제작합니다.
         </p>
         <!-- Contact Quick -->
@@ -63,7 +63,6 @@ const currentYear = new Date().getFullYear();
             <li><a href="/shop/faq" class="shop-footer__link">자주 묻는 질문</a></li>
             <li><a href="/shop/about" class="shop-footer__link">회사 소개</a></li>
             <li><a href="/shop/contact" class="shop-footer__link">고객센터</a></li>
-            <li><a href="/shop#quote" class="shop-footer__link">견적 문의</a></li>
           </ul>
         </div>
 
@@ -108,6 +107,8 @@ const currentYear = new Date().getFullYear();
     background: var(--background);
     border-top: 1px solid var(--border);
     padding: var(--space-4xl) 0 var(--space-xl);
+    /* PWA safe-area: 홈 인디케이터 */
+    padding-bottom: calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
   }
 
   .shop-footer__container {

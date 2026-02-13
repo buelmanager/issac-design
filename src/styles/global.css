@@ -128,9 +128,9 @@
   --container-max: 1400px;
   --container-padding: 1.5rem;
   
-  /* Header */
-  --header-height: 80px;
-  --header-height-mobile: 60px;
+  /* Header (safe-area 포함) */
+  --header-height: calc(80px + env(safe-area-inset-top, 0px));
+  --header-height-mobile: calc(60px + env(safe-area-inset-top, 0px));
 
   /* Glassmorphism */
   --glass-bg: rgba(37, 37, 37, 0.75);
@@ -186,6 +186,9 @@ body {
   color: var(--text-primary);
   background-color: var(--background);
   overflow-x: hidden;
+  /* PWA safe-area: 좌우 패딩 (landscape notch 대응) */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Remove default styling */

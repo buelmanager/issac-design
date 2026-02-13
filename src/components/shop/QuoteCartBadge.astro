@@ -19,8 +19,8 @@
 <style>
   .quote-cart-badge {
     position: fixed;
-    bottom: 24px;
-    left: 24px;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    left: calc(24px + env(safe-area-inset-left, 0px));
     z-index: 999;
   }
 

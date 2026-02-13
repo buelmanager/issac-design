@@ -22,29 +22,62 @@ const { categories } = productsData;
 
     <!-- Desktop Nav Links -->
     <div class="shop-navbar__links">
-      <a href="/shop" class="shop-navbar__link" data-nav-link="shop">전체 제품</a>
-
-      <!-- Category Dropdown -->
-      <div class="shop-navbar__dropdown" data-dropdown>
-        <button class="shop-navbar__link shop-navbar__link--dropdown" data-nav-link="category" type="button">
-          <span>카테고리</span>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-        <div class="shop-navbar__dropdown-menu" data-dropdown-menu>
-          {categories.map(cat => (
-            <a href={`/shop/category/${cat.id}`} class="shop-navbar__dropdown-item">
-              <span class="shop-navbar__dropdown-name">{cat.name}</span>
-              <span class="shop-navbar__dropdown-desc">{cat.description}</span>
-            </a>
-          ))}
-        </div>
+      <!-- Group 1: 회사소개 / 포트폴리오 / 블로그 -->
+      <div class="shop-navbar__group">
+        <a href="/shop/about" class="shop-navbar__link" data-nav-link="about">회사소개</a>
+        <a href="/shop/portfolio" class="shop-navbar__link" data-nav-link="portfolio">포트폴리오</a>
+        <a href="/blog" class="shop-navbar__link" data-nav-link="blog">블로그</a>
       </div>
 
-      <a href="/shop/about" class="shop-navbar__link" data-nav-link="about">회사 소개</a>
-      <a href="/shop/faq" class="shop-navbar__link" data-nav-link="faq">FAQ</a>
-      <a href="/shop/contact" class="shop-navbar__link" data-nav-link="contact">고객센터</a>
+      <span class="shop-navbar__divider"></span>
+
+      <!-- Group 2: 전체제품 / 카테고리 / 고객센터 -->
+      <div class="shop-navbar__group">
+        <a href="/shop" class="shop-navbar__link" data-nav-link="shop">쇼핑몰</a>
+        <a href="/shop/simulator" class="shop-navbar__link" data-nav-link="simulator">시뮬레이터</a>
+
+        <!-- Category Dropdown -->
+        <div class="shop-navbar__dropdown" data-dropdown>
+          <button class="shop-navbar__link shop-navbar__link--dropdown" data-nav-link="category" type="button">
+            <span>카테고리</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="shop-navbar__dropdown-menu" data-dropdown-menu>
+            {categories.map(cat => (
+              <a href={`/shop/category/${cat.id}`} class="shop-navbar__dropdown-item">
+                <span class="shop-navbar__dropdown-name">{cat.name}</span>
+                <span class="shop-navbar__dropdown-desc">{cat.description}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <!-- 고객센터 Dropdown -->
+        <div class="shop-navbar__dropdown" data-dropdown>
+          <button class="shop-navbar__link shop-navbar__link--dropdown" data-nav-link="support" type="button">
+            <span>고객센터</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="shop-navbar__dropdown-menu" data-dropdown-menu>
+            <a href="/shop/contact" class="shop-navbar__dropdown-item">
+              <span class="shop-navbar__dropdown-name">고객센터</span>
+              <span class="shop-navbar__dropdown-desc">문의 및 상담 안내</span>
+            </a>
+            <a href="/shop/faq" class="shop-navbar__dropdown-item">
+              <span class="shop-navbar__dropdown-name">FAQ</span>
+              <span class="shop-navbar__dropdown-desc">자주 묻는 질문</span>
+            </a>
+            <a href="/shop/quote" class="shop-navbar__dropdown-item">
+              <span class="shop-navbar__dropdown-name">견적문의</span>
+              <span class="shop-navbar__dropdown-desc">맞춤 견적 요청</span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Right Actions -->
@@ -68,7 +101,7 @@ const { categories } = productsData;
       </a>
 
       <!-- CTA Button (Desktop) -->
-      <a href="/shop#quote" class="shop-navbar__cta">
+      <a href="/shop/quote" class="shop-navbar__cta">
         <span>무료 견적</span>
       </a>
 
@@ -85,7 +118,16 @@ const { categories } = productsData;
   <div class="shop-navbar__mobile" data-mobile-menu>
     <div class="shop-navbar__mobile-inner">
       <div class="shop-navbar__mobile-links">
-        <a href="/shop" class="shop-navbar__mobile-link">전체 제품</a>
+        <!-- Group 1: 회사소개 / 포트폴리오 / 블로그 -->
+        <a href="/shop/about" class="shop-navbar__mobile-link">회사소개</a>
+        <a href="/shop/portfolio" class="shop-navbar__mobile-link">포트폴리오</a>
+        <a href="/blog" class="shop-navbar__mobile-link">블로그</a>
+
+        <div class="shop-navbar__mobile-divider"></div>
+
+        <!-- Group 2: 전체제품 / 카테고리 / 고객센터 -->
+        <a href="/shop" class="shop-navbar__mobile-link">쇼핑몰</a>
+        <a href="/shop/simulator" class="shop-navbar__mobile-link">시뮬레이터</a>
         <div class="shop-navbar__mobile-group">
           <span class="shop-navbar__mobile-group-title">카테고리</span>
           {categories.map(cat => (
@@ -94,16 +136,19 @@ const { categories } = productsData;
             </a>
           ))}
         </div>
-        <a href="/shop/about" class="shop-navbar__mobile-link">회사 소개</a>
-        <a href="/shop/faq" class="shop-navbar__mobile-link">FAQ</a>
-        <a href="/shop/contact" class="shop-navbar__mobile-link">고객센터</a>
+        <div class="shop-navbar__mobile-group">
+          <span class="shop-navbar__mobile-group-title">고객센터</span>
+          <a href="/shop/contact" class="shop-navbar__mobile-link shop-navbar__mobile-link--sub">고객센터</a>
+          <a href="/shop/faq" class="shop-navbar__mobile-link shop-navbar__mobile-link--sub">FAQ</a>
+          <a href="/shop/quote" class="shop-navbar__mobile-link shop-navbar__mobile-link--sub">견적문의</a>
+        </div>
         <a href="/shop/quote-cart" class="shop-navbar__mobile-link">
           견적함
           <span class="shop-navbar__mobile-badge" data-mobile-cart-count style="display: none;">0</span>
         </a>
       </div>
       <div class="shop-navbar__mobile-cta">
-        <a href="/shop#quote" class="shop-navbar__mobile-cta-btn">무료 견적 문의</a>
+        <a href="/shop/quote" class="shop-navbar__mobile-cta-btn">무료 견적 문의</a>
       </div>
     </div>
   </div>
@@ -121,6 +166,10 @@ const { categories } = productsData;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     z-index: var(--z-sticky);
     transition: transform 0.3s ease;
+    /* PWA safe-area: 노치 영역 */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   .shop-navbar.hidden {
@@ -188,6 +237,19 @@ const { categories } = productsData;
     gap: var(--space-lg);
     flex: 1;
     justify-content: center;
+  }
+
+  .shop-navbar__group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  .shop-navbar__divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
   }
 
   .shop-navbar__link {
@@ -450,6 +512,12 @@ const { categories } = productsData;
     color: var(--text-secondary);
   }
 
+  .shop-navbar__mobile-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: var(--space-sm) 0;
+  }
+
   .shop-navbar__mobile-group {
     display: flex;
     flex-direction: column;
@@ -504,6 +572,10 @@ const { categories } = productsData;
   /* Responsive */
   @media (max-width: 1023px) {
     .shop-navbar__links {
+      gap: var(--space-md);
+    }
+
+    .shop-navbar__group {
       gap: var(--space-md);
     }
 
@@ -567,8 +639,10 @@ const { categories } = productsData;
           const currentScrollY = window.scrollY;
           if (currentScrollY > 200 && currentScrollY > lastScrollY) {
             navbar.classList.add('hidden');
+            document.documentElement.classList.add('navbar-hidden');
           } else {
             navbar.classList.remove('hidden');
+            document.documentElement.classList.remove('navbar-hidden');
           }
           lastScrollY = currentScrollY;
           ticking = false;
