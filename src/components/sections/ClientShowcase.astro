@@ -3,9 +3,9 @@
  * Client Showcase Section Component
  * Client projects with filter tabs and GSAP animations
  */
-import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
 
-const clientProjects = [
+const FALLBACK_CLIENT_PROJECTS = [
   { category: 'restaurant', name: '고급 레스토랑 A', type: 'LED 채널 간판', image: 'https://images.unsplash.com/photo-1524237964353-f14cde1db034?w=500&q=80' },
   { category: 'restaurant', name: '이탈리안 레스토랑 B', type: '네온 사인', image: 'https://images.unsplash.com/photo-1766375886788-604dafdb138b?w=500&q=80' },
   { category: 'cafe', name: '감성 카페 C', type: '아크릴 간판', image: 'https://images.unsplash.com/photo-1762680850399-c085c8d15afe?w=500&q=80' },
@@ -16,7 +16,7 @@ const clientProjects = [
   { category: 'other', name: '대형 행사 H', type: '현수막/배너', image: 'https://images.unsplash.com/photo-1767780648463-2ba4c5866438?w=500&q=80' },
 ];
 
-const filterTabs = [
+const FALLBACK_FILTER_TABS = [
   { id: 'all', label: '전체' },
   { id: 'restaurant', label: '음식점' },
   { id: 'cafe', label: '카페' },
@@ -24,6 +24,42 @@ const filterTabs = [
   { id: 'office', label: '사무실' },
   { id: 'other', label: '기타' },
 ];
+
+let clientProjects = FALLBACK_CLIENT_PROJECTS;
+let filterTabs = FALLBACK_FILTER_TABS;
+
+try {
+  const { data: projectsData, error: projectsError } = await supabase
+    .from('client_projects')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  
+  if (!projectsError && projectsData && projectsData.length > 0) {
+    clientProjects = projectsData.map((p: any) => ({
+      category: p.category,
+      name: p.client_name,
+      type: p.description,
+      image: p.image_url
+    }));
+  }
+
+  const { data: tabsData, error: tabsError } = await supabase
+    .from('project_filter_tabs')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  
+  if (!tabsError && tabsData && tabsData.length > 0) {
+    filterTabs = [
+      { id: 'all', label: '전체' },
+      ...tabsData.map((t: any) => ({
+        id: t.filter_key,
+        label: t.label
+      }))
+    ];
+  }
+} catch {}
 ---
 
 <section id="brands" class="brand-hall section" data-brand-hall>
@@ -90,16 +126,14 @@ const filterTabs = [
              <!-- Image Area -->
              <div class="brand-card-image">
                <!-- Product Image -->
-               <Image
+               <img
                  src={product.image}
-                 alt={product.name}
+                 alt={product.name || '고객 프로젝트'}
                  class="brand-card-img"
                  loading="lazy"
                  decoding="async"
-                 width={500}
-                 height={375}
-                 format="webp"
-                 quality={80}
+                 width="500"
+                 height="375"
                />
                <!-- Dark Overlay for Text Contrast -->
                <div class="brand-card-image-overlay"></div>

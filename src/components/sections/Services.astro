@@ -4,7 +4,9 @@
  * 8개 서비스 카드 그리드 with GSAP ScrollTrigger 애니메이션
  */
 
-const services = [
+import { supabase } from '../../lib/supabase';
+
+const FALLBACK_SERVICES = [
   {
     icon: 'design',
     title: 'Creative Design',
@@ -46,6 +48,22 @@ const services = [
     desc: '7일 내 제작 완료 보장'
   },
 ];
+
+let services = FALLBACK_SERVICES;
+try {
+  const { data, error } = await supabase
+    .from('service_items')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  if (!error && data && data.length > 0) {
+    services = data.map((s: any) => ({
+      icon: s.icon ?? 'design',
+      title: s.title,
+      desc: s.description,
+    }));
+  }
+} catch {}
 
 // SVG 아이콘 매핑
 const icons: Record<string, string> = {

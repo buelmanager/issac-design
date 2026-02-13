@@ -3,9 +3,9 @@
  * SignageTypes Section Component
  * Horizontal slider for signage types with GSAP scroll animations
  */
-import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
 
-const signageTypes = [
+const FALLBACK_SIGNAGE_TYPES = [
   {
     id: 1,
     number: '01',
@@ -61,6 +61,29 @@ const signageTypes = [
     icon: 'rooftop'
   },
 ];
+
+let signageTypes = FALLBACK_SIGNAGE_TYPES;
+
+try {
+  const { data, error } = await supabase
+    .from('signage_types')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  
+  if (!error && data && data.length > 0) {
+    signageTypes = data.map((s: any) => ({
+      id: s.id,
+      number: String(s.order_index).padStart(2, '0'),
+      title: s.name,
+      desc: s.description,
+      link: `/shop?category=${s.slug}`,
+      image: s.image_url,
+      icon: s.icon || s.slug
+    }));
+  }
+} catch {}
+
 ---
 
 <section id="appliances" class="section-appliances" data-appliances>
@@ -123,16 +146,14 @@ const signageTypes = [
                <div class="appliance-image">
                  <div class="appliance-image-inner">
                    <!-- Product Image -->
-                   <Image
+                   <img
                      src={item.image}
-                     alt={item.title}
+                     alt={item.title || '간판 타입'}
                      class="appliance-image-bg"
                      loading="lazy"
                      decoding="async"
-                     width={800}
-                     height={600}
-                     format="webp"
-                     quality={80}
+                     width="800"
+                     height="600"
                    />
                    
                    <!-- Dark Overlay for Icon Visibility -->

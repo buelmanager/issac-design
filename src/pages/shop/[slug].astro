@@ -24,15 +24,13 @@ import ScrollProgress from '../../components/ScrollProgress.astro';
 import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
 import { getProducts } from '../../lib/data-fetchers';
 
-export async function getStaticPaths() {
-  const { products } = await getProducts();
-  return products.map((product) => ({
-    params: { slug: product.slug },
-    props: { product },
-  }));
-}
+const { slug } = Astro.params;
+const { products } = await getProducts();
+const product = products.find((p) => p.slug === slug);
 
-const { product } = Astro.props;
+if (!product) {
+  return Astro.redirect('/shop');
+}
 
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },

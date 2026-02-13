@@ -4,13 +4,27 @@
  * Accordion with GSAP height animation
  */
 
-const faqs = [
+import { supabase } from '../../lib/supabase';
+
+const FALLBACK_FAQS = [
   { q: '제작 기간은 얼마나 걸리나요?', a: '디자인 확정 후 일반 간판은 5-7일, LED 간판은 7-10일 소요됩니다.' },
   { q: 'LED 간판의 수명은 얼마나 되나요?', a: '고품질 LED 모듈 사용으로 평균 5년 이상 사용 가능합니다.' },
   { q: '설치는 어떻게 진행되나요?', a: '현장 조사 → 디자인 확정 → 제작 → 설치까지 원스톱으로 진행됩니다.' },
   { q: '견적은 무료인가요?', a: '네, 현장 방문 견적 및 온라인 견적 모두 무료입니다.' },
   { q: 'A/S는 어떻게 받나요?', a: '제작 후 1년간 무상 A/S를 제공합니다.' },
 ];
+
+let faqs = FALLBACK_FAQS;
+try {
+  const { data, error } = await supabase
+    .from('landing_faqs')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  if (!error && data && data.length > 0) {
+    faqs = data.map((f: any) => ({ q: f.question, a: f.answer }));
+  }
+} catch {}
 ---
 
 <section class="faq" id="faq">

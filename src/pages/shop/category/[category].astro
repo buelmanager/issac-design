@@ -17,18 +17,15 @@ import QuickViewModal from '../../../components/shop/QuickViewModal.astro';
 import QuoteCartBadge from '../../../components/shop/QuoteCartBadge.astro';
 import { getProducts } from '../../../lib/data-fetchers';
 
-export async function getStaticPaths() {
-  const { categories, products } = await getProducts();
-  return categories.map(cat => ({
-    params: { category: cat.id },
-    props: {
-      category: cat,
-      categoryProducts: products.filter(p => p.category === cat.id)
-    }
-  }));
+const { category: categoryId } = Astro.params;
+const { categories, products } = await getProducts();
+const category = categories.find((c) => c.id === categoryId);
+
+if (!category) {
+  return Astro.redirect('/shop');
 }
 
-const { category, categoryProducts } = Astro.props;
+const categoryProducts = products.filter((p) => p.category === categoryId);
 ---
 
 <Layout

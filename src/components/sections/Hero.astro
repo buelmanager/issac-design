@@ -6,6 +6,89 @@
  */
 import { Image } from 'astro:assets';
 import heroPoster from '../../assets/videos/hero1-poster.jpg';
+import { supabase } from '../../lib/supabase';
+
+interface SlideText {
+  eyebrow: string;
+  titleLine1: string;
+  titleLine2: string;
+  titleLine2IsAccent: boolean;
+  subtitle: string;
+  ctaPrimaryText: string;
+  ctaPrimaryHref: string;
+  ctaSecondaryText: string;
+  ctaSecondaryHref: string;
+}
+
+const FALLBACK_SLIDES: SlideText[] = [
+  {
+    eyebrow: 'SINCE 2010',
+    titleLine1: '당신의 Brand를',
+    titleLine2: 'Design하다',
+    titleLine2IsAccent: true,
+    subtitle: 'LED Signage · Neon Sign · Advertising Design - 당신의 브랜드를 가장 감각적으로',
+    ctaPrimaryText: '쇼핑몰 둘러보기',
+    ctaPrimaryHref: '/shop',
+    ctaSecondaryText: '포트폴리오 보기',
+    ctaSecondaryHref: '#portfolio',
+  },
+  {
+    eyebrow: 'LED SIGNAGE',
+    titleLine1: '빛으로 만드는',
+    titleLine2: 'Brand Identity',
+    titleLine2IsAccent: true,
+    subtitle: '최신 LED 기술로 브랜드의 가치를 높이는 Signage Solution을 제공합니다',
+    ctaPrimaryText: 'LED 간판 보기',
+    ctaPrimaryHref: '/shop',
+    ctaSecondaryText: '무료 상담 신청',
+    ctaSecondaryHref: '#contact',
+  },
+  {
+    eyebrow: 'NEON SIGN',
+    titleLine1: 'Creative한',
+    titleLine2: 'Neon Art',
+    titleLine2IsAccent: true,
+    subtitle: '감각적인 Neon Sign으로 공간에 특별한 Atmosphere를 더합니다',
+    ctaPrimaryText: '네온사인 컬렉션',
+    ctaPrimaryHref: '/shop',
+    ctaSecondaryText: '시공 사례 보기',
+    ctaSecondaryHref: '#portfolio',
+  },
+  {
+    eyebrow: 'TOTAL SOLUTION',
+    titleLine1: 'Design부터',
+    titleLine2: '시공까지 One-Stop',
+    titleLine2IsAccent: true,
+    subtitle: '기획 · Design · 제작 · 시공 · A/S까지, 하나의 흐름으로 완성합니다',
+    ctaPrimaryText: '견적 문의하기',
+    ctaPrimaryHref: '#contact',
+    ctaSecondaryText: '회사 소개',
+    ctaSecondaryHref: '#about',
+  },
+];
+
+let slides = FALLBACK_SLIDES;
+try {
+  const { data, error } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .eq('page', 'landing')
+    .eq('is_visible', true)
+    .order('slide_index');
+  if (!error && data && data.length > 0) {
+    slides = data.map((s: any) => ({
+      eyebrow: s.eyebrow ?? FALLBACK_SLIDES[0].eyebrow,
+      titleLine1: s.title_line1 ?? '',
+      titleLine2: s.title_line2 ?? '',
+      titleLine2IsAccent: true,
+      subtitle: s.subtitle ?? '',
+      ctaPrimaryText: s.cta_primary_text ?? '쇼핑몰 둘러보기',
+      ctaPrimaryHref: s.cta_primary_href ?? '/shop',
+      ctaSecondaryText: s.cta_secondary_text ?? '포트폴리오 보기',
+      ctaSecondaryHref: s.cta_secondary_href ?? '#portfolio',
+    }));
+  }
+} catch {}
 ---
 
 <section id="home" class="hero" data-hero>
@@ -137,157 +220,49 @@ import heroPoster from '../../assets/videos/hero1-poster.jpg';
   <div class="hero-content" data-hero-content>
     <!-- Slide Container -->
     <div class="hero-slides" data-hero-slides>
-      <!-- Slide 0 -->
-      <div class="hero-slide is-active" data-hero-slide="0">
-        <div class="hero-content-inner">
-          <span class="hero-eyebrow" data-hero-eyebrow>
-            <span class="hero-eyebrow-line"></span>
-            <span class="hero-eyebrow-text">SINCE 2010</span>
-          </span>
-          <h2 class="hero-title" data-hero-title>
-            <span class="hero-title-line">
-              <span class="hero-title-text" data-split-text>당신의 Brand를</span>
+      {slides.map((slide, index) => (
+        <div class={`hero-slide${index === 0 ? ' is-active' : ''}`} data-hero-slide={String(index)}>
+          <div class="hero-content-inner">
+            <span class="hero-eyebrow" data-hero-eyebrow>
+              <span class="hero-eyebrow-line"></span>
+              <span class="hero-eyebrow-text">{slide.eyebrow}</span>
             </span>
-            <span class="hero-title-line">
-              <span class="hero-title-text hero-title-accent" data-split-text data-accent>Design하다</span>
-            </span>
-          </h2>
-          <p class="hero-subtitle" data-hero-subtitle>
-            <span class="hero-subtitle-text">LED Signage · Neon Sign · Advertising Design - 당신의 브랜드를 가장 감각적으로</span>
-          </p>
-          <div class="hero-cta" data-hero-cta>
-            <a href="/shop" class="button button--primary hero-cta-btn" data-magnetic>
-              <span class="btn-text">쇼핑몰 둘러보기</span>
-              <span class="btn-shine"></span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-            <a href="#portfolio" class="button button--outline hero-cta-btn" data-magnetic>
-              <span class="btn-text">포트폴리오 보기</span>
-              <span class="btn-shine"></span>
-            </a>
+            <h2 class="hero-title" data-hero-title>
+              <span class="hero-title-line">
+                <span class="hero-title-text" data-split-text>{slide.titleLine1}</span>
+              </span>
+              <span class="hero-title-line">
+                <span class={`hero-title-text${slide.titleLine2IsAccent ? ' hero-title-accent' : ''}`} data-split-text data-accent>{slide.titleLine2}</span>
+              </span>
+            </h2>
+            <p class="hero-subtitle" data-hero-subtitle>
+              <span class="hero-subtitle-text">{slide.subtitle}</span>
+            </p>
+            <div class="hero-cta" data-hero-cta>
+              <a href={slide.ctaPrimaryHref} class="button button--primary hero-cta-btn" data-magnetic>
+                <span class="btn-text">{slide.ctaPrimaryText}</span>
+                <span class="btn-shine"></span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a href={slide.ctaSecondaryHref} class="button button--outline hero-cta-btn" data-magnetic>
+                <span class="btn-text">{slide.ctaSecondaryText}</span>
+                <span class="btn-shine"></span>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-
-      <!-- Slide 1 -->
-      <div class="hero-slide" data-hero-slide="1">
-        <div class="hero-content-inner">
-          <span class="hero-eyebrow" data-hero-eyebrow>
-            <span class="hero-eyebrow-line"></span>
-            <span class="hero-eyebrow-text">LED SIGNAGE</span>
-          </span>
-          <h2 class="hero-title" data-hero-title>
-            <span class="hero-title-line">
-              <span class="hero-title-text" data-split-text>빛으로 만드는</span>
-            </span>
-            <span class="hero-title-line">
-              <span class="hero-title-text hero-title-accent" data-split-text data-accent>Brand Identity</span>
-            </span>
-          </h2>
-          <p class="hero-subtitle" data-hero-subtitle>
-            <span class="hero-subtitle-text">최신 LED 기술로 브랜드의 가치를 높이는 Signage Solution을 제공합니다</span>
-          </p>
-          <div class="hero-cta" data-hero-cta>
-            <a href="/shop" class="button button--primary hero-cta-btn" data-magnetic>
-              <span class="btn-text">LED 간판 보기</span>
-              <span class="btn-shine"></span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-            <a href="#contact" class="button button--outline hero-cta-btn" data-magnetic>
-              <span class="btn-text">무료 상담 신청</span>
-              <span class="btn-shine"></span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 2 -->
-      <div class="hero-slide" data-hero-slide="2">
-        <div class="hero-content-inner">
-          <span class="hero-eyebrow" data-hero-eyebrow>
-            <span class="hero-eyebrow-line"></span>
-            <span class="hero-eyebrow-text">NEON SIGN</span>
-          </span>
-          <h2 class="hero-title" data-hero-title>
-            <span class="hero-title-line">
-              <span class="hero-title-text" data-split-text>Creative한</span>
-            </span>
-            <span class="hero-title-line">
-              <span class="hero-title-text hero-title-accent" data-split-text data-accent>Neon Art</span>
-            </span>
-          </h2>
-          <p class="hero-subtitle" data-hero-subtitle>
-            <span class="hero-subtitle-text">감각적인 Neon Sign으로 공간에 특별한 Atmosphere를 더합니다</span>
-          </p>
-          <div class="hero-cta" data-hero-cta>
-            <a href="/shop" class="button button--primary hero-cta-btn" data-magnetic>
-              <span class="btn-text">네온사인 컬렉션</span>
-              <span class="btn-shine"></span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-            <a href="#portfolio" class="button button--outline hero-cta-btn" data-magnetic>
-              <span class="btn-text">시공 사례 보기</span>
-              <span class="btn-shine"></span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Slide 3 -->
-      <div class="hero-slide" data-hero-slide="3">
-        <div class="hero-content-inner">
-          <span class="hero-eyebrow" data-hero-eyebrow>
-            <span class="hero-eyebrow-line"></span>
-            <span class="hero-eyebrow-text">TOTAL SOLUTION</span>
-          </span>
-          <h2 class="hero-title" data-hero-title>
-            <span class="hero-title-line">
-              <span class="hero-title-text" data-split-text>Design부터</span>
-            </span>
-            <span class="hero-title-line">
-              <span class="hero-title-text hero-title-accent" data-split-text data-accent>시공까지 One-Stop</span>
-            </span>
-          </h2>
-          <p class="hero-subtitle" data-hero-subtitle>
-            <span class="hero-subtitle-text">기획 · Design · 제작 · 시공 · A/S까지, 하나의 흐름으로 완성합니다</span>
-          </p>
-          <div class="hero-cta" data-hero-cta>
-            <a href="#contact" class="button button--primary hero-cta-btn" data-magnetic>
-              <span class="btn-text">견적 문의하기</span>
-              <span class="btn-shine"></span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-            <a href="#about" class="button button--outline hero-cta-btn" data-magnetic>
-              <span class="btn-text">회사 소개</span>
-              <span class="btn-shine"></span>
-            </a>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
 
     <!-- Slide Indicators -->
     <div class="hero-indicators" data-hero-indicators>
-      <button class="hero-indicator is-active" data-hero-indicator="0" aria-label="슬라이드 1">
-        <span class="hero-indicator-progress"></span>
-      </button>
-      <button class="hero-indicator" data-hero-indicator="1" aria-label="슬라이드 2">
-        <span class="hero-indicator-progress"></span>
-      </button>
-      <button class="hero-indicator" data-hero-indicator="2" aria-label="슬라이드 3">
-        <span class="hero-indicator-progress"></span>
-      </button>
-      <button class="hero-indicator" data-hero-indicator="3" aria-label="슬라이드 4">
-        <span class="hero-indicator-progress"></span>
-      </button>
+      {slides.map((_, index) => (
+        <button class={`hero-indicator${index === 0 ? ' is-active' : ''}`} data-hero-indicator={String(index)} aria-label={`슬라이드 ${index + 1}`}>
+          <span class="hero-indicator-progress"></span>
+        </button>
+      ))}
     </div>
 
   </div>

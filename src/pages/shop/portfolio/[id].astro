@@ -18,15 +18,9 @@ const categoryMap: Record<string, string> = {
   'rooftop': '옥상간판',
 };
 
-export async function getStaticPaths() {
-  const { portfolioItems } = await getPortfolioItems();
-  return portfolioItems.map((item) => ({
-    params: { id: item.id },
-    props: { item },
-  }));
-}
-
-const { item } = Astro.props;
+const { id } = Astro.params;
+const { portfolioItems } = await getPortfolioItems();
+const item = portfolioItems.find((p) => p.id === id);
 
 if (!item) {
   return Astro.redirect('/shop/portfolio');

@@ -4,7 +4,10 @@
  * Contact info + Form layout
  */
 
-const contactInfo = {
+import { supabase } from '../../lib/supabase';
+
+// Fallback data
+const FALLBACK_CONTACT_INFO = {
   company: 'issac.design',
   phone: '010-1234-5678',
   hours: '평일 09:00~18:00 (토요일 09:00~15:00)',
@@ -12,7 +15,7 @@ const contactInfo = {
   website: 'issac.design',
 };
 
-const inquiryTypes = [
+const FALLBACK_INQUIRY_TYPES = [
   { value: '', label: '문의 유형 선택' },
   { value: 'led', label: 'LED 간판 제작' },
   { value: 'banner', label: '현수막/배너 제작' },
@@ -20,6 +23,53 @@ const inquiryTypes = [
   { value: 'repair', label: '수리/A/S' },
   { value: 'other', label: '기타 문의' },
 ];
+
+// Fetch from Supabase with fallback
+let contactInfo = FALLBACK_CONTACT_INFO;
+let inquiryTypes = FALLBACK_INQUIRY_TYPES;
+
+try {
+  // Fetch inquiry types
+  const { data: inquiryData, error: inquiryError } = await supabase
+    .from('inquiry_types')
+    .select('name, description, order_index, is_visible')
+    .eq('is_visible', true)
+    .order('order_index', { ascending: true });
+
+  if (!inquiryError && inquiryData && inquiryData.length > 0) {
+    inquiryTypes = [
+      { value: '', label: '문의 유형 선택' },
+      ...inquiryData.map((item: any) => ({
+        value: item.name.toLowerCase().replace(/\s+/g, '-'),
+        label: item.name,
+      })),
+    ];
+  }
+
+  // Fetch contact info from site_config
+  const { data: configData, error: configError } = await supabase
+    .from('site_config')
+    .select('key, value, category')
+    .eq('category', 'contact');
+
+  if (!configError && configData && configData.length > 0) {
+    const configMap: Record<string, string> = {};
+    configData.forEach((item: any) => {
+      configMap[item.key] = item.value;
+    });
+
+    contactInfo = {
+      company: configMap['company'] || FALLBACK_CONTACT_INFO.company,
+      phone: configMap['phone'] || FALLBACK_CONTACT_INFO.phone,
+      hours: configMap['hours'] || FALLBACK_CONTACT_INFO.hours,
+      address: configMap['address'] || FALLBACK_CONTACT_INFO.address,
+      website: configMap['website'] || FALLBACK_CONTACT_INFO.website,
+    };
+  }
+} catch (error) {
+  console.error('Failed to fetch contact data from Supabase:', error);
+  // Use fallback data
+}
 ---
 
 <section class="contact" id="contact">

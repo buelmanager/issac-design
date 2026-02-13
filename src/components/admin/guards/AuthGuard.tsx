@@ -5,7 +5,7 @@ export default function AuthGuard() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="admin-spinner admin-spinner-fullpage" />;
+    return null;
   }
 
   if (!user) {

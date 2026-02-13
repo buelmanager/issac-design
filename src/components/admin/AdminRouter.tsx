@@ -24,7 +24,7 @@ const NavigationPage = lazy(() => import('./pages/NavigationPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function SuspenseFallback() {
-  return <div className="admin-spinner" />;
+  return null;
 }
 
 export default function AdminRouter() {

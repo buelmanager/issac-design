@@ -4,23 +4,26 @@
  * Logo, links, contact, business info, copyright
  */
 
+import { supabase } from '../../lib/supabase';
+
 const currentYear = new Date().getFullYear();
 
-const quickLinks = [
+// Fallback data
+const FALLBACK_QUICK_LINKS = [
   { label: '홈', href: '/' },
   { label: '서비스', href: '/#services' },
   { label: 'FAQ', href: '/#faq' },
   { label: '문의하기', href: '/#contact' },
 ];
 
-const serviceLinks = [
+const FALLBACK_SERVICE_LINKS = [
   { label: '쇼핑몰', href: '/shop' },
   { label: '온라인 견적', href: '#contact' },
   { label: '포트폴리오', href: '#portfolio' },
   { label: 'A/S 문의', href: '#contact' },
 ];
 
-const contactInfo = {
+const FALLBACK_CONTACT_INFO = {
   company: 'issac.design',
   phone: '010-1234-5678',
   hours: '평일 09:00~18:00 (토요일 09:00~15:00)',
@@ -28,6 +31,68 @@ const contactInfo = {
   businessNumber: '123-45-67890',
   email: 'contact@issac.design',
 };
+
+// Fetch from Supabase with fallback
+let quickLinks = FALLBACK_QUICK_LINKS;
+let serviceLinks = FALLBACK_SERVICE_LINKS;
+let contactInfo = FALLBACK_CONTACT_INFO;
+
+try {
+  // Fetch navigation items for quick links (group_key = 'quick')
+  const { data: quickData, error: quickError } = await supabase
+    .from('navigation_items')
+    .select('label, url, group_key, order_index, is_visible')
+    .eq('group_key', 'quick')
+    .eq('is_visible', true)
+    .order('order_index', { ascending: true });
+
+  if (!quickError && quickData && quickData.length > 0) {
+    quickLinks = quickData.map((item: any) => ({
+      label: item.label,
+      href: item.url,
+    }));
+  }
+
+  // Fetch navigation items for service links (group_key = 'service')
+  const { data: serviceData, error: serviceError } = await supabase
+    .from('navigation_items')
+    .select('label, url, group_key, order_index, is_visible')
+    .eq('group_key', 'service')
+    .eq('is_visible', true)
+    .order('order_index', { ascending: true });
+
+  if (!serviceError && serviceData && serviceData.length > 0) {
+    serviceLinks = serviceData.map((item: any) => ({
+      label: item.label,
+      href: item.url,
+    }));
+  }
+
+  // Fetch contact info from site_config
+  const { data: configData, error: configError } = await supabase
+    .from('site_config')
+    .select('key, value, category')
+    .in('category', ['company', 'contact']);
+
+  if (!configError && configData && configData.length > 0) {
+    const configMap: Record<string, string> = {};
+    configData.forEach((item: any) => {
+      configMap[item.key] = item.value;
+    });
+
+    contactInfo = {
+      company: configMap['company'] || FALLBACK_CONTACT_INFO.company,
+      phone: configMap['phone'] || FALLBACK_CONTACT_INFO.phone,
+      hours: configMap['hours'] || FALLBACK_CONTACT_INFO.hours,
+      address: configMap['address'] || FALLBACK_CONTACT_INFO.address,
+      businessNumber: configMap['businessNumber'] || FALLBACK_CONTACT_INFO.businessNumber,
+      email: configMap['email'] || FALLBACK_CONTACT_INFO.email,
+    };
+  }
+} catch (error) {
+  console.error('Failed to fetch footer data from Supabase:', error);
+  // Use fallback data
+}
 ---
 
 <footer class="footer">
