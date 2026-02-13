@@ -17,6 +17,7 @@ import TrustIndicators from '../../components/shop/TrustIndicators.astro';
 import SortControls from '../../components/shop/SortControls.astro';
 import QuickViewModal from '../../components/shop/QuickViewModal.astro';
 import ClientLogos from '../../components/shop/ClientLogos.astro';
+import ChatBot from '../../components/shop/ChatBot';
 import KakaoFloat from '../../components/shop/KakaoFloat.astro';
 import QuoteCartBadge from '../../components/shop/QuoteCartBadge.astro';
 import QuoteForm from '../../components/shop/QuoteForm.astro';
@@ -105,6 +106,7 @@ const { products, categories } = productsData;
 
   <QuickViewModal />
   <KakaoFloat />
+  <ChatBot client:load />
   <QuoteCartBadge />
   <ShopFooter />
   <ShopAnimations />

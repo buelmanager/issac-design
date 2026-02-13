@@ -1,117 +1,49 @@
 ---
 /**
- * Shop Hero Section Component (Redesigned)
- * Typography-centered minimal design with video carousel
- * Apple/Tesla inspired premium aesthetic
+ * Shop Hero Section — Single-focus Hero
+ * 단일 가치 제안 + 듀얼 CTA + 신뢰 배지 + 카테고리 퀵 네비
+ * 캐러셀 제거, 메시지 100% 항상 노출
  */
+import ShopHeroBackground from './ShopHeroBackground.astro';
+import productsData from '../../data/products.json';
+
+// 카테고리별 대표 상품 (isFeatured) 추출
+const categoryOrder = ['led-channel', 'neon', 'acrylic', 'banner', 'protruding', 'rooftop'];
+const featuredProducts = categoryOrder.map((catId) => {
+  const product = productsData.products.find(
+    (p) => p.category === catId && p.isFeatured
+  );
+  return product!;
+});
 ---
 
 <section class="shop-hero" data-shop-hero>
-  <!-- LAYER 1: Background (Videos + Dark Overlay) -->
-  <div class="shop-hero__bg" data-shop-hero-bg>
-    <div class="shop-hero__video-wrap" data-shop-hero-bg-wrapper>
-      <!-- Mobile fallback image -->
-      <img
-        class="shop-hero__poster"
-        src="/videos/hero1-poster.jpg"
-        alt="쇼핑몰 히어로 배경"
-        loading="eager"
-        decoding="async"
-        data-shop-hero-fallback
-      />
-      <!-- 2개 영상 (슬라이드 0,2 → video 0 / 슬라이드 1,3 → video 1) -->
-      <video
-        class="shop-hero__video is-active"
-        autoplay
-        muted
-        loop
-        playsinline
-        preload="auto"
-        poster="/videos/hero1-poster.jpg"
-        data-shop-hero-video="0"
-      >
-        <source src="/videos/hero1-opt.webm" type="video/webm" />
-        <source src="/videos/hero1-opt.mp4" type="video/mp4" />
-      </video>
-      <video
-        class="shop-hero__video"
-        muted
-        loop
-        playsinline
-        preload="none"
-        poster="/videos/hero2-poster.jpg"
-        data-shop-hero-video="1"
-      >
-        <source src="/videos/hero2-opt.webm" type="video/webm" />
-        <source src="/videos/hero2-opt.mp4" type="video/mp4" />
-      </video>
-    </div>
-    <div class="shop-hero__overlay"></div>
-  </div>
+  <!-- LAYER 1: Background -->
+  <ShopHeroBackground />
 
   <!-- LAYER 2: Content -->
   <div class="shop-hero__container">
     <div class="shop-hero__content" data-shop-hero-content>
-      <!-- Slide System -->
-      <div class="shop-hero__slides" data-shop-hero-slides>
-        <!-- Slide 0: 가치 제안 -->
-        <div class="shop-hero__slide is-active" data-shop-hero-slide="0">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>프리미엄 간판 전문</span>
-          <h2 class="shop-hero__headline">
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>내 가게에 딱 맞는</span>
-            </span>
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>간판을 찾아보세요</span>
-            </span>
-          </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>LED 채널간판, 네온사인, 현수막, 돌출간판 등 16종 이상 제품 라인업</p>
-        </div>
+      <!-- Eyebrow -->
+      <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>프리미엄 간판 전문 · 15년 1,000건+</span>
 
-        <!-- Slide 1: 제품 라인업 -->
-        <div class="shop-hero__slide" data-shop-hero-slide="1">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>LED부터 네온까지</span>
-          <h2 class="shop-hero__headline">
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>모든 간판, 한곳에서</span>
-            </span>
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>비교하고 견적받기</span>
-            </span>
-          </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>채널간판, 네온사인, 현수막, 돌출간판 등 원하는 간판을 바로 비교하세요</p>
-        </div>
+      <!-- Headline -->
+      <h2 class="shop-hero__headline">
+        <span class="shop-hero__headline-line">
+          <span class="shop-hero__headline-text" data-split-text>내 가게에 딱 맞는</span>
+        </span>
+        <span class="shop-hero__headline-line">
+          <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>간판을 찾아보세요</span>
+        </span>
+      </h2>
 
-        <!-- Slide 2: 신뢰 / 경험 -->
-        <div class="shop-hero__slide" data-shop-hero-slide="2">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>15년 · 1,000건+</span>
-          <h2 class="shop-hero__headline">
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>경험이 증명하는</span>
-            </span>
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>신뢰의 품질</span>
-            </span>
-          </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>천 건 이상의 시공 경험과 1년 무상 A/S로 완성한 기술력</p>
-        </div>
+      <!-- Description -->
+      <p class="shop-hero__desc" data-shop-hero-desc>
+        LED 채널간판, 네온사인, 현수막, 돌출간판 등 16종 이상의 제품을<br class="hide-mobile" />
+        온라인에서 비교하고 바로 견적받으세요
+      </p>
 
-        <!-- Slide 3: 원스톱 서비스 -->
-        <div class="shop-hero__slide" data-shop-hero-slide="3">
-          <span class="shop-hero__eyebrow" data-shop-hero-eyebrow>원스톱 서비스</span>
-          <h2 class="shop-hero__headline">
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text" data-split-text>견적부터 시공까지</span>
-            </span>
-            <span class="shop-hero__headline-line">
-              <span class="shop-hero__headline-text shop-hero__headline-text--accent" data-split-text>한번에 해결</span>
-            </span>
-          </h2>
-          <p class="shop-hero__desc" data-shop-hero-desc>온라인 견적, 디자인 시안, 제작, 설치까지 한곳에서 해결하세요</p>
-        </div>
-      </div>
-
-      <!-- Persistent CTA (outside slides) -->
+      <!-- Dual CTA -->
       <div class="shop-hero__cta" data-shop-hero-cta>
         <a href="#products" class="shop-hero__cta-btn shop-hero__cta-btn--primary" data-magnetic>
           <span>제품 둘러보기</span>
@@ -122,40 +54,39 @@
         <a href="#quote" class="shop-hero__cta-btn shop-hero__cta-btn--secondary" data-magnetic>
           <span>무료 견적 문의</span>
         </a>
+        <button class="shop-hero__cta-btn shop-hero__cta-btn--chat" data-open-chat type="button" data-magnetic>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            <path d="M8 10h.01M12 10h.01M16 10h.01"/>
+          </svg>
+          <span>AI 상담</span>
+        </button>
       </div>
 
-      <!-- Trust Badge — 항상 노출 -->
-      <div class="shop-hero__trust" data-shop-hero-trust>
-        <div class="shop-hero__trust-item">
-          <span class="shop-hero__trust-number">15+</span>
-          <span class="shop-hero__trust-label">년 경력</span>
+      <!-- Category Products Showcase — Marquee -->
+      <div class="shop-hero__showcase" data-shop-hero-categories aria-label="대표 제품">
+        <div class="shop-hero__showcase-track">
+          {/* 3배 복제로 넓은 화면에서도 끊김 없는 무한 스크롤 */}
+          {[...featuredProducts, ...featuredProducts, ...featuredProducts].map((product) => (
+            <a href="#products" class="shop-hero__product-card" data-filter={product.category}>
+              <div class="shop-hero__product-img-wrap">
+                <img
+                  src={`${product.thumbnail}&w=240&q=75`}
+                  alt={product.name}
+                  class="shop-hero__product-img"
+                  loading="lazy"
+                  decoding="async"
+                  width="240"
+                  height="180"
+                />
+              </div>
+              <div class="shop-hero__product-info">
+                <span class="shop-hero__product-category">{product.categoryName}</span>
+                <span class="shop-hero__product-name">{product.name}</span>
+                </div>
+            </a>
+          ))}
         </div>
-        <div class="shop-hero__trust-divider"></div>
-        <div class="shop-hero__trust-item">
-          <span class="shop-hero__trust-number">1,000+</span>
-          <span class="shop-hero__trust-label">시공 실적</span>
-        </div>
-        <div class="shop-hero__trust-divider"></div>
-        <div class="shop-hero__trust-item">
-          <span class="shop-hero__trust-number">1년</span>
-          <span class="shop-hero__trust-label">무상 A/S</span>
-        </div>
-      </div>
-
-      <!-- Slide Indicators -->
-      <div class="shop-hero__indicators" data-shop-hero-indicators>
-        <button class="shop-hero__indicator is-active" data-shop-hero-indicator="0" aria-label="슬라이드 1">
-          <span class="shop-hero__indicator-bar"></span>
-        </button>
-        <button class="shop-hero__indicator" data-shop-hero-indicator="1" aria-label="슬라이드 2">
-          <span class="shop-hero__indicator-bar"></span>
-        </button>
-        <button class="shop-hero__indicator" data-shop-hero-indicator="2" aria-label="슬라이드 3">
-          <span class="shop-hero__indicator-bar"></span>
-        </button>
-        <button class="shop-hero__indicator" data-shop-hero-indicator="3" aria-label="슬라이드 4">
-          <span class="shop-hero__indicator-bar"></span>
-        </button>
       </div>
     </div>
   </div>
@@ -170,7 +101,7 @@
 
 <style>
   /* ==================
-     Shop Hero — Typography-Centered Minimal
+     Shop Hero — Single-focus
      ================== */
   .shop-hero {
     position: relative;
@@ -182,63 +113,6 @@
     align-items: center;
     overflow: hidden;
     background: var(--background);
-  }
-
-  /* Background */
-  .shop-hero__bg {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .shop-hero__video-wrap {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    will-change: transform;
-  }
-
-  .shop-hero__video {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: cover;
-    pointer-events: none;
-    filter: brightness(0.4) saturate(1.15);
-    opacity: 0;
-    transition: opacity 1.2s ease;
-  }
-
-  .shop-hero__video.is-active {
-    opacity: 1;
-  }
-
-  .shop-hero__poster {
-    display: none;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.5) saturate(1.2);
-  }
-
-  .shop-hero__overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.75) 0%,
-      rgba(0, 0, 0, 0.55) 35%,
-      rgba(0, 0, 0, 0.60) 65%,
-      rgba(0, 0, 0, 0.85) 100%
-    );
   }
 
   /* Container */
@@ -258,43 +132,13 @@
     text-align: center;
   }
 
-  /* Slides */
-  .shop-hero__slides {
-    position: relative;
-    width: 100%;
-  }
-
-  .shop-hero__slide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: visibility 0s linear 0.6s;
-  }
-
-  .shop-hero__slide.is-active {
-    position: relative;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transition: visibility 0s linear 0s;
-  }
-
   /* Eyebrow */
   .shop-hero__eyebrow {
     display: block;
     font-family: var(--font-primary);
     font-size: var(--font-size-caption, 0.75rem);
     font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    letter-spacing: 0.15em;
     color: rgba(76, 175, 80, 0.7);
     margin-bottom: var(--space-lg);
     opacity: 0;
@@ -347,10 +191,14 @@
     font-weight: 300;
     line-height: var(--line-height-relaxed);
     color: var(--text-secondary);
-    max-width: 480px;
+    max-width: 520px;
     margin: 0 auto;
     text-align: center;
     opacity: 0;
+  }
+
+  .hide-mobile {
+    display: inline;
   }
 
   /* CTA */
@@ -377,7 +225,6 @@
     cursor: pointer;
   }
 
-  /* Primary CTA — 고대비 초록 배경 */
   .shop-hero__cta-btn--primary {
     color: #fff;
     background: var(--primary-light, #4caf50);
@@ -391,7 +238,6 @@
     box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
   }
 
-  /* Secondary CTA — 아웃라인 */
   .shop-hero__cta-btn--secondary {
     color: var(--text-primary);
     background: transparent;
@@ -403,6 +249,21 @@
     border-color: rgba(255, 255, 255, 0.5);
   }
 
+  .shop-hero__cta-btn--chat {
+    color: var(--primary-light, #4caf50);
+    background: transparent;
+    border: 1px solid rgba(76, 175, 80, 0.35);
+  }
+
+  .shop-hero__cta-btn--chat:hover {
+    background: rgba(76, 175, 80, 0.1);
+    border-color: rgba(76, 175, 80, 0.6);
+  }
+
+  .shop-hero__cta-btn--chat svg {
+    color: var(--primary-light, #4caf50);
+  }
+
   .shop-hero__cta-btn svg {
     transition: transform var(--transition-base);
   }
@@ -411,94 +272,103 @@
     transform: translateX(4px);
   }
 
-  /* Trust Badge */
-  .shop-hero__trust {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-lg);
+  /* Category Products Showcase — Marquee */
+  .shop-hero__showcase {
+    --card-w: 180px;
+    --card-gap: 16px;
+    width: 100%;
     margin-top: var(--space-xl);
-    padding: var(--space-md) var(--space-xl);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    overflow: hidden;
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      #000 10%,
+      #000 90%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      #000 10%,
+      #000 90%,
+      transparent 100%
+    );
+    opacity: 0;
+  }
+
+  .shop-hero__showcase-track {
+    display: flex;
+    gap: var(--card-gap);
+    /* 6장 원본 너비만큼 이동 → 복제본으로 이음새 없이 반복 */
+    animation: showcaseMarquee 36s linear infinite;
+  }
+
+  .shop-hero__showcase:hover .shop-hero__showcase-track {
+    animation-play-state: paused;
+  }
+
+  @keyframes showcaseMarquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc((var(--card-w) + var(--card-gap)) * -6)); }
+  }
+
+  .shop-hero__product-card {
+    flex: 0 0 var(--card-w);
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-lg);
-    opacity: 0;
-  }
-
-  .shop-hero__trust-item {
-    text-align: center;
-  }
-
-  .shop-hero__trust-number {
-    display: block;
-    font-size: var(--font-size-xl);
-    font-weight: 600;
-    color: var(--primary-light, #4caf50);
-    line-height: 1;
-  }
-
-  .shop-hero__trust-label {
-    display: block;
-    font-size: var(--font-size-xs);
-    font-weight: 400;
-    color: var(--text-secondary);
-    margin-top: var(--space-xs);
-  }
-
-  .shop-hero__trust-divider {
-    width: 1px;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  /* Indicators */
-  .shop-hero__indicators {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-    margin-top: var(--space-2xl);
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  .shop-hero__indicator {
-    position: relative;
-    width: 48px;
-    height: 3px;
-    background: rgba(76, 175, 80, 0.2);
-    border: none;
-    border-radius: var(--radius-full);
-    cursor: pointer;
     overflow: hidden;
-    padding: 0;
-    transition: background 0.3s ease;
+    text-decoration: none;
+    transition: background 0.3s, border-color 0.3s;
+    cursor: pointer;
   }
 
-  .shop-hero__indicator:hover {
-    background: rgba(76, 175, 80, 0.35);
+  .shop-hero__product-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(76, 175, 80, 0.3);
   }
 
-  .shop-hero__indicator-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0%;
-    height: 100%;
-    background: var(--primary-light, #4caf50);
-    border-radius: var(--radius-full);
-    transition: width 0s;
-  }
-
-  .shop-hero__indicator.is-active .shop-hero__indicator-bar {
-    width: 0%;
-  }
-
-  .shop-hero__indicator.is-done .shop-hero__indicator-bar {
+  .shop-hero__product-img-wrap {
+    position: relative;
     width: 100%;
-    transition: none;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+
+  .shop-hero__product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .shop-hero__product-card:hover .shop-hero__product-img {
+    transform: scale(1.08);
+  }
+
+  .shop-hero__product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-sm);
+  }
+
+  .shop-hero__product-category {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--primary-light, #4caf50);
+  }
+
+  .shop-hero__product-name {
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Scroll Indicator */
@@ -580,8 +450,14 @@
       padding: 0 var(--space-md);
     }
 
+    .hide-mobile {
+      display: none;
+    }
+
     .shop-hero__cta {
       flex-direction: column;
+      width: 100%;
+      padding: 0 var(--space-md);
     }
 
     .shop-hero__cta-btn {
@@ -589,47 +465,26 @@
       justify-content: center;
     }
 
-    .shop-hero__trust {
-      gap: var(--space-md);
-      padding: var(--space-sm) var(--space-lg);
+    .shop-hero__showcase {
+      --card-w: 140px;
+      --card-gap: 12px;
+      margin-top: var(--space-lg);
     }
 
-    .shop-hero__trust-number {
-      font-size: var(--font-size-lg);
+    .shop-hero__showcase-track {
+      animation-duration: 28s;
     }
 
-    .shop-hero__trust-divider {
-      height: 24px;
+    .shop-hero__product-info {
+      padding: var(--space-xs);
     }
 
-    .shop-hero__video {
-      display: none;
-    }
-
-    .shop-hero__poster {
-      display: block;
-      animation: shopHeroKenBurns 20s ease-in-out infinite alternate;
-    }
-
-    @keyframes shopHeroKenBurns {
-      0% {
-        transform: scale(1) translate(0, 0);
-      }
-      100% {
-        transform: scale(1.08) translate(-2%, -1%);
-      }
+    .shop-hero__product-name {
+      font-size: 0.7rem;
     }
 
     .shop-hero__scroll {
       display: none;
-    }
-
-    .shop-hero__indicators {
-      margin-top: var(--space-xl);
-    }
-
-    .shop-hero__indicator {
-      width: 32px;
     }
   }
 
@@ -637,20 +492,10 @@
      Reduced Motion
      ================== */
   @media (prefers-reduced-motion: reduce) {
-    .shop-hero__video {
-      display: none;
-    }
-
-    .shop-hero__poster {
-      display: block;
-      animation: none;
-    }
-
     .shop-hero__eyebrow,
     .shop-hero__desc,
     .shop-hero__cta,
-    .shop-hero__trust,
-    .shop-hero__indicators,
+    .shop-hero__showcase,
     .shop-hero__scroll {
       opacity: 1 !important;
       transform: none !important;
@@ -665,439 +510,23 @@
     .shop-hero__scroll-dot {
       animation: none;
     }
+
+    .shop-hero__showcase-track {
+      animation: none;
+    }
   }
 </style>
 
 <script>
-  // Shop Hero — Typography-centered minimal carousel with GSAP
-  import { gsap } from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
-
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let shopHeroInitialized = false;
-  let activeAbortController: AbortController | null = null;
-
-  function initShopHero() {
-    if (shopHeroInitialized) return;
-    shopHeroInitialized = true;
-
-    const hero = document.querySelector('[data-shop-hero]') as HTMLElement;
-    if (!hero || prefersReducedMotion) return;
-
-    // Elements
-    const bgWrapper = hero.querySelector('[data-shop-hero-bg-wrapper]') as HTMLElement;
-    const slides = hero.querySelectorAll('[data-shop-hero-slide]') as NodeListOf<HTMLElement>;
-    const indicators = hero.querySelectorAll('[data-shop-hero-indicator]') as NodeListOf<HTMLElement>;
-    const indicatorsContainer = hero.querySelector('[data-shop-hero-indicators]') as HTMLElement;
-    const ctaEl = hero.querySelector('[data-shop-hero-cta]') as HTMLElement;
-    const trustEl = hero.querySelector('[data-shop-hero-trust]') as HTMLElement;
-    const scrollEl = hero.querySelector('[data-shop-hero-scroll]') as HTMLElement;
-    const heroVideos = hero.querySelectorAll('[data-shop-hero-video]') as NodeListOf<HTMLVideoElement>;
-    const heroFallback = hero.querySelector('[data-shop-hero-fallback]') as HTMLImageElement;
-
-    // 슬라이드 → 영상 매핑 (4슬라이드, 2영상)
-    const slideToVideo = [0, 1, 0, 1]; // 슬라이드 0,2 → video 0 / 슬라이드 1,3 → video 1
-    const posterImages = [
-      '/videos/hero1-poster.jpg',
-      '/videos/hero2-poster.jpg',
-      '/videos/hero1-poster.jpg',
-      '/videos/hero2-poster.jpg',
-    ];
-
-    const SLIDE_COUNT = slides.length;
-    const AUTO_PLAY_INTERVAL = 5000;
-    const VIDEO_FADE_DURATION = 1200;
-    let currentSlide = 0;
-    let progressTween: gsap.core.Tween | null = null;
-    let isTransitioning = false;
-    let initialAnimationDone = false;
-
-    // AbortController로 이벤트 리스너 일괄 관리
-    const abortController = new AbortController();
-    const { signal } = abortController;
-    activeAbortController = abortController;
-
-    // =====================
-    // SPLIT TEXT SETUP
-    // =====================
-    slides.forEach((slide) => {
-      const titleTexts = slide.querySelectorAll('[data-split-text]');
-      titleTexts.forEach((textEl) => {
-        const el = textEl as HTMLElement;
-        const text = el.textContent || '';
-        el.innerHTML = '';
-
-        text.split('').forEach((char) => {
-          const span = document.createElement('span');
-          if (char === ' ') {
-            span.className = 'char char-space';
-            span.innerHTML = '&nbsp;';
-          } else {
-            span.className = 'char';
-            span.textContent = char;
-          }
-          el.appendChild(span);
-        });
-
-        gsap.set(el, { opacity: 1, y: 0 });
-      });
-    });
-
-    // =====================
-    // SLIDE ANIMATIONS
-    // =====================
-    function animateSlideIn(slide: HTMLElement, isInitial = false) {
-      const eyebrow = slide.querySelector('[data-shop-hero-eyebrow]') as HTMLElement;
-      const chars = slide.querySelectorAll('.char');
-      const desc = slide.querySelector('[data-shop-hero-desc]') as HTMLElement;
-
-      gsap.set(eyebrow, { opacity: 0, y: 15 });
-      gsap.set(chars, { opacity: 0, y: '100%' });
-      gsap.set(desc, { opacity: 0, y: 20 });
-
-      const tl = gsap.timeline({
-        delay: isInitial ? 0.2 : 0.1,
-        onComplete: () => { isTransitioning = false; }
-      });
-
-      // Eyebrow
-      tl.to(eyebrow, {
-        opacity: 1, y: 0,
-        duration: 0.4,
-        ease: 'power3.out'
-      }, 0);
-
-      // Characters — staggered reveal (속도 개선: ~2초 → ~1초)
-      tl.to(chars, {
-        opacity: 1, y: 0,
-        duration: 0.4,
-        stagger: { amount: 0.35, from: 'start' },
-        ease: 'power4.out',
-      }, 0.15);
-
-      // Description
-      tl.to(desc, {
-        opacity: 1, y: 0,
-        duration: 0.6,
-        ease: 'power3.out'
-      }, '-=0.15');
-
-      return tl;
-    }
-
-    function animateSlideOut(slide: HTMLElement) {
-      const eyebrow = slide.querySelector('[data-shop-hero-eyebrow]') as HTMLElement;
-      const chars = slide.querySelectorAll('.char');
-      const desc = slide.querySelector('[data-shop-hero-desc]') as HTMLElement;
-
-      const tl = gsap.timeline();
-
-      // Description first
-      tl.to(desc, {
-        opacity: 0, y: -15,
-        duration: 0.3, ease: 'power2.in',
-      }, 0);
-
-      // Characters (reverse stagger)
-      tl.to(chars, {
-        opacity: 0, y: '-50%',
-        duration: 0.3,
-        stagger: { amount: 0.15, from: 'end' },
-        ease: 'power2.in',
-      }, 0.05);
-
-      // Eyebrow last
-      tl.to(eyebrow, {
-        opacity: 0, y: -10,
-        duration: 0.25, ease: 'power2.in',
-      }, 0.1);
-
-      return tl;
-    }
-
-    // =====================
-    // CAROUSEL CONTROLLER
-    // =====================
-    // Lazy load: 영상이 아직 로드되지 않았으면 로드 시작
-    function ensureVideoLoaded(video: HTMLVideoElement) {
-      if (video.preload === 'none') {
-        video.preload = 'auto';
-        video.load();
-      }
-    }
-
-    function switchVideo(slideIndex: number) {
-      const targetVideoIdx = slideToVideo[slideIndex];
-
-      heroVideos.forEach((video, i) => {
-        if (i === targetVideoIdx) {
-          ensureVideoLoaded(video);
-          video.classList.add('is-active');
-          video.play().catch((err) => {
-            console.debug(`[ShopHero] Video ${i} autoplay failed:`, err.message);
-          });
-        } else {
-          video.classList.remove('is-active');
-          setTimeout(() => {
-            if (!video.classList.contains('is-active')) {
-              video.pause();
-            }
-          }, VIDEO_FADE_DURATION + 100);
-        }
-      });
-
-      if (heroFallback) {
-        heroFallback.src = posterImages[slideIndex] || posterImages[0];
-      }
-
-      // 다음 슬라이드 영상 프리로드
-      const nextSlideIdx = (slideIndex + 1) % SLIDE_COUNT;
-      const nextVideoIdx = slideToVideo[nextSlideIdx];
-      ensureVideoLoaded(heroVideos[nextVideoIdx]);
-    }
-
-    function goToSlide(index: number) {
-      if (isTransitioning || index === currentSlide) return;
-      isTransitioning = true;
-
-      const oldSlide = slides[currentSlide];
-      const newSlide = slides[index];
-
-      // Update indicators
-      indicators.forEach((ind, i) => {
-        ind.classList.remove('is-active', 'is-done');
-        if (i < index) ind.classList.add('is-done');
-      });
-      indicators[index].classList.add('is-active');
-
-      // Switch video
-      switchVideo(index);
-
-      // Animate out, then swap and animate in
-      const outTl = animateSlideOut(oldSlide);
-      outTl.call(() => {
-        oldSlide.classList.remove('is-active');
-        newSlide.classList.add('is-active');
-        currentSlide = index;
-        animateSlideIn(newSlide);
-      });
-
-      startProgress(index);
-    }
-
-    function nextSlide() {
-      const next = (currentSlide + 1) % SLIDE_COUNT;
-      goToSlide(next);
-    }
-
-    // =====================
-    // PROGRESS BAR & AUTO-PLAY
-    // =====================
-    function startProgress(index: number) {
-      if (progressTween) progressTween.kill();
-
-      indicators.forEach((ind) => {
-        const bar = ind.querySelector('.shop-hero__indicator-bar') as HTMLElement;
-        gsap.set(bar, { width: '0%' });
-      });
-
-      indicators.forEach((ind, i) => {
-        if (i < index) {
-          const bar = ind.querySelector('.shop-hero__indicator-bar') as HTMLElement;
-          gsap.set(bar, { width: '100%' });
-        }
-      });
-
-      const currentBar = indicators[index].querySelector('.shop-hero__indicator-bar') as HTMLElement;
-      progressTween = gsap.fromTo(currentBar,
-        { width: '0%' },
-        {
-          width: '100%',
-          duration: AUTO_PLAY_INTERVAL / 1000,
-          ease: 'none',
-          onComplete: nextSlide,
-        }
-      );
-    }
-
-    function startAutoPlay() {
-      startProgress(currentSlide);
-    }
-
-    function pauseAutoPlay() {
-      if (progressTween) progressTween.pause();
-    }
-
-    function resumeAutoPlay() {
-      if (progressTween) progressTween.resume();
-    }
-
-    // =====================
-    // INDICATOR CLICK HANDLERS
-    // =====================
-    indicators.forEach((indicator, i) => {
-      indicator.addEventListener('click', () => {
-        if (i !== currentSlide && !isTransitioning) {
-          goToSlide(i);
-        }
-      }, { signal });
-    });
-
-    // Pause on hover
-    function handleHeroMouseLeave() {
-      if (initialAnimationDone) resumeAutoPlay();
-    }
-    hero.addEventListener('mouseenter', pauseAutoPlay, { signal });
-    hero.addEventListener('mouseleave', handleHeroMouseLeave, { signal });
-
-    // =====================
-    // MAGNETIC BUTTON
-    // =====================
-    const magneticBtns = hero.querySelectorAll('[data-magnetic]');
-    magneticBtns.forEach((btn) => {
-      const button = btn as HTMLElement;
-      button.addEventListener('mousemove', (e: MouseEvent) => {
-        const rect = button.getBoundingClientRect();
-        gsap.to(button, {
-          x: (e.clientX - rect.left - rect.width / 2) * 0.2,
-          y: (e.clientY - rect.top - rect.height / 2) * 0.2,
-          duration: 0.3, ease: 'power2.out',
-        });
-      }, { signal });
-      button.addEventListener('mouseleave', () => {
-        gsap.to(button, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' });
-      }, { signal });
-    });
-
-    // =====================
-    // INITIAL ENTRANCE TIMELINE
-    // =====================
-    // Background zoom
-    gsap.fromTo(bgWrapper,
-      { scale: 1.15 },
-      { scale: 1, duration: 2.0, ease: 'power2.out', delay: 0.3 }
-    );
-
-    const tl = gsap.timeline({ delay: 0.3 });
-
-    // First slide content
-    tl.add(animateSlideIn(slides[0], true));
-
-    // CTA
-    gsap.set(ctaEl, { opacity: 0, y: 15 });
-    tl.to(ctaEl, {
-      opacity: 1, y: 0,
-      duration: 0.5, ease: 'power3.out'
-    }, '-=0.2');
-
-    // Trust Badge
-    gsap.set(trustEl, { opacity: 0, y: 15 });
-    tl.to(trustEl, {
-      opacity: 1, y: 0,
-      duration: 0.5, ease: 'power3.out'
-    }, '-=0.15');
-
-    // Indicators
-    tl.to(indicatorsContainer, {
-      opacity: 1, y: 0,
-      duration: 0.4, ease: 'power2.out'
-    }, '-=0.15');
-
-    // Scroll indicator
-    tl.to(scrollEl, {
-      opacity: 0.5,
-      duration: 0.6
-    }, '-=0.1');
-
-    // Start auto-play
-    tl.call(() => {
-      initialAnimationDone = true;
-      startAutoPlay();
-    });
-
-    // =====================
-    // SCROLL PARALLAX
-    // =====================
-    gsap.to(bgWrapper, {
-      yPercent: 25,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: hero,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1,
-      }
-    });
-
-    ScrollTrigger.create({
-      trigger: hero,
-      start: 'top top',
-      end: '50% top',
-      scrub: 1,
-      onUpdate: (self) => {
-        const p = self.progress;
-        const activeSlide = slides[currentSlide];
-        const activeChars = activeSlide?.querySelectorAll('.char');
-
-        gsap.set([
-          activeSlide?.querySelector('[data-shop-hero-eyebrow]'),
-          activeSlide?.querySelector('[data-shop-hero-desc]'),
-          ctaEl, trustEl, indicatorsContainer, scrollEl
-        ].filter(Boolean), { opacity: 1 - p * 1.5 });
-
-        if (activeChars) {
-          gsap.set(activeChars, { opacity: 1 - p * 1.2 });
-        }
-      },
-    });
-
-    // =====================
-    // SCROLL INDICATOR CLICK
-    // =====================
-    function scrollToProducts() {
-      const productsSection = document.querySelector('#products');
-      if (productsSection) productsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    scrollEl?.addEventListener('click', scrollToProducts, { signal });
-
-    scrollEl?.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        scrollToProducts();
-      }
-    }, { signal });
-  }
-
-  // Cleanup
-  function cleanupShopHero() {
-    shopHeroInitialized = false;
-    const hero = document.querySelector('[data-shop-hero]') as HTMLElement;
-    if (!hero) return;
-
-    // 모든 이벤트 리스너 일괄 제거
-    if (activeAbortController) {
-      activeAbortController.abort();
-      activeAbortController = null;
-    }
-
-    ScrollTrigger.getAll().forEach(trigger => {
-      const triggerEl = trigger.vars?.trigger;
-      if (triggerEl && hero.contains(triggerEl as Node)) {
-        trigger.kill();
-      } else if (triggerEl === hero) {
-        trigger.kill();
-      }
-    });
-
-    const heroElements = hero.querySelectorAll('*');
-    heroElements.forEach(el => gsap.killTweensOf(el));
-    gsap.killTweensOf(hero);
-  }
+  import { initShopHero, cleanupShopHero } from './shop-hero-animations';
 
   document.addEventListener('DOMContentLoaded', initShopHero);
   document.addEventListener('astro:page-load', initShopHero);
   document.addEventListener('astro:before-preparation', cleanupShopHero);
+
+  // AI 상담 button → open chatbot
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-open-chat]');
+    if (btn) window.dispatchEvent(new CustomEvent('open-chatbot'));
+  });
 </script>
