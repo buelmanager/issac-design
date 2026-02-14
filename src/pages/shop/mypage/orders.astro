@@ -99,6 +99,67 @@ function getItemSummary(items: any): string {
         debugLog.forEach(log => console.log('[orders.astro]', log));
       </script>
 
+      <!-- 환불 사유 다이얼로그 -->
+      <div class="refund-dialog__overlay" id="refund-dialog" style="display:none;">
+        <div class="refund-dialog">
+          <div class="refund-dialog__header">
+            <h3 class="refund-dialog__title">환불 사유 선택</h3>
+            <button class="refund-dialog__close" id="refund-dialog-close" type="button" aria-label="닫기">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <p class="refund-dialog__desc">환불 사유를 선택해주세요.</p>
+
+          <div class="refund-dialog__options" id="refund-reasons">
+            <label class="refund-dialog__option">
+              <input type="radio" name="refund_reason" value="단순 변심" />
+              <span class="refund-dialog__radio"></span>
+              <span>단순 변심</span>
+            </label>
+            <label class="refund-dialog__option">
+              <input type="radio" name="refund_reason" value="제품 불량 / 파손" />
+              <span class="refund-dialog__radio"></span>
+              <span>제품 불량 / 파손</span>
+            </label>
+            <label class="refund-dialog__option">
+              <input type="radio" name="refund_reason" value="오배송 (다른 제품 수령)" />
+              <span class="refund-dialog__radio"></span>
+              <span>오배송 (다른 제품 수령)</span>
+            </label>
+            <label class="refund-dialog__option">
+              <input type="radio" name="refund_reason" value="배송 지연" />
+              <span class="refund-dialog__radio"></span>
+              <span>배송 지연</span>
+            </label>
+            <label class="refund-dialog__option">
+              <input type="radio" name="refund_reason" value="제품이 설명과 다름" />
+              <span class="refund-dialog__radio"></span>
+              <span>제품이 설명과 다름</span>
+            </label>
+            <label class="refund-dialog__option refund-dialog__option--other">
+              <input type="radio" name="refund_reason" value="기타" id="refund-reason-other" />
+              <span class="refund-dialog__radio"></span>
+              <span>기타</span>
+            </label>
+            <textarea
+              class="refund-dialog__textarea"
+              id="refund-reason-text"
+              placeholder="환불 사유를 직접 입력해주세요"
+              maxlength="200"
+              style="display:none;"
+            ></textarea>
+          </div>
+
+          <div class="refund-dialog__footer">
+            <button class="refund-dialog__btn refund-dialog__btn--cancel" id="refund-dialog-cancel" type="button">취소</button>
+            <button class="refund-dialog__btn refund-dialog__btn--submit" id="refund-dialog-submit" type="button" disabled>환불 요청</button>
+          </div>
+        </div>
+      </div>
+
       {orders.length === 0 ? (
         <div class="orders__empty">
           <div class="orders__empty-icon">
@@ -666,73 +727,135 @@ function getItemSummary(items: any): string {
       });
     });
 
-    // ---- Refund buttons ----
-    document.querySelectorAll<HTMLButtonElement>('.orders__refund-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
+    // ---- Refund dialog setup ----
+    const dialog = document.getElementById('refund-dialog') as HTMLDivElement | null;
+    const dialogCloseBtn = document.getElementById('refund-dialog-close') as HTMLButtonElement | null;
+    const dialogCancelBtn = document.getElementById('refund-dialog-cancel') as HTMLButtonElement | null;
+    const dialogSubmitBtn = document.getElementById('refund-dialog-submit') as HTMLButtonElement | null;
+    const reasonOtherRadio = document.getElementById('refund-reason-other') as HTMLInputElement | null;
+    const reasonTextarea = document.getElementById('refund-reason-text') as HTMLTextAreaElement | null;
+    const allRadios = document.querySelectorAll<HTMLInputElement>('input[name="refund_reason"]');
 
-        const orderId = btn.dataset.orderId;
-        const amount = Number(btn.dataset.paymentAmount);
-        if (!orderId || !amount) return;
+    let pendingRefund: { orderId: string; amount: number; btn: HTMLButtonElement } | null = null;
 
-        const formattedAmount = new Intl.NumberFormat('ko-KR').format(amount);
-        const confirmed = window.confirm(
-          `${formattedAmount}원을 환불 요청하시겠습니까?\n\n환불 처리는 결제 수단에 따라 1~5영업일이 소요될 수 있습니다.`
-        );
-        if (!confirmed) return;
+    function openDialog(orderId: string, amount: number, btn: HTMLButtonElement) {
+      pendingRefund = { orderId, amount, btn };
+      // reset state
+      allRadios.forEach(r => (r.checked = false));
+      if (reasonTextarea) { reasonTextarea.value = ''; reasonTextarea.style.display = 'none'; }
+      if (dialogSubmitBtn) dialogSubmitBtn.disabled = true;
+      if (dialog) { dialog.style.display = 'flex'; requestAnimationFrame(() => dialog.classList.add('refund-dialog__overlay--active')); }
+      document.body.style.overflow = 'hidden';
+    }
 
-        btn.disabled = true;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `
-          <svg class="orders__refund-spinner" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="8" stroke-linecap="round"/>
-          </svg>
-          처리 중...
-        `;
+    function closeDialog() {
+      if (dialog) { dialog.classList.remove('refund-dialog__overlay--active'); setTimeout(() => { dialog.style.display = 'none'; }, 200); }
+      document.body.style.overflow = '';
+      pendingRefund = null;
+    }
 
-        try {
-          const res = await fetch('/api/payment/refund', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              order_id: orderId,
-              amount: amount,
-              reason: '고객 요청에 의한 환불',
-            }),
-          });
+    function getSelectedReason(): string | null {
+      const checked = document.querySelector<HTMLInputElement>('input[name="refund_reason"]:checked');
+      if (!checked) return null;
+      if (checked.value === '기타') {
+        const text = reasonTextarea?.value.trim();
+        return text ? `기타: ${text}` : null;
+      }
+      return checked.value;
+    }
 
-          const data = await res.json().catch(() => null);
-
-          if (res.ok && data?.success) {
-            // Update the status badge
-            const card = btn.closest('[data-order-card]');
-            if (card) {
-              const badge = card.querySelector('[data-status-badge]');
-              if (badge) {
-                badge.className = 'orders__status orders__status--refunded';
-                badge.textContent = '환불됨';
-              }
-              card.setAttribute('data-order-status', 'refunded');
-            }
-
-            // Remove refund button
-            const actionsEl = btn.closest('.orders__detail-actions');
-            if (actionsEl) {
-              actionsEl.innerHTML = '<p style="font-size:var(--font-size-sm);color:#c084fc;">환불이 요청되었습니다.</p>';
-            }
-
-            alert('환불 요청이 완료되었습니다.');
+    // radio change → toggle textarea, enable submit
+    allRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        const isOther = reasonOtherRadio?.checked;
+        if (reasonTextarea) reasonTextarea.style.display = isOther ? 'block' : 'none';
+        if (dialogSubmitBtn) {
+          if (isOther) {
+            dialogSubmitBtn.disabled = !reasonTextarea?.value.trim();
           } else {
-            const errorMsg = data?.error || data?.message || '환불 처리 중 오류가 발생했습니다.';
-            alert(`환불 실패: ${errorMsg}`);
-            btn.disabled = false;
-            btn.innerHTML = originalText;
+            dialogSubmitBtn.disabled = false;
           }
-        } catch (err) {
-          alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      });
+    });
+
+    // textarea input → enable/disable submit when "기타" selected
+    reasonTextarea?.addEventListener('input', () => {
+      if (reasonOtherRadio?.checked && dialogSubmitBtn) {
+        dialogSubmitBtn.disabled = !reasonTextarea.value.trim();
+      }
+    });
+
+    dialogCloseBtn?.addEventListener('click', closeDialog);
+    dialogCancelBtn?.addEventListener('click', closeDialog);
+    dialog?.addEventListener('click', (e) => { if (e.target === dialog) closeDialog(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && dialog?.style.display !== 'none') closeDialog(); });
+
+    // ---- Submit refund ----
+    dialogSubmitBtn?.addEventListener('click', async () => {
+      if (!pendingRefund) return;
+      const reason = getSelectedReason();
+      if (!reason) return;
+
+      const { orderId, amount, btn } = pendingRefund;
+      const formattedAmount = new Intl.NumberFormat('ko-KR').format(amount);
+      const confirmed = window.confirm(
+        `${formattedAmount}원을 환불 요청하시겠습니까?\n사유: ${reason}\n\n환불 처리는 결제 수단에 따라 1~5영업일이 소요될 수 있습니다.`
+      );
+      if (!confirmed) return;
+
+      closeDialog();
+      btn.disabled = true;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `
+        <svg class="orders__refund-spinner" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="8" stroke-linecap="round"/>
+        </svg>
+        처리 중...
+      `;
+
+      try {
+        const res = await fetch('/api/payment/refund', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId, amount, reason }),
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (res.ok && data?.success) {
+          const card = btn.closest('[data-order-card]');
+          if (card) {
+            const badge = card.querySelector('[data-status-badge]');
+            if (badge) { badge.className = 'orders__status orders__status--refunded'; badge.textContent = '환불됨'; }
+            card.setAttribute('data-order-status', 'refunded');
+          }
+          const actionsEl = btn.closest('.orders__detail-actions');
+          if (actionsEl) {
+            actionsEl.innerHTML = '<p style="font-size:var(--font-size-sm);color:#c084fc;">환불이 요청되었습니다.</p>';
+          }
+          alert('환불 요청이 완료되었습니다.');
+        } else {
+          const errorMsg = data?.error || data?.message || '환불 처리 중 오류가 발생했습니다.';
+          alert(`환불 실패: ${errorMsg}`);
           btn.disabled = false;
           btn.innerHTML = originalText;
         }
+      } catch {
+        alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    });
+
+    // ---- Refund buttons → open dialog ----
+    document.querySelectorAll<HTMLButtonElement>('.orders__refund-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const orderId = btn.dataset.orderId;
+        const amount = Number(btn.dataset.paymentAmount);
+        if (!orderId || !amount) return;
+        openDialog(orderId, amount, btn);
       });
     });
   }
@@ -751,5 +874,231 @@ function getItemSummary(items: any): string {
 
   :global(.orders__refund-spinner) {
     animation: orders-spin 0.8s linear infinite;
+  }
+
+  /* ---- Refund Reason Dialog ---- */
+  .refund-dialog__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    transition: background 0.2s ease, backdrop-filter 0.2s ease;
+    padding: var(--space-lg);
+  }
+
+  .refund-dialog__overlay--active {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  .refund-dialog {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-secondary, #1a1a1a);
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border-radius: var(--radius-xl, 16px);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    transform: translateY(12px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    overflow: hidden;
+  }
+
+  .refund-dialog__overlay--active .refund-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .refund-dialog__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg, 20px) var(--space-xl, 24px) 0;
+  }
+
+  .refund-dialog__title {
+    font-size: var(--font-size-lg, 18px);
+    font-weight: 700;
+    color: var(--text-primary, #fff);
+    letter-spacing: -0.02em;
+  }
+
+  .refund-dialog__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: var(--text-muted, #888);
+    cursor: pointer;
+    border-radius: var(--radius-sm, 6px);
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .refund-dialog__close:hover {
+    color: var(--text-primary, #fff);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .refund-dialog__desc {
+    font-size: var(--font-size-sm, 14px);
+    color: var(--text-muted, #888);
+    padding: var(--space-sm, 8px) var(--space-xl, 24px) 0;
+    line-height: 1.5;
+  }
+
+  .refund-dialog__options {
+    padding: var(--space-md, 16px) var(--space-xl, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .refund-dialog__option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 10px);
+    padding: var(--space-sm, 10px) var(--space-md, 12px);
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    font-size: var(--font-size-sm, 14px);
+    color: var(--text-secondary, #ccc);
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+
+  .refund-dialog__option:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary, #fff);
+  }
+
+  .refund-dialog__option input[type="radio"] {
+    display: none;
+  }
+
+  .refund-dialog__radio {
+    position: relative;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transition: border-color 0.15s;
+  }
+
+  .refund-dialog__radio::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--primary, #1a4d2e);
+    transform: scale(0);
+    transition: transform 0.15s ease;
+  }
+
+  .refund-dialog__option input[type="radio"]:checked ~ .refund-dialog__radio {
+    border-color: var(--primary, #1a4d2e);
+  }
+
+  .refund-dialog__option input[type="radio"]:checked ~ .refund-dialog__radio::after {
+    transform: scale(1);
+  }
+
+  .refund-dialog__option input[type="radio"]:checked ~ span:last-child {
+    color: var(--text-primary, #fff);
+    font-weight: 500;
+  }
+
+  .refund-dialog__textarea {
+    width: 100%;
+    min-height: 72px;
+    max-height: 120px;
+    padding: var(--space-sm, 10px) var(--space-md, 12px);
+    margin-top: var(--space-xs, 4px);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border-radius: var(--radius-md, 8px);
+    color: var(--text-primary, #fff);
+    font-size: var(--font-size-sm, 14px);
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s;
+    line-height: 1.5;
+  }
+
+  .refund-dialog__textarea::placeholder {
+    color: var(--text-muted, #666);
+  }
+
+  .refund-dialog__textarea:focus {
+    border-color: var(--primary, #1a4d2e);
+  }
+
+  .refund-dialog__footer {
+    display: flex;
+    gap: var(--space-sm, 8px);
+    padding: 0 var(--space-xl, 24px) var(--space-lg, 20px);
+    justify-content: flex-end;
+  }
+
+  .refund-dialog__btn {
+    padding: var(--space-sm, 10px) var(--space-xl, 20px);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+
+  .refund-dialog__btn--cancel {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary, #ccc);
+  }
+
+  .refund-dialog__btn--cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary, #fff);
+  }
+
+  .refund-dialog__btn--submit {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .refund-dialog__btn--submit:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+
+  .refund-dialog__btn--submit:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 719px) {
+    .refund-dialog__overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .refund-dialog {
+      max-width: 100%;
+      border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
+      transform: translateY(100%);
+    }
+
+    .refund-dialog__overlay--active .refund-dialog {
+      transform: translateY(0);
+    }
   }
 </style>
