@@ -1,11 +1,20 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { uploadImage } from '../../../lib/upload';
-import { Upload, Link, X, Loader2, AlertCircle } from 'lucide-react';
+import { Upload, Link, X, Loader2, AlertCircle, ImageOff } from 'lucide-react';
 
 interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
   folder?: string;
+}
+
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 export function ImageUploader({ value, onChange, folder = 'general' }: ImageUploaderProps) {
@@ -14,7 +23,17 @@ export function ImageUploader({ value, onChange, folder = 'general' }: ImageUplo
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [value]);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -23,15 +42,17 @@ export function ImageUploader({ value, onChange, folder = 'general' }: ImageUplo
     }
     setUploading(true);
     setError(null);
+    setDragOver(false);
     try {
       const url = await uploadImage(file, folder);
-      onChange(url);
+      if (mountedRef.current) onChange(url);
     } catch (err: any) {
-      const msg = err?.message ?? '업로드에 실패했습니다';
-      console.error('Upload error:', msg);
-      setError(msg);
+      if (mountedRef.current) {
+        const msg = err?.message ?? '업로드에 실패했습니다';
+        setError(msg);
+      }
     } finally {
-      setUploading(false);
+      if (mountedRef.current) setUploading(false);
     }
   }, [folder, onChange]);
 
@@ -43,10 +64,15 @@ export function ImageUploader({ value, onChange, folder = 'general' }: ImageUplo
   }, [handleFile]);
 
   const handleUrlConfirm = useCallback(() => {
-    if (urlInput.trim()) {
-      onChange(urlInput.trim());
-      setUrlInput('');
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    if (!isValidUrl(trimmed)) {
+      setError('올바른 URL 형식이 아닙니다. http:// 또는 https://로 시작해야 합니다.');
+      return;
     }
+    setError(null);
+    onChange(trimmed);
+    setUrlInput('');
   }, [urlInput, onChange]);
 
   const handleClear = useCallback(() => {
@@ -57,7 +83,19 @@ export function ImageUploader({ value, onChange, folder = 'general' }: ImageUplo
     <div className="img-uploader">
       {value ? (
         <div className="img-uploader-preview">
-          <img src={value} alt="미리보기" className="img-uploader-img" />
+          {imgError ? (
+            <div className="img-uploader-broken">
+              <ImageOff size={32} />
+              <span>이미지를 불러올 수 없습니다</span>
+            </div>
+          ) : (
+            <img
+              src={value}
+              alt="미리보기"
+              className="img-uploader-img"
+              onError={() => setImgError(true)}
+            />
+          )}
           <button type="button" className="img-uploader-remove" onClick={handleClear}>
             <X size={14} />
           </button>
@@ -116,15 +154,18 @@ export function ImageUploader({ value, onChange, folder = 'general' }: ImageUplo
           ) : (
             <div className="img-uploader-url">
               <input
-                className="admin-input"
+                className={`admin-input${urlInput.trim() && !isValidUrl(urlInput.trim()) ? ' admin-input-invalid' : ''}`}
                 value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
+                onChange={(e) => { setUrlInput(e.target.value); setError(null); }}
                 placeholder="https://..."
                 onKeyDown={(e) => e.key === 'Enter' && handleUrlConfirm()}
               />
-              <button type="button" className="admin-btn admin-btn-primary" onClick={handleUrlConfirm} disabled={!urlInput.trim()}>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={handleUrlConfirm} disabled={!urlInput.trim() || !isValidUrl(urlInput.trim())}>
                 확인
               </button>
+              {urlInput.trim() && !isValidUrl(urlInput.trim()) && (
+                <p className="img-uploader-url-hint">http:// 또는 https://로 시작하는 URL을 입력하세요</p>
+              )}
             </div>
           )}
 

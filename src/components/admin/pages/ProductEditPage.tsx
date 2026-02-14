@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { Product, ProductCategory } from '../../../types/admin';
 import type { Json } from '../../../types/database';
 import {
@@ -147,6 +147,9 @@ export default function ProductEditPage() {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [savingDefaults, setSavingDefaults] = useState(false);
+  const saveLockRef = useRef(false);
+  const formRef = useRef(form);
+  formRef.current = form;
 
   const updateField = useCallback(<K extends keyof ProductForm>(key: K, value: ProductForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -154,17 +157,27 @@ export default function ProductEditPage() {
 
   useEffect(() => {
     async function loadCategories() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('product_categories')
         .select('id, name, description, defaults, order_index, is_visible, is_seed, updated_at')
         .order('order_index');
+      if (error) {
+        console.error('카테고리 로딩 실패:', error.message);
+        toast.error('카테고리 목록을 불러올 수 없습니다');
+        return;
+      }
       setCategories(data ?? []);
     }
     async function loadProducts() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('products')
         .select('id, name')
         .order('name');
+      if (error) {
+        console.error('상품 목록 로딩 실패:', error.message);
+        toast.error('상품 목록을 불러올 수 없습니다');
+        return;
+      }
       setAllProducts(data ?? []);
     }
     loadCategories();
@@ -193,63 +206,82 @@ export default function ProductEditPage() {
   }, [id, isNew, navigate]);
 
   const handleSave = useCallback(async () => {
-    if (!form.name.trim()) {
+    // 레이스 컨디션 방지: useRef 기반 잠금
+    if (saveLockRef.current) return;
+
+    const currentForm = formRef.current;
+
+    if (!currentForm.name.trim()) {
       toast.error('제품명을 입력해 주세요');
       return;
     }
+
+    // 썸네일 미설정 경고
+    if (!currentForm.thumbnail) {
+      toast('썸네일이 설정되지 않았습니다. 쇼핑몰에서 이미지가 표시되지 않을 수 있습니다.', {
+        icon: '⚠️',
+        duration: 4000,
+      });
+    }
+
+    saveLockRef.current = true;
     setSaving(true);
-    const slug = form.slug || toSlug(form.name) || `product-${Date.now()}`;
+    const slug = currentForm.slug || toSlug(currentForm.name) || `product-${Date.now()}`;
     const payload = {
-      name: form.name,
+      name: currentForm.name,
       slug,
-      category_id: form.category_id || null,
-      price: form.price,
-      price_range: form.price_range || null,
-      description: form.description || null,
-      full_description: form.full_description || null,
-      tags: form.tags as Json,
-      is_visible: form.is_visible,
-      is_featured: form.is_featured,
-      is_new: form.is_new,
-      popularity: form.popularity,
-      thumbnail: form.thumbnail,
-      images: form.images as unknown as Json,
-      material_images: form.material_images as unknown as Json,
-      lighting_images: form.lighting_images as unknown as Json,
-      options: form.options as unknown as Json,
-      production_time: form.production_time || null,
-      included_services: form.included_services as Json,
-      features: form.features as Json,
-      specs: form.specs as unknown as Json,
-      installation_gallery: form.installation_gallery as unknown as Json,
-      production_steps: form.production_steps as unknown as Json,
-      related_product_ids: form.related_product_ids as Json,
+      category_id: currentForm.category_id || null,
+      price: currentForm.price,
+      price_range: currentForm.price_range || null,
+      description: currentForm.description || null,
+      full_description: currentForm.full_description || null,
+      tags: currentForm.tags as Json,
+      is_visible: currentForm.is_visible,
+      is_featured: currentForm.is_featured,
+      is_new: currentForm.is_new,
+      popularity: currentForm.popularity,
+      thumbnail: currentForm.thumbnail,
+      images: currentForm.images as unknown as Json,
+      material_images: currentForm.material_images as unknown as Json,
+      lighting_images: currentForm.lighting_images as unknown as Json,
+      options: currentForm.options as unknown as Json,
+      production_time: currentForm.production_time || null,
+      included_services: currentForm.included_services as Json,
+      features: currentForm.features as Json,
+      specs: currentForm.specs as unknown as Json,
+      installation_gallery: currentForm.installation_gallery as unknown as Json,
+      production_steps: currentForm.production_steps as unknown as Json,
+      related_product_ids: currentForm.related_product_ids as Json,
     };
 
-    if (isNew) {
-      const newId = crypto.randomUUID();
-      const { error } = await supabase
-        .from('products')
-        .insert({ ...payload, id: newId, is_seed: false });
-      if (error) {
-        toast.error('저장에 실패했습니다');
+    try {
+      if (isNew) {
+        const newId = crypto.randomUUID();
+        const { error } = await supabase
+          .from('products')
+          .insert({ ...payload, id: newId, is_seed: false });
+        if (error) {
+          toast.error('저장에 실패했습니다');
+        } else {
+          toast.success('제품이 생성되었습니다');
+          navigate(`/products/${newId}`);
+        }
       } else {
-        toast.success('제품이 생성되었습니다');
-        navigate(`/products/${newId}`);
+        const { error } = await supabase
+          .from('products')
+          .update(payload)
+          .eq('id', id!);
+        if (error) {
+          toast.error('저장에 실패했습니다');
+        } else {
+          toast.success('저장되었습니다');
+        }
       }
-    } else {
-      const { error } = await supabase
-        .from('products')
-        .update(payload)
-        .eq('id', id!);
-      if (error) {
-        toast.error('저장에 실패했습니다');
-      } else {
-        toast.success('저장되었습니다');
-      }
+    } finally {
+      setSaving(false);
+      saveLockRef.current = false;
     }
-    setSaving(false);
-  }, [form, isNew, id, navigate]);
+  }, [isNew, id, navigate]);
 
   const handleDelete = useCallback(async () => {
     if (!id || isNew) return;

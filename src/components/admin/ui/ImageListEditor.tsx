@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { DragSortList } from './DragSortList';
-import { Plus, X, Pencil } from 'lucide-react';
+import { Plus, X, Pencil, ImageOff } from 'lucide-react';
 
 interface ImageListEditorProps {
   images: string[];
@@ -14,9 +14,8 @@ interface ImageItem {
   url: string;
 }
 
-let nextId = 1;
-function makeId() {
-  return `img-${nextId++}-${Date.now()}`;
+function makeId(): string {
+  return crypto.randomUUID();
 }
 
 function toItems(urls: string[]): ImageItem[] {
@@ -27,31 +26,34 @@ export function ImageListEditor({ images, onChange, folder = 'products' }: Image
   const [items, setItems] = useState<ImageItem[]>(() => toItems(images));
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [brokenIds, setBrokenIds] = useState<Set<string>>(new Set());
 
-  const sync = useCallback((newItems: ImageItem[]) => {
-    setItems(newItems);
-    onChange(newItems.map((i) => i.url));
+  const syncItems = useCallback((updater: (prev: ImageItem[]) => ImageItem[]) => {
+    setItems((prev) => {
+      const next = updater(prev);
+      onChange(next.map((i) => i.url));
+      return next;
+    });
   }, [onChange]);
 
   const handleAdd = useCallback((url: string) => {
     if (!url) return;
-    const newItems = [...items, { id: makeId(), url }];
-    sync(newItems);
+    syncItems((prev) => [...prev, { id: makeId(), url }]);
     setShowAdd(false);
-  }, [items, sync]);
+  }, [syncItems]);
 
   const handleRemove = useCallback((id: string) => {
-    sync(items.filter((i) => i.id !== id));
-  }, [items, sync]);
+    syncItems((prev) => prev.filter((i) => i.id !== id));
+  }, [syncItems]);
 
   const handleEdit = useCallback((id: string, url: string) => {
-    sync(items.map((i) => (i.id === id ? { ...i, url } : i)));
+    syncItems((prev) => prev.map((i) => (i.id === id ? { ...i, url } : i)));
     setEditingId(null);
-  }, [items, sync]);
+  }, [syncItems]);
 
   const handleReorder = useCallback((reordered: ImageItem[]) => {
-    sync(reordered);
-  }, [sync]);
+    syncItems(() => reordered);
+  }, [syncItems]);
 
   return (
     <div className="img-list-editor">
@@ -72,7 +74,20 @@ export function ImageListEditor({ images, onChange, folder = 'products' }: Image
                 </div>
               ) : (
                 <>
-                  {item.url && <img src={item.url} alt="" className="img-list-thumb" />}
+                  {item.url && (
+                    brokenIds.has(item.id) ? (
+                      <div className="img-list-thumb img-list-thumb-broken">
+                        <ImageOff size={16} />
+                      </div>
+                    ) : (
+                      <img
+                        src={item.url}
+                        alt=""
+                        className="img-list-thumb"
+                        onError={() => setBrokenIds((prev) => new Set(prev).add(item.id))}
+                      />
+                    )
+                  )}
                   <span className="img-list-url">{item.url}</span>
                   <button type="button" className="admin-btn-icon" onClick={() => setEditingId(item.id)}>
                     <Pencil size={14} />
