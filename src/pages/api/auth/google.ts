@@ -35,11 +35,20 @@ export const POST: APIRoute = async ({ request, url }) => {
   });
 
   if (error || !data.url) {
+    PaymentLogger.error('OAUTH_GOOGLE_FAILED', error ?? new Error('No redirect URL returned'), {
+      ip,
+      error_code: error?.status,
+      error_message: error?.message,
+      redirect: redirectTo,
+      callback_url: callbackUrl.toString(),
+    });
     return new Response(JSON.stringify({
       success: false,
       error: { code: 'OAUTH_ERROR', message: 'Google 로그인을 시작할 수 없습니다.' },
     }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
+
+  PaymentLogger.info('OAUTH_GOOGLE_REDIRECT', { ip, oauth_url: data.url });
 
   return new Response(JSON.stringify({
     success: true,
