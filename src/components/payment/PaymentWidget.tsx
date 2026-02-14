@@ -12,8 +12,8 @@ interface PaymentWidgetProps {
 
 interface TossWidgets {
   setAmount: (opts: { currency: string; value: number }) => Promise<void>;
-  renderPaymentMethods: (opts: { el: string; variantKey?: string }) => Promise<void>;
-  renderAgreement: (opts: { el: string; variantKey?: string }) => Promise<void>;
+  renderPaymentMethods: (opts: { selector: string; variantKey?: string }) => Promise<void>;
+  renderAgreement: (opts: { selector: string; variantKey?: string }) => Promise<void>;
   requestPayment: (opts: {
     orderId: string;
     orderName: string;
@@ -125,12 +125,12 @@ export default function PaymentWidget({
         await widgets.setAmount({ currency: 'KRW', value: amount });
         console.log('[PaymentWidget] setAmount OK');
 
-        console.log('[PaymentWidget] renderPaymentMethods({ el: "#payment-methods" })...');
-        await widgets.renderPaymentMethods({ el: '#payment-methods', variantKey: 'DEFAULT' });
+        console.log('[PaymentWidget] renderPaymentMethods({ selector: "#payment-methods" })...');
+        await widgets.renderPaymentMethods({ selector: '#payment-methods', variantKey: 'DEFAULT' });
         console.log('[PaymentWidget] renderPaymentMethods OK');
 
-        console.log('[PaymentWidget] renderAgreement({ el: "#payment-agreement" })...');
-        await widgets.renderAgreement({ el: '#payment-agreement', variantKey: 'AGREEMENT' });
+        console.log('[PaymentWidget] renderAgreement({ selector: "#payment-agreement" })...');
+        await widgets.renderAgreement({ selector: '#payment-agreement', variantKey: 'AGREEMENT' });
         console.log('[PaymentWidget] renderAgreement OK');
 
         console.log('[PaymentWidget] ALL INIT COMPLETE');
@@ -211,8 +211,8 @@ export default function PaymentWidget({
         </div>
       )}
 
-      <div id="payment-methods" style={{ display: loading ? 'none' : 'block' }} />
-      <div id="payment-agreement" style={{ display: loading ? 'none' : 'block' }} />
+      <div id="payment-methods" style={loading ? { visibility: 'hidden', height: 0, overflow: 'hidden' } : {}} />
+      <div id="payment-agreement" style={loading ? { visibility: 'hidden', height: 0, overflow: 'hidden' } : {}} />
 
       {!loading && (
         <button
