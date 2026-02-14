@@ -169,6 +169,9 @@ const { categories } = await getProducts();
         <a href="/shop/login" class="shop-navbar__mobile-link" data-mobile-auth-link>
           로그인 / 회원가입
         </a>
+        <a href="/shop/mypage/quotes" class="shop-navbar__mobile-link" data-mobile-auth-extra style="display:none;">견적 내역</a>
+        <a href="/shop/mypage/orders" class="shop-navbar__mobile-link" data-mobile-auth-extra style="display:none;">주문 내역</a>
+        <button type="button" class="shop-navbar__mobile-link shop-navbar__mobile-link--logout" data-mobile-logout style="display:none;">로그아웃</button>
       </div>
       <div class="shop-navbar__mobile-cta">
         <a href="/shop/quote" class="shop-navbar__mobile-cta-btn">무료 견적 문의</a>
@@ -607,6 +610,18 @@ const { categories } = await getProducts();
     }
   }
 
+  .shop-navbar__mobile-link--logout {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ef4444;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    padding: var(--space-sm) 0;
+    text-align: left;
+  }
+
   /* Auth dropdown */
   .shop-navbar__auth-wrapper {
     position: relative;
@@ -866,6 +881,17 @@ const { categories } = await getProducts();
           if (mobileAuthLink) {
             mobileAuthLink.href = '/shop/mypage';
             mobileAuthLink.textContent = '마이페이지';
+            navbar.querySelectorAll('[data-mobile-auth-extra]').forEach((el) => {
+              (el as HTMLElement).style.display = '';
+            });
+            const mobileLogout = navbar.querySelector('[data-mobile-logout]') as HTMLButtonElement | null;
+            if (mobileLogout) {
+              mobileLogout.style.display = '';
+              mobileLogout.addEventListener('click', async () => {
+                try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } catch {}
+                window.location.href = '/shop';
+              });
+            }
           }
         }
       } catch {
