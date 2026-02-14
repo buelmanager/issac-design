@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { SimulatorConfig } from '../../../types/admin';
 import type { Json } from '../../../types/database';
 import { FormField, TagInput, ColorPicker, LoadingSpinner } from '../ui';

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { Product, ProductCategory } from '../../../types/admin';
 import type { Database } from '../../../types/database';
 import { DataTable, SearchInput, Pagination, ConfirmModal, EmptyState, Toggle } from '../ui';

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DataTable, SearchInput, Pagination, LoadingSpinner, EmptyState } from '../ui';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { Users, X, Mail, Phone, Calendar, ShoppingBag, CreditCard } from 'lucide-react';
 
@@ -66,6 +67,7 @@ function formatCurrency(amount: number): string {
 }
 
 export default function MembersPage() {
+  const { accessToken } = useAuth();
   const [members, setMembers] = useState<MemberListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -88,7 +90,9 @@ export default function MembersPage() {
       params.set('sort', 'created_at');
       params.set('sort_dir', 'desc');
 
-      const res = await fetch(`/api/admin/members?${params.toString()}`);
+      const res = await fetch(`/api/admin/members?${params.toString()}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || 'Failed');
       setMembers(json.data.members);
@@ -97,13 +101,15 @@ export default function MembersPage() {
       toast.error('회원 목록을 불러올 수 없습니다');
     }
     setLoading(false);
-  }, [search, providerFilter, page]);
+  }, [search, providerFilter, page, accessToken]);
 
   const openDetail = useCallback(async (member: MemberListItem) => {
     setSelectedMember(member);
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/admin/members?member_id=${member.id}`);
+      const res = await fetch(`/api/admin/members?member_id=${member.id}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || 'Failed');
       setMemberDetail(json.data);
@@ -111,7 +117,7 @@ export default function MembersPage() {
       toast.error('회원 상세 정보를 불러올 수 없습니다');
     }
     setDetailLoading(false);
-  }, []);
+  }, [accessToken]);
 
   const closeDetail = useCallback(() => {
     setSelectedMember(null);

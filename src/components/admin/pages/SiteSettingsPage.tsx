@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { SiteConfig } from '../../../types/admin';
 import { TabNav, FormField, LoadingSpinner } from '../ui';
 import { Save } from 'lucide-react';

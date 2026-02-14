@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { PortfolioItem } from '../../../types/admin';
 import { FormField, Toggle, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';
 import toast from 'react-hot-toast';

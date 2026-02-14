@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { HeroSlide, LandingSection, TrustIndicator, ClientLogo } from '../../../types/admin';
 import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner } from '../ui';
 import toast from 'react-hot-toast';

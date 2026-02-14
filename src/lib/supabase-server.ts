@@ -31,20 +31,18 @@ export function createAstroServerClient(request: Request) {
         return parseCookieHeader(cookieHeader);
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          responseHeaders.append(
-            'Set-Cookie',
-            serializeCookieHeader(name, value, {
-              ...options,
-              // 보안 쿠키 설정 강제
-              httpOnly: true,
-              secure: true,
-              sameSite: 'lax',
-              path: '/',
-            }),
-          );
-        });
-      },
+         cookiesToSet.forEach(({ name, value, options }) => {
+           responseHeaders.append(
+             'Set-Cookie',
+             serializeCookieHeader(name, value, {
+               ...options,
+               secure: true,
+               sameSite: 'lax',
+               path: '/',
+             }),
+           );
+         });
+       },
     },
   });
 

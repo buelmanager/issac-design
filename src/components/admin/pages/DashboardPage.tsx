@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { QuoteRequest, ContactInquiry } from '../../../types/admin';
 import { StatusBadge, LoadingSpinner } from '../ui';
 import { Package, FileText, MessageSquare, BookOpen } from 'lucide-react';

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { BlogPost } from '../../../types/admin';
 import { DataTable, SearchInput, Pagination, ConfirmModal, EmptyState, StatusBadge, Toggle } from '../ui';
 import toast from 'react-hot-toast';

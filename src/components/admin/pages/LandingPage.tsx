@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { LandingSection, HeroSlide, ServiceItem, SignageType, ClientProject, ProjectFilterTab } from '../../../types/admin';
 import type { LandingFaq, InquiryType, NavigationItem, SiteConfig } from '../../../types/admin';
 import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
+import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { ProductCategory } from '../../../types/admin';
 import type { Database } from '../../../types/database';
 import { DragSortList, Toggle, ConfirmModal, LoadingSpinner, EmptyState } from '../ui';
