@@ -69,7 +69,7 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
   import PaymentWidget from '../../components/payment/PaymentWidget';
   import OrderSummary from '../../components/payment/OrderSummary';
 
-  document.addEventListener('DOMContentLoaded', async () => {
+  async function initPayment() {
     const CART_KEY = 'paymentCart';
     const loadingEl = document.getElementById('payment-loading');
     const contentEl = document.getElementById('payment-content');
@@ -184,7 +184,13 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
     } catch {
       showEmpty();
     }
-  });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPayment);
+  } else {
+    initPayment();
+  }
 </script>
 
 <style>

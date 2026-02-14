@@ -96,32 +96,51 @@ export const POST: APIRoute = async ({ request }) => {
     const MIN_ORDER_AMOUNT = 100; // 토스 카드결제 최소금액
     const MAX_ORDER_AMOUNT = 500_000_000; // 총 주문 최대 5억원
 
-    const orderItems: OrderItem[] = items.map((item: Record<string, unknown>, index: number) => {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i] as Record<string, unknown>;
       const unitPrice = Number(item.unit_price);
-      const quantity = Number(item.quantity);
+      const qty = Number(item.quantity);
 
       if (!isValidAmount(unitPrice)) {
-        throw new Error(`Item ${index}: invalid unit_price`);
+        PaymentLogger.warn('ORDER_INVALID_PRICE', { index: i, unit_price: item.unit_price });
+        cleanup();
+        return jsonResponse<ApiResponse>(400, {
+          success: false,
+          error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 상품 가격입니다' },
+        });
       }
-      if (!isValidAmount(quantity)) {
-        throw new Error(`Item ${index}: invalid quantity`);
+      if (!isValidAmount(qty)) {
+        PaymentLogger.warn('ORDER_INVALID_QUANTITY', { index: i, quantity: item.quantity });
+        cleanup();
+        return jsonResponse<ApiResponse>(400, {
+          success: false,
+          error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 수량입니다' },
+        });
       }
-
       if (unitPrice > MAX_UNIT_PRICE) {
-        PaymentLogger.warn('ORDER_UNIT_PRICE_EXCEEDED', { index, unit_price: unitPrice, max: MAX_UNIT_PRICE });
-        throw new Error(`Item ${index}: unit_price exceeds maximum (${MAX_UNIT_PRICE})`);
+        PaymentLogger.warn('ORDER_UNIT_PRICE_EXCEEDED', { index: i, unit_price: unitPrice, max: MAX_UNIT_PRICE });
+        cleanup();
+        return jsonResponse<ApiResponse>(400, {
+          success: false,
+          error: { code: 'VALIDATION_ERROR', message: '상품 가격이 허용 범위를 초과합니다' },
+        });
       }
-
-      if (quantity > MAX_QUANTITY) {
-        PaymentLogger.warn('ORDER_QUANTITY_EXCEEDED', { index, quantity, max: MAX_QUANTITY });
-        throw new Error(`Item ${index}: quantity exceeds maximum (${MAX_QUANTITY})`);
+      if (qty > MAX_QUANTITY) {
+        PaymentLogger.warn('ORDER_QUANTITY_EXCEEDED', { index: i, quantity: qty, max: MAX_QUANTITY });
+        cleanup();
+        return jsonResponse<ApiResponse>(400, {
+          success: false,
+          error: { code: 'VALIDATION_ERROR', message: '수량이 허용 범위를 초과합니다' },
+        });
       }
+    }
 
+    const orderItems: OrderItem[] = items.map((item: Record<string, unknown>, index: number) => {
       return {
         product_id: String(item.product_id ?? `item_${index}`),
         name: String(item.name ?? 'Unknown'),
-        quantity,
-        unit_price: unitPrice,
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unit_price),
         options: (item.options ?? {}) as Record<string, string>,
         thumbnail: item.thumbnail ? String(item.thumbnail) : undefined,
       };
@@ -187,7 +206,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return jsonResponse<ApiResponse>(500, {
       success: false,
-      error: { code: 'INTERNAL_ERROR', message: error.message },
+      error: { code: 'INTERNAL_ERROR', message: '주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
     });
   }
 };

@@ -46,6 +46,8 @@ MockPaymentAdapter → **TossPaymentAdapter**로 교체하는 것이 핵심 작�
 | **6** | Webhook 핸들러 업데이트 | 2 | ★★☆ | ✅ 완료 |
 | **7** | 테스트 페이지 구축 | 2 | ★★☆ | ✅ 완료 |
 | **8** | 통합 검증 + 엣지 케이스 테스트 | 0 | ★★★ | ✅ 완료 |
+| **9** | 보안 감사 + 취약점 수정 | 7 | ★★★ | ✅ 완료 (14건 수정) |
+| **10** | E2E 실서비스 테스트 + API 엣지케이스 검증 | 0 | ★★☆ | 🔄 진행중 |
 
 ---
 
@@ -529,6 +531,74 @@ CVC: 아무 3자리
 비밀번호 앞 2자리: 아무 2자리
 생년월일/사업자번호: 아무 6자리 (YYMMDD)
 ```
+
+---
+
+---
+
+## Phase 9: 보안 감사 + 취약점 수정
+**상태: ✅ 완료** (커밋: `4edb57a`)
+
+### 9.1 감사 결과 요약
+
+3개 병렬 리서치 에이전트로 코드 감사 수행:
+- 토스 공식 문서 스펙 대조
+- 코드 정밀 감사 (CRITICAL 5건, HIGH 7건, MEDIUM 6건 발견)
+- 일반 이슈/엣지케이스 리서치 (47개 이슈)
+
+### 9.2 수정된 취약점
+
+| # | 심각도 | 이슈 | 수정 파일 | 수정 내용 |
+|---|--------|------|-----------|-----------|
+| C1 | 🔴 CRITICAL | 금액 변조 공격 | create-order.ts | 상한선/하한선 검증 추가 |
+| C2 | 🔴 CRITICAL | Webhook 금액 검증 누락 | webhook.ts | isValidAmount + null 체크 |
+| C3 | 🔴 CRITICAL | 상태 전이 Race Condition | payment-service.ts | 멱등 처리 (confirmPayment/completeConfirmation) |
+| C4 | 🔴 CRITICAL | 비인증 주문 생성 abuse | create-order.ts | IP Rate Limiting (60초/10회) |
+| C5 | 🔴 CRITICAL | localStorage 금액 조작 | - | 서버 응답 amount 사용으로 이미 해결 |
+| H1 | 🟠 HIGH | pg_payment_id 조기 저장 | confirm.ts | PG confirm 성공 후로 이동 |
+| H2 | 🟠 HIGH | Date.now() ID 충돌 | toss-adapter.ts | crypto.randomUUID() 변경 |
+| H4 | 🟠 HIGH | fail.ts 하드코딩 pgPaymentId | fail.ts | DB 조회로 실제 값 사용 |
+| H5 | 🟠 HIGH | ALREADY_PROCESSED 실패 처리 | confirm.ts | 성공으로 처리 (멱등성) |
+| M1 | 🟡 MEDIUM | Webhook 에러 시 200 반환 | webhook.ts | 500 반환으로 PG 재전송 유도 |
+| M2 | 🟡 MEDIUM | 민감정보 마스킹 불완전 | logger.ts | 패턴 4종 추가 |
+
+### 완료 조건
+- [x] CRITICAL 5건 모두 수정
+- [x] HIGH 주요 6건 수정
+- [x] MEDIUM 3건 수정
+- [x] `npm run build` 성공
+- [x] 커밋 완료 (`4edb57a`)
+
+---
+
+## Phase 10: E2E 실서비스 테스트 + API 엣지케이스 검증
+**상태: 🔄 진행중**
+
+### 10.1 E2E 브라우저 테스트
+- [ ] /shop 상품 목록 확인
+- [ ] 장바구니 → /shop/payment 이동
+- [ ] 결제 위젯 로드 확인
+- [ ] 주문 요약 표시 확인
+- [ ] /shop/payment-fail 페이지 동작 확인
+- [ ] /shop/payment-success 페이지 동작 확인
+- [ ] /admin/payment-test 대시보드 로드 확인
+
+### 10.2 API 엣지케이스 테스트
+- [ ] 금액 변조 (100억원) → 400 에러
+- [ ] 최소 금액 (50원) → 400 에러
+- [ ] 수량 초과 (1000개) → 400 에러
+- [ ] Items 50개 초과 → 400 에러
+- [ ] 빈 items 배열 → 400 에러
+- [ ] 음수 금액 → 400 에러
+- [ ] 잘못된 HTTP 메서드 → 405 에러
+- [ ] 잘못된 confirm 데이터 → 에러 응답
+- [ ] 가짜 webhook → 에러 응답
+- [ ] Rate Limiting (11회 연속) → 429 에러
+
+### 완료 조건
+- [ ] 모든 E2E 테스트 통과
+- [ ] 모든 API 엣지케이스 테스트 통과
+- [ ] 발견된 추가 이슈 없음 (또는 수정 완료)
 
 ---
 
