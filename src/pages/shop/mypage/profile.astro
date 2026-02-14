@@ -18,11 +18,13 @@ if (!user) {
 
 const { supabase } = createAstroServerClient(Astro.request);
 
-const { data: profile } = await supabase
+const profileResult = await supabase
   .from('profiles')
   .select('*')
-  .eq('id', user.id)
-  .single();
+  .eq('id' as never, user.id as never)
+  .limit(1);
+
+const profile = (profileResult.data as Array<Record<string, any>> | null)?.[0] ?? null;
 
 const displayName = profile?.display_name || user.user_metadata?.full_name || '';
 const phone = profile?.phone || '';
@@ -521,8 +523,8 @@ const providerLabel: Record<string, string> = {
     if (!doubleConfirm) return;
 
     try {
-      const res = await fetch('/api/auth/profile', {
-        method: 'DELETE',
+      const res = await fetch('/api/auth/withdraw', {
+        method: 'POST',
       });
 
       if (res.ok) {

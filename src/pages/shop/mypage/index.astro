@@ -23,20 +23,22 @@ const userEmail = user.email ?? '';
 const profileResult = await supabase
   .from('profiles')
   .select('*')
-  .eq('id' as never, user.id)
+  .eq('id' as never, user.id as never)
   .limit(1);
 
 const profile = (profileResult.data as Array<Record<string, any>> | null)?.[0] ?? null;
 
-const { count: orderCount } = await supabase
+const orderCountResult = await supabase
   .from('orders')
   .select('*', { count: 'exact', head: true })
-  .eq('customer_email' as never, userEmail);
+  .eq('customer_email' as never, userEmail as never);
+
+const orderCount = orderCountResult.count;
 
 const latestOrderResult = await supabase
   .from('orders')
   .select('created_at')
-  .eq('customer_email' as never, userEmail)
+  .eq('customer_email' as never, userEmail as never)
   .order('created_at' as never, { ascending: false })
   .limit(1);
 

@@ -1,0 +1,369 @@
+---
+export const prerender = false;
+
+/**
+ * 주문 내역 페이지
+ * List of all orders with status badges, item summaries, amounts
+ */
+
+import Layout from '../../../layouts/Layout.astro';
+import ShopNavbar from '../../../components/shop/ShopNavbar.astro';
+import ShopFooter from '../../../components/shop/ShopFooter.astro';
+import { createAstroServerClient } from '../../../lib/supabase-server';
+
+const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect('/shop/login?redirect=/shop/mypage/orders');
+}
+
+const userEmail = user.email ?? '';
+const { supabase } = createAstroServerClient(Astro.request);
+
+const ordersResult = await supabase
+  .from('orders')
+  .select('*')
+  .eq('customer_email' as never, userEmail as never)
+  .order('created_at' as never, { ascending: false });
+
+const orders = (ordersResult.data as Array<Record<string, any>> | null) ?? [];
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function formatAmount(amount: number): string {
+  return new Intl.NumberFormat('ko-KR').format(amount);
+}
+
+function getStatusInfo(status: string): { label: string; className: string } {
+  const map: Record<string, { label: string; className: string }> = {
+    pending: { label: '주문 대기', className: 'orders__status--pending' },
+    paid: { label: '결제 완료', className: 'orders__status--paid' },
+    shipped: { label: '배송 중', className: 'orders__status--shipped' },
+    delivered: { label: '배송 완료', className: 'orders__status--delivered' },
+    cancelled: { label: '취소됨', className: 'orders__status--cancelled' },
+  };
+  return map[status] || { label: status, className: 'orders__status--pending' };
+}
+
+function getItemSummary(items: any): string {
+  if (!items || !Array.isArray(items)) return '상품 정보 없음';
+  if (items.length === 0) return '상품 정보 없음';
+  const firstName = items[0]?.name || items[0]?.product_name || '상품';
+  if (items.length === 1) return firstName;
+  return `${firstName} 외 ${items.length - 1}건`;
+}
+---
+
+<Layout title="주문 내역 | issac.design" description="주문 내역을 확인합니다.">
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+
+  <main class="orders">
+    <div class="orders__container">
+      <a href="/shop/mypage" class="orders__back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        마이페이지
+      </a>
+
+      <h1 class="orders__heading">주문 내역</h1>
+
+      {orders.length === 0 ? (
+        <div class="orders__empty">
+          <div class="orders__empty-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"/>
+              <path d="M3 6h18"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+          </div>
+          <h2 class="orders__empty-title">아직 주문 내역이 없습니다</h2>
+          <p class="orders__empty-desc">다양한 제품을 둘러보고 첫 주문을 시작해보세요.</p>
+          <a href="/shop" class="orders__empty-btn">제품 보러가기</a>
+        </div>
+      ) : (
+        <div class="orders__list">
+          <p class="orders__count">총 <strong>{orders.length}</strong>건</p>
+
+          {orders.map((order) => {
+            const statusInfo = getStatusInfo(order.status);
+            return (
+              <div class="orders__card">
+                <div class="orders__card-header">
+                  <div class="orders__card-meta">
+                    <span class="orders__order-number">{order.order_number}</span>
+                    <span class="orders__date">{formatDate(order.created_at)}</span>
+                  </div>
+                  <span class={`orders__status ${statusInfo.className}`}>
+                    {statusInfo.label}
+                  </span>
+                </div>
+
+                <div class="orders__card-body">
+                  <p class="orders__item-summary">{getItemSummary(order.items)}</p>
+                  <p class="orders__amount">{formatAmount(order.total_amount)}<span class="orders__currency">원</span></p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<style>
+  .orders {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: calc(var(--header-height) + var(--space-2xl)) var(--container-padding) var(--space-3xl);
+  }
+
+  .orders__container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .orders__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: var(--space-lg);
+    transition: color var(--transition-base);
+  }
+
+  .orders__back:hover {
+    color: var(--text-primary);
+  }
+
+  .orders__heading {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+    letter-spacing: -0.02em;
+  }
+
+  /* Empty State */
+  .orders__empty {
+    text-align: center;
+    padding: var(--space-4xl) var(--space-xl);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  .orders__empty-icon {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+  }
+
+  .orders__empty-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .orders__empty-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.5;
+  }
+
+  .orders__empty-btn {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-xl);
+    background: var(--primary);
+    border-radius: var(--radius-md);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .orders__empty-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+  }
+
+  /* Order List */
+  .orders__count {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+
+  .orders__count strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .orders__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .orders__card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg) var(--space-xl);
+    transition: all var(--transition-base);
+  }
+
+  .orders__card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .orders__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .orders__card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    min-width: 0;
+  }
+
+  .orders__order-number {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .orders__date {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Status Badges */
+  .orders__status {
+    display: inline-block;
+    padding: 2px var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .orders__status--pending {
+    background: rgba(234, 179, 8, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(234, 179, 8, 0.25);
+  }
+
+  .orders__status--paid {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .orders__status--shipped {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+
+  .orders__status--delivered {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .orders__status--cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+
+  .orders__card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+  }
+
+  .orders__item-summary {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .orders__amount {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .orders__currency {
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 2px;
+  }
+
+  @media (max-width: 719px) {
+    .orders {
+      padding-top: calc(var(--header-height-mobile) + var(--space-xl));
+    }
+
+    .orders__card {
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .orders__card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .orders__card-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-xs);
+    }
+
+    .orders__card-body {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .orders__amount {
+      font-size: var(--font-size-base);
+    }
+  }
+</style>
