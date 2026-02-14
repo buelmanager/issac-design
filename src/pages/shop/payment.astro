@@ -89,6 +89,8 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
   import OrderSummary from '../../components/payment/OrderSummary';
 
   async function initPayment() {
+    console.log('[payment.astro] initPayment START');
+    console.log('[payment.astro] __TOSS_CLIENT_KEY__:', window.__TOSS_CLIENT_KEY__ ? 'SET' : 'MISSING');
     const CART_KEY = 'paymentCart';
     const loadingEl = document.getElementById('payment-loading');
     const contentEl = document.getElementById('payment-content');
@@ -133,11 +135,15 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
     const quoteIdParam = urlParams.get('quote_id');
 
     try {
+      console.log('[payment.astro] quoteIdParam:', quoteIdParam);
       if (quoteIdParam) {
         const pendingRaw = localStorage.getItem('pendingPayment');
+        console.log('[payment.astro] pendingPayment raw:', pendingRaw);
         if (pendingRaw) {
           const pending = JSON.parse(pendingRaw);
+          console.log('[payment.astro] pendingPayment parsed:', pending);
           const totalAmount = Math.round(Number(pending.totalAmount));
+          console.log('[payment.astro] totalAmount (rounded):', totalAmount);
           if (pending.type === 'quote' && pending.quoteId && totalAmount > 0) {
             quoteId = pending.quoteId;
             const products = Array.isArray(pending.products) ? pending.products : [];
@@ -147,6 +153,7 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
                 : `${products[0]?.productName || '견적 제품'} 외 ${products.length - 1}건`)
               : '견적 결제';
             cartItems = [{ name: itemName, quantity: 1, unit_price: totalAmount }];
+            console.log('[payment.astro] Quote cart built:', { quoteId, cartItems });
           }
         }
       }
@@ -194,6 +201,10 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
     }
 
     async function createOrderAndRender() {
+      console.log('[payment.astro] createOrderAndRender START');
+      console.log('[payment.astro] cartItems:', cartItems);
+      console.log('[payment.astro] quoteId:', quoteId);
+      console.log('[payment.astro] customerName:', customerName, 'customerEmail:', customerEmail);
       showLoading();
 
       try {
@@ -211,11 +222,13 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
           orderPayload.quote_id = quoteId;
         }
 
+        console.log('[payment.astro] orderPayload:', orderPayload);
         const res = await fetch('/api/payment/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(orderPayload),
         });
+        console.log('[payment.astro] create-order response:', res.status, res.statusText);
 
         if (!res.ok) {
           let errorMessage = `서버 오류가 발생했습니다 (${res.status}).`;
@@ -232,15 +245,18 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
         }
 
         const data = await res.json();
+        console.log('[payment.astro] create-order data:', data);
         if (!data.success || !data.data) {
           showError(data.error || data.message || '주문 데이터를 생성할 수 없습니다.');
           return;
         }
 
         const { order_id, order_number, amount } = data.data;
+        console.log('[payment.astro] order created:', { order_id, order_number, amount });
         const orderName = cartItems.length === 1
           ? cartItems[0].name
           : `${cartItems[0].name} 외 ${cartItems.length - 1}건`;
+        console.log('[payment.astro] orderName:', orderName);
 
         showContent();
 
@@ -261,17 +277,19 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
         }
 
         const widgetMount = document.getElementById('widget-mount');
+        console.log('[payment.astro] widgetMount exists:', !!widgetMount);
         if (widgetMount) {
+          const widgetProps = {
+            orderId: order_id,
+            orderName,
+            amount,
+            customerName,
+            customerEmail,
+          };
+          console.log('[payment.astro] Rendering PaymentWidget with props:', widgetProps);
           const widgetRoot = createRoot(widgetMount);
-          widgetRoot.render(
-            createElement(PaymentWidget, {
-              orderId: order_id,
-              orderName,
-              amount,
-              customerName,
-              customerEmail,
-            })
-          );
+          widgetRoot.render(createElement(PaymentWidget, widgetProps));
+          console.log('[payment.astro] PaymentWidget render() called');
         }
       } catch {
         showError('네트워크 오류가 발생했습니다. 인터넷 연결을 확인한 후 다시 시도해주세요.');

@@ -50,42 +50,97 @@ export default function PaymentWidget({
   const [processing, setProcessing] = useState(false);
   const widgetsRef = useRef<TossWidgets | null>(null);
   const initializedRef = useRef(false);
+  const paymentMethodsRef = useRef<HTMLDivElement>(null);
+  const agreementRef = useRef<HTMLDivElement>(null);
 
   // ─── SDK Load & Init ───
 
   useEffect(() => {
-    if (initializedRef.current) return;
+    console.log('[PaymentWidget] useEffect triggered', { amount, initialized: initializedRef.current });
+    if (initializedRef.current) {
+      console.log('[PaymentWidget] Already initialized, skipping');
+      return;
+    }
     initializedRef.current = true;
 
     const initPayment = async () => {
+      console.log('[PaymentWidget] initPayment START');
+      console.log('[PaymentWidget] Props:', { orderId, orderName, amount, customerName, customerEmail });
       try {
         const clientKey = window.__TOSS_CLIENT_KEY__;
+        console.log('[PaymentWidget] clientKey:', clientKey ? `${clientKey.substring(0, 15)}...` : 'MISSING');
         if (!clientKey) {
           setError('결제 설정을 불러올 수 없습니다.');
           setLoading(false);
           return;
         }
 
+        console.log('[PaymentWidget] window.TossPayments exists:', !!window.TossPayments);
+        console.log('[PaymentWidget] typeof window.TossPayments:', typeof window.TossPayments);
+
         if (!window.TossPayments) {
+          console.log('[PaymentWidget] Loading Toss SDK script...');
           await new Promise<void>((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://js.tosspayments.com/v2/standard';
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('SDK 로드 실패'));
+            script.onload = () => {
+              console.log('[PaymentWidget] SDK script loaded OK');
+              console.log('[PaymentWidget] window.TossPayments after load:', typeof window.TossPayments);
+              resolve();
+            };
+            script.onerror = (e) => {
+              console.error('[PaymentWidget] SDK script FAILED', e);
+              reject(new Error('SDK 로드 실패'));
+            };
             document.head.appendChild(script);
           });
         }
 
+        const elMethods = document.getElementById('payment-methods');
+        const elAgreement = document.getElementById('payment-agreement');
+        console.log('[PaymentWidget] DOM check BEFORE wait:', {
+          methods: !!elMethods, methodsDisplay: elMethods?.style.display,
+          agreement: !!elAgreement, agreementDisplay: elAgreement?.style.display,
+        });
+
+        if (!elMethods || !elAgreement) {
+          console.log('[PaymentWidget] DOM not ready, waiting rAF...');
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          console.log('[PaymentWidget] DOM check AFTER wait:', {
+            methods: !!document.getElementById('payment-methods'),
+            agreement: !!document.getElementById('payment-agreement'),
+          });
+        }
+
+        console.log('[PaymentWidget] Calling TossPayments(clientKey)...');
         const tossPayments = window.TossPayments(clientKey);
+        console.log('[PaymentWidget] tossPayments:', tossPayments);
+
+        console.log('[PaymentWidget] Calling widgets({ customerKey: "ANONYMOUS" })...');
         const widgets = tossPayments.widgets({ customerKey: 'ANONYMOUS' });
+        console.log('[PaymentWidget] widgets:', widgets);
         widgetsRef.current = widgets;
 
+        console.log('[PaymentWidget] setAmount({ currency: "KRW", value:', amount, '})...');
         await widgets.setAmount({ currency: 'KRW', value: amount });
-        await widgets.renderPaymentMethods({ el: '#payment-methods', variantKey: 'DEFAULT' });
-        await widgets.renderAgreement({ el: '#payment-agreement', variantKey: 'AGREEMENT' });
+        console.log('[PaymentWidget] setAmount OK');
 
+        console.log('[PaymentWidget] renderPaymentMethods({ el: "#payment-methods" })...');
+        await widgets.renderPaymentMethods({ el: '#payment-methods', variantKey: 'DEFAULT' });
+        console.log('[PaymentWidget] renderPaymentMethods OK');
+
+        console.log('[PaymentWidget] renderAgreement({ el: "#payment-agreement" })...');
+        await widgets.renderAgreement({ el: '#payment-agreement', variantKey: 'AGREEMENT' });
+        console.log('[PaymentWidget] renderAgreement OK');
+
+        console.log('[PaymentWidget] ALL INIT COMPLETE');
         setLoading(false);
       } catch (err) {
+        console.error('[PaymentWidget] INIT ERROR:', err);
+        if (err instanceof Error) {
+          console.error('[PaymentWidget] message:', err.message);
+          console.error('[PaymentWidget] stack:', err.stack);
+        }
         const message = err instanceof Error ? err.message : '결제 위젯을 불러오는데 실패했습니다.';
         setError(message);
         setLoading(false);
@@ -98,20 +153,25 @@ export default function PaymentWidget({
   // ─── Request Payment ───
 
   const handlePayment = useCallback(async () => {
+    console.log('[PaymentWidget] handlePayment called', { hasWidgets: !!widgetsRef.current, processing });
     if (!widgetsRef.current || processing) return;
 
     setProcessing(true);
     try {
       const origin = window.location.origin;
-      await widgetsRef.current.requestPayment({
+      const params = {
         orderId,
         orderName,
         successUrl: `${origin}/api/payment/confirm`,
         failUrl: `${origin}/api/payment/fail`,
         customerName,
         customerEmail,
-      });
+      };
+      console.log('[PaymentWidget] requestPayment params:', params);
+      await widgetsRef.current.requestPayment(params);
+      console.log('[PaymentWidget] requestPayment OK');
     } catch (err) {
+      console.error('[PaymentWidget] requestPayment ERROR:', err);
       const message = err instanceof Error ? err.message : '결제 요청 중 오류가 발생했습니다.';
       setError(message);
       setProcessing(false);
@@ -119,6 +179,8 @@ export default function PaymentWidget({
   }, [orderId, orderName, customerName, customerEmail, processing]);
 
   // ─── Render ───
+
+  console.log('[PaymentWidget] Render:', { loading, error, processing });
 
   if (error) {
     return (
