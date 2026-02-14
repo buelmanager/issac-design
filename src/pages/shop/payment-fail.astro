@@ -1,0 +1,97 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShopNavbar from '../../components/shop/ShopNavbar.astro';
+import Breadcrumb from '../../components/shop/Breadcrumb.astro';
+import ShopFooter from '../../components/shop/ShopFooter.astro';
+import Toast from '../../components/shop/Toast.astro';
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '결제 실패' },
+];
+---
+
+<Layout
+  title="결제 실패 - issac.design Shop"
+  description="결제 처리 중 오류가 발생했습니다."
+>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+  <Toast />
+
+  <main class="payment-page">
+    <div class="payment-page__breadcrumb">
+      <Breadcrumb items={breadcrumbs} />
+    </div>
+
+    <section class="payment-result">
+      <div class="payment-result__container">
+        <div class="payment-result__icon payment-result__icon--fail">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2.5"/>
+            <path d="M16 16l16 16M32 16L16 32" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <h2 class="payment-result__title" id="fail-title">결제에 실패했습니다</h2>
+        <p class="payment-result__desc" id="fail-message">결제 처리 중 오류가 발생했습니다.</p>
+        <p class="payment-result__error-code" id="fail-code"></p>
+
+        <p class="payment-result__support">
+          문제가 지속되면 고객센터로 연락해주세요.<br/>
+          <a href="tel:010-1234-5678">010-1234-5678</a>
+        </p>
+
+        <div class="payment-result__actions">
+          <a href="/shop" class="checkout__btn checkout__btn--outline">쇼핑몰로 돌아가기</a>
+          <a href="/shop/payment" class="checkout__btn checkout__btn--primary">
+            다시 시도
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code') || '';
+    const message = params.get('message') || '';
+    const orderId = params.get('orderId') || '';
+
+    const errorMessages: Record<string, string> = {
+      PAY_PROCESS_CANCELED: '결제가 취소되었습니다',
+      PAY_PROCESS_ABORTED: '결제가 중단되었습니다',
+      REJECT_CARD_COMPANY: '카드사에서 결제를 거절했습니다',
+      AMOUNT_MISMATCH: '결제 금액이 일치하지 않습니다',
+    };
+
+    const titleEl = document.getElementById('fail-title');
+    const messageEl = document.getElementById('fail-message');
+    const codeEl = document.getElementById('fail-code');
+
+    const displayMessage = errorMessages[code] || message || '결제 처리 중 오류가 발생했습니다';
+
+    if (code === 'PAY_PROCESS_CANCELED' && titleEl) {
+      titleEl.textContent = '결제가 취소되었습니다';
+    }
+
+    if (messageEl) {
+      messageEl.textContent = displayMessage;
+    }
+
+    if (codeEl && code) {
+      codeEl.textContent = `오류 코드: ${code}${orderId ? ` | 주문 ID: ${orderId}` : ''}`;
+    }
+  });
+</script>
+
+<style>
+  @import '../../styles/payment.css';
+</style>

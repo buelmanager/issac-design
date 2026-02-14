@@ -22,7 +22,8 @@ export const POST: APIRoute = async ({ request }) => {
   const cleanup = PaymentLogger.apiRequest(request, '/api/payment/webhook');
 
   const rawBody = await request.text();
-  const signature = request.headers.get('x-webhook-signature') ?? '';
+  const signature = request.headers.get('x-webhook-signature')
+    ?? request.headers.get('toss-signature') ?? '';
 
   // Raw payload 보존 (디버깅/감사용, 민감정보 자동 마스킹)
   PaymentLogger.info('WEBHOOK_RAW_PAYLOAD', {
@@ -59,7 +60,7 @@ export const POST: APIRoute = async ({ request }) => {
       pg_payment_id: event.pg_payment_id,
     });
 
-    switch (event.type) {
+    switch (event.type ?? event.eventType) {
       case 'payment.confirmed':
       case 'payment_intent.succeeded': {
         await paymentService.confirmPayment(
@@ -95,9 +96,57 @@ export const POST: APIRoute = async ({ request }) => {
         break;
       }
 
+      case 'PAYMENT_STATUS_CHANGED': {
+        const tossData = event.data;
+        const paymentKey = tossData?.paymentKey;
+        const status = tossData?.status;
+
+        if (!paymentKey) {
+          PaymentLogger.warn('WEBHOOK_TOSS_NO_PAYMENT_KEY', { event_type: event.eventType });
+          break;
+        }
+
+        if (status === 'DONE') {
+          await paymentService.confirmPayment(paymentKey, tossData.totalAmount ?? 0);
+          PaymentLogger.info('WEBHOOK_TOSS_CONFIRMED', { paymentKey, amount: tossData.totalAmount });
+        } else if (status === 'CANCELED' || status === 'PARTIAL_CANCELED') {
+          await paymentService.confirmRefund(paymentKey);
+          PaymentLogger.info('WEBHOOK_TOSS_CANCELED', { paymentKey, status });
+        } else if (status === 'ABORTED' || status === 'EXPIRED') {
+          await paymentService.failPayment(paymentKey, `Toss status: ${status}`);
+          PaymentLogger.warn('WEBHOOK_TOSS_FAILED', { paymentKey, status });
+        } else {
+          PaymentLogger.info('WEBHOOK_TOSS_STATUS_IGNORED', { paymentKey, status });
+        }
+        break;
+      }
+
+      case 'DEPOSIT_CALLBACK': {
+        const depositData = event.data;
+        const depositPaymentKey = depositData?.paymentKey;
+        const depositStatus = depositData?.status;
+
+        if (depositPaymentKey && depositStatus === 'DONE') {
+          await paymentService.confirmPayment(depositPaymentKey, depositData.totalAmount ?? 0);
+          PaymentLogger.info('WEBHOOK_TOSS_DEPOSIT_CONFIRMED', { paymentKey: depositPaymentKey });
+        }
+        break;
+      }
+
+      case 'CANCEL_STATUS_CHANGED': {
+        const cancelData = event.data;
+        const cancelPaymentKey = cancelData?.paymentKey;
+
+        if (cancelPaymentKey) {
+          await paymentService.confirmRefund(cancelPaymentKey);
+          PaymentLogger.info('WEBHOOK_TOSS_CANCEL_CONFIRMED', { paymentKey: cancelPaymentKey });
+        }
+        break;
+      }
+
       default: {
         PaymentLogger.warn('WEBHOOK_UNKNOWN_EVENT', {
-          type: event.type,
+          type: event.type ?? event.eventType,
           body_preview: rawBody.slice(0, 300),
         });
       }

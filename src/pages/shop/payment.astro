@@ -1,0 +1,192 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShopNavbar from '../../components/shop/ShopNavbar.astro';
+import Breadcrumb from '../../components/shop/Breadcrumb.astro';
+import ShopFooter from '../../components/shop/ShopFooter.astro';
+import Toast from '../../components/shop/Toast.astro';
+import PaymentWidget from '../../components/payment/PaymentWidget';
+import OrderSummary from '../../components/payment/OrderSummary';
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '결제' },
+];
+
+const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+---
+
+<Layout
+  title="결제 - issac.design Shop"
+  description="주문 결제를 진행합니다."
+>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+  <Toast />
+
+  <main class="payment-page">
+    <div class="payment-page__breadcrumb">
+      <Breadcrumb items={breadcrumbs} />
+    </div>
+
+    <div class="payment-page__container">
+      <h1 class="payment-page__title">결제</h1>
+
+      <div class="payment-page__grid" id="payment-content" style="display: none;">
+        <div class="payment-page__summary" id="summary-mount"></div>
+        <div class="payment-page__widget" id="widget-mount"></div>
+      </div>
+
+      <div class="checkout__empty" id="payment-empty" style="display: none;">
+        <div class="checkout__empty-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+        </div>
+        <h2 class="checkout__empty-title">장바구니가 비어있습니다</h2>
+        <p class="checkout__empty-desc">결제할 제품을 먼저 장바구니에 추가해주세요.</p>
+        <a href="/shop" class="checkout__btn checkout__btn--primary">제품 보러가기</a>
+      </div>
+
+      <div class="payment-widget__loading" id="payment-loading">
+        <div class="payment-widget__spinner"></div>
+        <p class="payment-widget__loading-text">주문 정보를 준비하는 중...</p>
+      </div>
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<script is:inline define:vars={{ clientKey }}>
+  window.__TOSS_CLIENT_KEY__ = clientKey;
+</script>
+
+<script>
+  import { createElement } from 'react';
+  import { createRoot } from 'react-dom/client';
+  import PaymentWidget from '../../components/payment/PaymentWidget';
+  import OrderSummary from '../../components/payment/OrderSummary';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const CART_KEY = 'paymentCart';
+    const loadingEl = document.getElementById('payment-loading');
+    const contentEl = document.getElementById('payment-content');
+    const emptyEl = document.getElementById('payment-empty');
+
+    function hideLoading() {
+      if (loadingEl) loadingEl.style.display = 'none';
+    }
+
+    function showEmpty() {
+      hideLoading();
+      if (emptyEl) emptyEl.style.display = 'block';
+    }
+
+    function showContent() {
+      hideLoading();
+      if (contentEl) contentEl.style.display = 'grid';
+    }
+
+    let cartItems: Array<{ name: string; quantity: number; unit_price: number; options?: Record<string, string> }> = [];
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      if (!raw) {
+        showEmpty();
+        return;
+      }
+      cartItems = JSON.parse(raw);
+      if (!Array.isArray(cartItems) || cartItems.length === 0) {
+        showEmpty();
+        return;
+      }
+    } catch {
+      showEmpty();
+      return;
+    }
+
+    let customerName = '고객';
+    let customerEmail: string | undefined;
+    try {
+      const infoRaw = localStorage.getItem('paymentCustomerInfo');
+      if (infoRaw) {
+        const info = JSON.parse(infoRaw);
+        if (info.name) customerName = info.name;
+        if (info.email) customerEmail = info.email;
+      }
+    } catch {
+      // noop
+    }
+
+    try {
+      const res = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: customerName,
+          customer_phone: '000-0000-0000',
+          items: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        showEmpty();
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.success || !data.data) {
+        showEmpty();
+        return;
+      }
+
+      const { order_id, order_number, amount } = data.data;
+      const orderName = cartItems.length === 1
+        ? cartItems[0].name
+        : `${cartItems[0].name} 외 ${cartItems.length - 1}건`;
+
+      showContent();
+
+      const summaryMount = document.getElementById('summary-mount');
+      if (summaryMount) {
+        const summaryRoot = createRoot(summaryMount);
+        summaryRoot.render(
+          createElement(OrderSummary, {
+            items: cartItems.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.unit_price,
+              options: item.options,
+            })),
+            totalAmount: amount,
+          })
+        );
+      }
+
+      const widgetMount = document.getElementById('widget-mount');
+      if (widgetMount) {
+        const widgetRoot = createRoot(widgetMount);
+        widgetRoot.render(
+          createElement(PaymentWidget, {
+            orderId: order_id,
+            orderName,
+            amount,
+            customerName,
+            customerEmail,
+          })
+        );
+      }
+    } catch {
+      showEmpty();
+    }
+  });
+</script>
+
+<style>
+  @import '../../styles/payment.css';
+</style>

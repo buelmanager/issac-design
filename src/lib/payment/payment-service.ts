@@ -301,6 +301,56 @@ export class PaymentService {
     return updated as unknown as Payment;
   }
 
+  /** confirmPayment()과 달리 PG API를 재호출하지 않고 상태 전이 + PG 응답 저장만 수행 */
+  async completeConfirmation(
+    pgPaymentId: string,
+    pgAmount: number,
+    confirmResult: { method?: string; raw_response?: Record<string, unknown> },
+    actor: LogActor = 'system'
+  ): Promise<Payment> {
+    const supabase = createAdminClient();
+
+    PaymentLogger.info('PAYMENT_COMPLETE_CONFIRMATION_START', { pg_payment_id: pgPaymentId, pg_amount: pgAmount });
+
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('pg_payment_id', pgPaymentId)
+      .single();
+
+    if (!payment) {
+      PaymentLogger.error('PAYMENT_NOT_FOUND_BY_PG_ID', new Error(`PG ID: ${pgPaymentId}`));
+      throw new Error(`Payment not found for pg_payment_id: ${pgPaymentId}`);
+    }
+
+    if (!validateAmount(payment.amount as number, pgAmount, { payment_id: payment.id })) {
+      throw new Error(`Amount mismatch: expected ${payment.amount}, received ${pgAmount}`);
+    }
+
+    await this.transitionStatus(payment.id, PAYMENT_STATUS.PENDING, PAYMENT_STATUS.PAID, actor, 'Payment confirmed');
+
+    await supabase
+      .from('payments')
+      .update({
+        pg_response: confirmResult.raw_response ?? {},
+        method: confirmResult.method,
+      })
+      .eq('id', payment.id);
+
+    const { data: updated } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('id', payment.id)
+      .single();
+
+    PaymentLogger.info('PAYMENT_CONFIRMED', {
+      amount: payment.amount,
+      method: confirmResult.method,
+    }, { payment_id: payment.id, order_id: payment.order_id });
+
+    return updated as unknown as Payment;
+  }
+
   // ─── 5. 결제 취소 ───────────────────────────────
   async cancelPayment(paymentId: string, reason: string, actor: LogActor = 'user'): Promise<Payment> {
     const supabase = createAdminClient();

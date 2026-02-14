@@ -1,0 +1,114 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShopNavbar from '../../components/shop/ShopNavbar.astro';
+import Breadcrumb from '../../components/shop/Breadcrumb.astro';
+import ShopFooter from '../../components/shop/ShopFooter.astro';
+import Toast from '../../components/shop/Toast.astro';
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '결제 완료' },
+];
+---
+
+<Layout
+  title="결제 완료 - issac.design Shop"
+  description="결제가 성공적으로 완료되었습니다."
+>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+  <Toast />
+
+  <main class="payment-page">
+    <div class="payment-page__breadcrumb">
+      <Breadcrumb items={breadcrumbs} />
+    </div>
+
+    <section class="payment-result">
+      <div class="payment-result__container">
+        <div class="payment-result__icon payment-result__icon--success">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2.5"/>
+            <path d="M15 24l6 6 12-12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <h2 class="payment-result__title">결제가 완료되었습니다!</h2>
+        <p class="payment-result__desc">주문이 정상적으로 접수되었습니다.</p>
+
+        <div class="payment-result__card" id="result-card" style="display: none;">
+          <h3 class="payment-result__card-heading">주문 정보</h3>
+          <div class="payment-result__row">
+            <span class="payment-result__label">주문 번호</span>
+            <span class="payment-result__value" id="result-order-number">-</span>
+          </div>
+          <div class="payment-result__row">
+            <span class="payment-result__label">결제 금액</span>
+            <span class="payment-result__value" id="result-amount">-</span>
+          </div>
+          <div class="payment-result__row">
+            <span class="payment-result__label">결제 수단</span>
+            <span class="payment-result__value" id="result-method">-</span>
+          </div>
+        </div>
+
+        <div class="payment-result__actions">
+          <a href="/shop" class="checkout__btn checkout__btn--primary">
+            쇼핑 계속하기
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('orderId') || params.get('order_id');
+
+    if (!orderId) return;
+
+    try {
+      const res = await fetch(`/api/payment/status?order_id=${encodeURIComponent(orderId)}`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (!data.success || !data.data) return;
+
+      const { order, payment } = data.data;
+
+      const orderNumberEl = document.getElementById('result-order-number');
+      const amountEl = document.getElementById('result-amount');
+      const methodEl = document.getElementById('result-method');
+      const cardEl = document.getElementById('result-card');
+
+      if (orderNumberEl && order?.order_number) {
+        orderNumberEl.textContent = order.order_number;
+      }
+      if (amountEl && payment?.amount) {
+        amountEl.textContent = Number(payment.amount).toLocaleString('ko-KR') + '원';
+      }
+      if (methodEl && payment?.method) {
+        methodEl.textContent = payment.method;
+      }
+      if (cardEl) {
+        cardEl.style.display = 'block';
+      }
+
+      localStorage.removeItem('paymentCart');
+      localStorage.removeItem('paymentCustomerInfo');
+    } catch {
+      // noop
+    }
+  });
+</script>
+
+<style>
+  @import '../../styles/payment.css';
+</style>
