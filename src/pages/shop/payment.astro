@@ -134,30 +134,18 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
 
     try {
       if (quoteIdParam) {
-        // 견적 기반 결제: pendingPayment에서 데이터 로드
         const pendingRaw = localStorage.getItem('pendingPayment');
         if (pendingRaw) {
           const pending = JSON.parse(pendingRaw);
-          if (pending.type === 'quote' && pending.quoteId) {
+          if (pending.type === 'quote' && pending.quoteId && pending.totalAmount > 0) {
             quoteId = pending.quoteId;
-            cartItems = (pending.products || []).map((p: any) => ({
-              name: p.productName || '견적 제품',
-              quantity: p.quantity || 1,
-              unit_price: Math.round(pending.totalAmount / (pending.products?.length || 1)),
-              options: p.options || {},
-            }));
-            // 총액이 정확하도록 마지막 아이템에서 보정
-            if (cartItems.length > 0) {
-              const sumSoFar = cartItems.reduce((s: number, it: any) => s + it.unit_price * it.quantity, 0);
-              const diff = pending.totalAmount - sumSoFar;
-              if (diff !== 0) {
-                cartItems[cartItems.length - 1].unit_price += diff;
-              }
-            }
-            // 제품이 없으면 단일 견적 아이템으로 생성
-            if (cartItems.length === 0) {
-              cartItems = [{ name: '견적 결제', quantity: 1, unit_price: pending.totalAmount }];
-            }
+            const products = Array.isArray(pending.products) ? pending.products : [];
+            const itemName = products.length > 0
+              ? (products.length === 1
+                ? (products[0]?.productName || '견적 제품')
+                : `${products[0]?.productName || '견적 제품'} 외 ${products.length - 1}건`)
+              : '견적 결제';
+            cartItems = [{ name: itemName, quantity: 1, unit_price: pending.totalAmount }];
           }
         }
       }
