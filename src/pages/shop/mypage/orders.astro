@@ -61,6 +61,7 @@ function formatAmount(amount: number): string {
 function getStatusInfo(status: string): { label: string; className: string } {
   const map: Record<string, { label: string; className: string }> = {
     pending: { label: '주문 대기', className: 'orders__status--pending' },
+    pending_payment: { label: '결제 대기', className: 'orders__status--pending' },
     paid: { label: '결제 완료', className: 'orders__status--paid' },
     shipped: { label: '배송 중', className: 'orders__status--shipped' },
     delivered: { label: '배송 완료', className: 'orders__status--delivered' },

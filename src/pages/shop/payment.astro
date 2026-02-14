@@ -234,8 +234,13 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
           let errorMessage = `서버 오류가 발생했습니다 (${res.status}).`;
           try {
             const errData = await res.json();
-            if (errData.error || errData.message) {
-              errorMessage = errData.error || errData.message;
+            console.log('[payment.astro] create-order error response:', errData);
+            if (errData.error?.message) {
+              errorMessage = errData.error.message;
+            } else if (typeof errData.error === 'string') {
+              errorMessage = errData.error;
+            } else if (errData.message) {
+              errorMessage = errData.message;
             }
           } catch {
             // use default message

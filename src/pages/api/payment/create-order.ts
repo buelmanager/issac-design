@@ -224,7 +224,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     return jsonResponse<ApiResponse>(500, {
       success: false,
-      error: { code: 'INTERNAL_ERROR', message: '주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+      error: { code: 'INTERNAL_ERROR', message: error.message || '주문 처리 중 오류가 발생했습니다.' },
     });
   }
 };
