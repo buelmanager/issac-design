@@ -24,9 +24,14 @@ export type SimulatorConfig = Tables<'simulator_config'>;
 export type PageContent = Tables<'page_contents'>;
 export type NavigationItem = Tables<'navigation_items'>;
 export type InquiryType = Tables<'inquiry_types'>;
+export type Profile = Tables<'profiles'>;
+export type Order = Tables<'orders'>;
+export type Payment = Tables<'payments'>;
 
 export type QuoteStatus = 'pending' | 'reviewing' | 'quoted' | 'completed' | 'cancelled';
 export type InquiryStatus = 'new' | 'read' | 'replied' | 'closed';
+export type MemberStatus = 'active' | 'suspended' | 'withdrawn';
+export type MemberProvider = 'email' | 'google' | 'kakao';
 
 export interface AdminRoute {
   path: string;
