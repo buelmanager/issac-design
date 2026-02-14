@@ -28,12 +28,20 @@ const profileResult = await supabase
 
 const profile = (profileResult.data as Array<Record<string, any>> | null)?.[0] ?? null;
 
-const orderCountResult = await supabase
+let orderCountResult = await supabase
   .from('orders')
   .select('*', { count: 'exact', head: true })
-  .eq('customer_email' as never, userEmail as never);
+  .eq('user_id' as never, user.id as never);
 
-const orderCount = orderCountResult.count;
+let orderCount = orderCountResult.count;
+
+if (!orderCount && userEmail) {
+  orderCountResult = await supabase
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('customer_email' as never, userEmail as never);
+  orderCount = orderCountResult.count;
+}
 
 const quoteCountResult = await supabase
   .from('quote_requests')
@@ -42,12 +50,21 @@ const quoteCountResult = await supabase
 
 const quoteCount = quoteCountResult.count;
 
-const latestOrderResult = await supabase
+let latestOrderResult = await supabase
   .from('orders')
   .select('created_at')
-  .eq('customer_email' as never, userEmail as never)
+  .eq('user_id' as never, user.id as never)
   .order('created_at' as never, { ascending: false })
   .limit(1);
+
+if (!(latestOrderResult.data as Array<Record<string, any>> | null)?.length && userEmail) {
+  latestOrderResult = await supabase
+    .from('orders')
+    .select('created_at')
+    .eq('customer_email' as never, userEmail as never)
+    .order('created_at' as never, { ascending: false })
+    .limit(1);
+}
 
 const latestOrder = (latestOrderResult.data as Array<Record<string, any>> | null)?.[0] ?? null;
 

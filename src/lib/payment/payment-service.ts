@@ -40,6 +40,7 @@ export class PaymentService {
     customer_name: string;
     customer_email?: string;
     customer_phone: string;
+    user_id?: string;
     business_name?: string;
     shipping_address?: Record<string, string>;
     items: OrderItem[];
@@ -59,18 +60,23 @@ export class PaymentService {
       total_amount: totalAmount,
     });
 
+    const insertData: Record<string, unknown> = {
+      customer_name: params.customer_name,
+      customer_email: params.customer_email ?? null,
+      customer_phone: params.customer_phone,
+      business_name: params.business_name ?? null,
+      shipping_address: params.shipping_address ?? {},
+      items: params.items as unknown as Record<string, unknown>[],
+      total_amount: totalAmount,
+      quote_id: params.quote_id ?? null,
+    };
+    if (params.user_id) {
+      insertData.user_id = params.user_id;
+    }
+
     const { data, error } = await supabase
       .from('orders')
-      .insert({
-        customer_name: params.customer_name,
-        customer_email: params.customer_email ?? null,
-        customer_phone: params.customer_phone,
-        business_name: params.business_name ?? null,
-        shipping_address: params.shipping_address ?? {},
-        items: params.items as unknown as Record<string, unknown>[],
-        total_amount: totalAmount,
-        quote_id: params.quote_id ?? null,
-      })
+      .insert(insertData)
       .select()
       .single();
 

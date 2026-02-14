@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getPaymentService } from '../../../lib/payment/gateway-factory';
 import { PaymentLogger } from '../../../lib/payment/logger';
 import { isValidAmount } from '../../../lib/payment/validators';
+import { createAstroServerClient } from '../../../lib/supabase-server';
 import type { ApiResponse, OrderItem } from '../../../lib/payment/types';
 
 const { service: paymentService } = getPaymentService();
@@ -45,6 +46,20 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    // 서버 사이드에서 로그인 사용자 확인 (쿠키 기반)
+    let authUserId: string | undefined;
+    let authUserEmail: string | undefined;
+    try {
+      const { supabase: authSupabase } = createAstroServerClient(request);
+      const { data: { user } } = await authSupabase.auth.getUser();
+      if (user) {
+        authUserId = user.id;
+        authUserEmail = user.email ?? undefined;
+      }
+    } catch {
+      // 비로그인 사용자도 주문 가능 (guest checkout)
+    }
+
     const body = await request.json();
 
     const {
@@ -171,7 +186,8 @@ export const POST: APIRoute = async ({ request }) => {
     const order = await paymentService.createOrder({
       customer_name: customer_name.trim(),
       customer_phone: customer_phone.trim(),
-      customer_email: customer_email?.trim() || undefined,
+      customer_email: authUserEmail || customer_email?.trim() || undefined,
+      user_id: authUserId,
       business_name: business_name?.trim() || undefined,
       shipping_address: shipping_address ?? {},
       items: orderItems,

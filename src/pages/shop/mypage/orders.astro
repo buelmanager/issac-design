@@ -16,16 +16,27 @@ if (!user) {
   return Astro.redirect('/shop/login?redirect=/shop/mypage/orders');
 }
 
+const userId = user.id;
 const userEmail = user.email ?? '';
 const { supabase } = createAstroServerClient(Astro.request);
 
-const ordersResult = await supabase
+// user_id로 먼저 조회, 없으면 email fallback
+let ordersResult = await supabase
   .from('orders')
   .select('*')
-  .eq('customer_email' as never, userEmail as never)
+  .eq('user_id' as never, userId as never)
   .order('created_at' as never, { ascending: false });
 
-const orders = (ordersResult.data as Array<Record<string, any>> | null) ?? [];
+let orders = (ordersResult.data as Array<Record<string, any>> | null) ?? [];
+
+if (orders.length === 0 && userEmail) {
+  ordersResult = await supabase
+    .from('orders')
+    .select('*')
+    .eq('customer_email' as never, userEmail as never)
+    .order('created_at' as never, { ascending: false });
+  orders = (ordersResult.data as Array<Record<string, any>> | null) ?? [];
+}
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
