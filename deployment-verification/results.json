@@ -1,0 +1,51 @@
+[
+  {
+    "test": "Homepage - All Sections",
+    "pass": true,
+    "details": {
+      "hero": true,
+      "services": true,
+      "signage": true,
+      "client": true,
+      "faq": true,
+      "contact": true,
+      "footer": true,
+      "hasContent": true,
+      "contentLength": 14738
+    }
+  },
+  {
+    "test": "Admin Login Page",
+    "pass": true,
+    "details": {
+      "loginForm": true,
+      "emailInput": true,
+      "passwordInput": true
+    }
+  },
+  {
+    "test": "Admin Dashboard",
+    "pass": true,
+    "details": {
+      "isDashboard": true,
+      "loggedIn": false,
+      "currentUrl": "https://issac-design.vercel.app/admin"
+    }
+  },
+  {
+    "test": "Shop Page",
+    "pass": true,
+    "details": {
+      "shopPageVisible": true,
+      "productsVisible": true
+    }
+  },
+  {
+    "test": "Blog Page",
+    "pass": true,
+    "details": {
+      "blogPageVisible": true,
+      "articlesVisible": true
+    }
+  }
+]

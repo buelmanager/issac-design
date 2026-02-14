@@ -1,0 +1,14 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e7]: issac.design
+    - generic [ref=e8]: 관리자 로그인
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]: 이메일
+      - textbox "이메일" [ref=e12]:
+        - /placeholder: admin@issac.design
+    - generic [ref=e13]:
+      - generic [ref=e14]: 비밀번호
+      - textbox "비밀번호" [ref=e15]:
+        - /placeholder: 비밀번호를 입력하세요
+    - button "로그인" [ref=e16] [cursor=pointer]
