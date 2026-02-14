@@ -18,6 +18,13 @@
 
     <!-- CTAs -->
     <div class="landing-navbar__ctas">
+      <a href="/shop/login" class="landing-navbar__login" data-auth-login>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span data-auth-label>로그인</span>
+      </a>
       <a href="/shop" class="landing-navbar__cta">
         <span>쇼핑몰</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -105,6 +112,27 @@
     opacity: 0.8;
   }
 
+  /* Login Button */
+  .landing-navbar__login {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all var(--transition-base);
+    white-space: nowrap;
+  }
+
+  .landing-navbar__login:hover {
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
   /* CTAs Wrapper */
   .landing-navbar__ctas {
     display: flex;
@@ -160,6 +188,17 @@
 
     .landing-navbar__ctas {
       gap: 6px;
+    }
+
+    .landing-navbar__login {
+      padding: var(--space-xs) var(--space-sm);
+      font-size: 11px;
+      gap: 4px;
+    }
+
+    .landing-navbar__login svg {
+      width: 12px;
+      height: 12px;
     }
 
     .landing-navbar__cta {

@@ -308,6 +308,232 @@ const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
       })();
     </script>
 
+    <!-- Global Auth State Management -->
+    <script is:inline>
+      (function() {
+        function initAuthState() {
+          // Abort if no auth elements exist on this page
+          var authElements = document.querySelectorAll('[data-auth-login],[data-auth-btn],[data-mobile-auth-link]');
+          if (authElements.length === 0) return;
+
+          fetch('/api/auth/me', { credentials: 'same-origin' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (!data.authenticated) return;
+
+              var user = data.user;
+              var initial = (user.displayName || user.email || '?').charAt(0).toUpperCase();
+
+              // --- LandingNavbar: [data-auth-login] ---
+              document.querySelectorAll('[data-auth-login]').forEach(function(el) {
+                el.setAttribute('href', '#');
+                el.setAttribute('aria-label', user.displayName || '내 계정');
+                el.removeAttribute('data-auth-login');
+                el.setAttribute('data-auth-logged-in', '');
+
+                // Replace icon with initial badge
+                var svg = el.querySelector('svg');
+                if (svg) {
+                  var badge = document.createElement('span');
+                  badge.className = 'auth-initial-badge';
+                  badge.textContent = initial;
+                  badge.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:700;flex-shrink:0;';
+                  svg.replaceWith(badge);
+                }
+
+                // Update label
+                var label = el.querySelector('[data-auth-label]');
+                if (label) label.textContent = user.displayName || '내 계정';
+
+                // Add dropdown
+                setupAuthDropdown(el, user);
+              });
+
+              // --- ShopNavbar: [data-auth-btn] ---
+              document.querySelectorAll('[data-auth-btn]').forEach(function(el) {
+                el.setAttribute('href', '#');
+                el.setAttribute('aria-label', user.displayName || '내 계정');
+                el.removeAttribute('data-auth-btn');
+                el.setAttribute('data-auth-logged-in', '');
+
+                // Replace SVG with initial or avatar
+                if (user.avatarUrl) {
+                  var img = document.createElement('img');
+                  img.src = user.avatarUrl;
+                  img.alt = user.displayName || '';
+                  img.style.cssText = 'width:24px;height:24px;border-radius:50%;object-fit:cover;';
+                  var svg = el.querySelector('svg');
+                  if (svg) svg.replaceWith(img);
+                }
+
+                setupAuthDropdown(el, user);
+              });
+
+              // --- MenuOverlay: [data-mobile-auth-link] (in both MenuOverlay and ShopNavbar mobile) ---
+              document.querySelectorAll('[data-mobile-auth-link]').forEach(function(el) {
+                el.textContent = '로그아웃';
+                el.setAttribute('href', '#');
+                el.removeAttribute('data-mobile-auth-link');
+                el.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  handleLogout();
+                });
+              });
+
+              // --- MenuOverlay item (section="login") ---
+              document.querySelectorAll('.menu-overlay__link[data-section="login"]').forEach(function(el) {
+                var textEls = el.querySelectorAll('.menu-overlay__link-text');
+                textEls.forEach(function(t) { t.textContent = '로그아웃'; });
+                el.setAttribute('data-section', 'logout');
+                el.setAttribute('href', '#');
+
+                // Remove existing click listener by cloning
+                var clone = el.cloneNode(true);
+                el.parentNode.replaceChild(clone, el);
+                clone.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleLogout();
+                });
+              });
+            })
+            .catch(function() {
+              // Auth check failed silently — user remains in logged-out state
+            });
+        }
+
+        function setupAuthDropdown(trigger, user) {
+          // Prevent default link behavior
+          trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Toggle existing dropdown
+            var existing = trigger.parentElement.querySelector('.auth-dropdown');
+            if (existing) {
+              existing.remove();
+              return;
+            }
+
+            // Close other dropdowns
+            document.querySelectorAll('.auth-dropdown').forEach(function(d) { d.remove(); });
+
+            var dropdown = document.createElement('div');
+            dropdown.className = 'auth-dropdown';
+            dropdown.style.cssText =
+              'position:absolute;top:calc(100% + 8px);right:0;' +
+              'min-width:180px;background:rgba(17,17,17,0.95);' +
+              'backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);' +
+              'border:1px solid rgba(255,255,255,0.1);border-radius:12px;' +
+              'padding:8px;z-index:9999;' +
+              'box-shadow:0 20px 40px rgba(0,0,0,0.5);' +
+              'animation:authDropdownIn .15s ease-out;';
+
+            // User info header
+            var header = document.createElement('div');
+            header.style.cssText = 'padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;';
+            header.innerHTML =
+              '<div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;">' +
+              escapeHtml(user.displayName || '사용자') + '</div>' +
+              '<div style="font-size:11px;color:rgba(255,255,255,0.5);">' +
+              escapeHtml(user.email || '') + '</div>';
+            dropdown.appendChild(header);
+
+            // Menu items
+            var items = [
+              { label: '마이페이지', href: '/shop/mypage', icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2' },
+              { label: '주문내역', href: '/shop/orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+            ];
+
+            items.forEach(function(item) {
+              var a = document.createElement('a');
+              a.href = item.href;
+              a.style.cssText =
+                'display:flex;align-items:center;gap:10px;padding:9px 12px;' +
+                'border-radius:8px;font-size:13px;font-weight:500;' +
+                'color:rgba(255,255,255,0.8);transition:all .15s ease;';
+              a.innerHTML =
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + item.icon + '"/></svg>' +
+                '<span>' + item.label + '</span>';
+              a.addEventListener('mouseenter', function() { a.style.background = 'rgba(255,255,255,0.08)'; a.style.color = '#fff'; });
+              a.addEventListener('mouseleave', function() { a.style.background = 'transparent'; a.style.color = 'rgba(255,255,255,0.8)'; });
+              dropdown.appendChild(a);
+            });
+
+            // Divider
+            var divider = document.createElement('div');
+            divider.style.cssText = 'height:1px;background:rgba(255,255,255,0.08);margin:4px 0;';
+            dropdown.appendChild(divider);
+
+            // Logout
+            var logoutBtn = document.createElement('button');
+            logoutBtn.type = 'button';
+            logoutBtn.style.cssText =
+              'display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;' +
+              'border:none;border-radius:8px;background:transparent;' +
+              'font-size:13px;font-weight:500;color:rgba(255,100,100,0.9);cursor:pointer;transition:all .15s ease;';
+            logoutBtn.innerHTML =
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
+              '<span>로그아웃</span>';
+            logoutBtn.addEventListener('mouseenter', function() { logoutBtn.style.background = 'rgba(255,100,100,0.1)'; });
+            logoutBtn.addEventListener('mouseleave', function() { logoutBtn.style.background = 'transparent'; });
+            logoutBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              dropdown.remove();
+              handleLogout();
+            });
+            dropdown.appendChild(logoutBtn);
+
+            // Position relative to trigger's parent
+            var parent = trigger.parentElement;
+            if (parent) {
+              parent.style.position = 'relative';
+              parent.appendChild(dropdown);
+            }
+
+            // Close on outside click
+            setTimeout(function() {
+              document.addEventListener('click', function closeDropdown(e) {
+                if (!dropdown.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) {
+                  dropdown.remove();
+                  document.removeEventListener('click', closeDropdown);
+                }
+              });
+            }, 0);
+          });
+        }
+
+        function handleLogout() {
+          fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' })
+            .then(function() { window.location.href = '/'; })
+            .catch(function() { window.location.href = '/'; });
+        }
+
+        function escapeHtml(str) {
+          var div = document.createElement('div');
+          div.textContent = str;
+          return div.innerHTML;
+        }
+
+        // Inject dropdown animation keyframes
+        if (!document.getElementById('auth-dropdown-style')) {
+          var style = document.createElement('style');
+          style.id = 'auth-dropdown-style';
+          style.textContent = '@keyframes authDropdownIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}';
+          document.head.appendChild(style);
+        }
+
+        // Run on load and on Astro page transitions
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initAuthState);
+        } else {
+          initAuthState();
+        }
+        document.addEventListener('astro:page-load', initAuthState);
+      })();
+    </script>
+
     <!-- Service Worker Registration -->
     <script is:inline>
       if ('serviceWorker' in navigator) {

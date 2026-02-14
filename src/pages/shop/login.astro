@@ -1,0 +1,484 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ShopNavbar from '../../components/shop/ShopNavbar.astro';
+import ShopFooter from '../../components/shop/ShopFooter.astro';
+
+const user = Astro.locals.user;
+if (user) {
+  return Astro.redirect('/shop');
+}
+---
+
+<Layout title="로그인 | issac.design" description="issac.design 로그인 - 이메일 또는 Google 계정으로 간편하게 로그인하세요.">
+  <ShopNavbar />
+  <main class="login-page">
+    <div class="login-page__container">
+      <div class="login-page__card">
+        <div class="login-page__header">
+          <a href="/" class="login-page__logo">issac.design</a>
+          <h1 class="login-page__title">로그인</h1>
+          <p class="login-page__desc">간편하게 로그인하고 맞춤 서비스를 이용하세요</p>
+        </div>
+
+        <div class="login-page__social">
+          <button type="button" class="login-page__social-btn login-page__social-btn--kakao" id="kakaoLoginBtn">
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 1C4.582 1 1 3.87 1 7.404c0 2.264 1.46 4.252 3.666 5.392l-.932 3.45c-.082.303.265.548.53.375l4.122-2.727c.2.014.402.022.614.022 4.418 0 8-2.87 8-6.512C17 3.87 13.418 1 9 1z" fill="#3C1E1E"/>
+            </svg>
+            <span>카카오로 계속하기</span>
+          </button>
+          <button type="button" class="login-page__social-btn login-page__social-btn--google" id="googleLoginBtn">
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+              <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+            <span>Google로 계속하기</span>
+          </button>
+        </div>
+
+        <div class="login-page__divider">
+          <span>또는</span>
+        </div>
+
+        <form class="login-page__form" id="loginForm">
+          <div class="login-page__alert" id="loginAlert" role="alert" style="display:none;"></div>
+
+          <div class="login-page__tabs" id="authTabs">
+            <button type="button" class="login-page__tab login-page__tab--active" data-tab="login">로그인</button>
+            <button type="button" class="login-page__tab" data-tab="signup">회원가입</button>
+          </div>
+
+          <div class="login-page__field">
+            <label for="auth-email" class="login-page__label">이메일</label>
+            <input id="auth-email" type="email" class="login-page__input" placeholder="email@example.com" required autocomplete="email" />
+          </div>
+
+          <div class="login-page__field">
+            <label for="auth-password" class="login-page__label">비밀번호</label>
+            <input id="auth-password" type="password" class="login-page__input" placeholder="8자 이상" required autocomplete="current-password" minlength="8" />
+          </div>
+
+          <div class="login-page__field login-page__field--name" id="nameField" style="display:none;">
+            <label for="auth-name" class="login-page__label">이름 <span class="login-page__optional">(선택)</span></label>
+            <input id="auth-name" type="text" class="login-page__input" placeholder="홍길동" autocomplete="name" />
+          </div>
+
+          <button type="submit" class="login-page__submit" id="submitBtn">
+            <span id="submitText">로그인</span>
+            <svg class="login-page__spinner" id="submitSpinner" viewBox="0 0 24 24" style="display:none;">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </form>
+
+        <p class="login-page__footer-text">
+          로그인 시 <a href="/shop/terms">이용약관</a> 및 <a href="/shop/privacy">개인정보처리방침</a>에 동의합니다.
+        </p>
+      </div>
+    </div>
+  </main>
+  <ShopFooter />
+</Layout>
+
+<style>
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--header-height) + var(--space-2xl)) var(--container-padding) var(--space-3xl);
+    background: var(--bg-primary);
+  }
+
+  .login-page__container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .login-page__card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+  }
+
+  .login-page__header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+  }
+
+  .login-page__logo {
+    display: inline-block;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    transition: opacity var(--transition-base);
+  }
+
+  .login-page__logo:hover { opacity: 0.8; }
+
+  .login-page__title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+  }
+
+  .login-page__desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .login-page__social {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .login-page__social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .login-page__social-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .login-page__social-btn--kakao {
+    background: #FEE500;
+    border-color: #FEE500;
+    color: #3C1E1E;
+  }
+
+  .login-page__social-btn--kakao:hover:not(:disabled) {
+    background: #F5DC00;
+    border-color: #F5DC00;
+  }
+
+  .login-page__social-btn--google {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+  }
+
+  .login-page__social-btn--google:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .login-page__divider {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  .login-page__divider::before,
+  .login-page__divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .login-page__tabs {
+    display: flex;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-md);
+    padding: 3px;
+    margin-bottom: var(--space-lg);
+  }
+
+  .login-page__tab {
+    flex: 1;
+    padding: var(--space-sm);
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .login-page__tab--active {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .login-page__field {
+    margin-bottom: var(--space-md);
+  }
+
+  .login-page__label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wider);
+  }
+
+  .login-page__optional {
+    font-weight: 400;
+    color: var(--text-muted);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .login-page__input {
+    width: 100%;
+    padding: var(--space-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-base);
+    outline: none;
+  }
+
+  .login-page__input::placeholder { color: var(--text-muted); }
+
+  .login-page__input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.15);
+  }
+
+  .login-page__alert {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-md);
+    line-height: 1.4;
+  }
+
+  .login-page__alert--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+
+  .login-page__alert--success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #86efac;
+  }
+
+  .login-page__submit {
+    width: 100%;
+    padding: var(--space-md);
+    background: var(--primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #fff;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .login-page__submit:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+  }
+
+  .login-page__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .login-page__spinner {
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .login-page__footer-text {
+    text-align: center;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    margin-top: var(--space-lg);
+    line-height: 1.5;
+  }
+
+  .login-page__footer-text a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.2);
+    transition: color var(--transition-base);
+  }
+
+  .login-page__footer-text a:hover { color: var(--primary-light); }
+
+  @media (max-width: 719px) {
+    .login-page {
+      padding-top: calc(var(--header-height-mobile) + var(--space-xl));
+    }
+    .login-page__card {
+      padding: var(--space-xl) var(--space-lg);
+      border: none;
+      background: transparent;
+    }
+  }
+</style>
+
+<script>
+  type AuthMode = 'login' | 'signup';
+  let mode: AuthMode = 'login';
+
+  const form = document.getElementById('loginForm') as HTMLFormElement;
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.login-page__tab');
+  const nameField = document.getElementById('nameField') as HTMLElement;
+  const submitText = document.getElementById('submitText') as HTMLElement;
+  const submitSpinner = document.getElementById('submitSpinner') as HTMLElement;
+  const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+  const alertEl = document.getElementById('loginAlert') as HTMLElement;
+  const googleBtn = document.getElementById('googleLoginBtn') as HTMLButtonElement;
+  const kakaoBtn = document.getElementById('kakaoLoginBtn') as HTMLButtonElement;
+  const passwordInput = document.getElementById('auth-password') as HTMLInputElement;
+
+  function showAlert(message: string, type: 'error' | 'success') {
+    alertEl.textContent = message;
+    alertEl.className = `login-page__alert login-page__alert--${type}`;
+    alertEl.style.display = 'block';
+  }
+
+  function hideAlert() {
+    alertEl.style.display = 'none';
+  }
+
+  function setLoading(loading: boolean) {
+    submitBtn.disabled = loading;
+    googleBtn.disabled = loading;
+    kakaoBtn.disabled = loading;
+    submitText.style.display = loading ? 'none' : 'inline';
+    submitSpinner.style.display = loading ? 'block' : 'none';
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      mode = tab.dataset.tab as AuthMode;
+      tabs.forEach(t => t.classList.remove('login-page__tab--active'));
+      tab.classList.add('login-page__tab--active');
+
+      nameField.style.display = mode === 'signup' ? 'block' : 'none';
+      submitText.textContent = mode === 'login' ? '로그인' : '회원가입';
+      passwordInput.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+      hideAlert();
+    });
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+    setLoading(true);
+
+    const email = (document.getElementById('auth-email') as HTMLInputElement).value;
+    const password = passwordInput.value;
+    const displayName = (document.getElementById('auth-name') as HTMLInputElement).value;
+
+    try {
+      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+      const body = mode === 'login'
+        ? { email, password }
+        : { email, password, displayName };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        showAlert(json.error?.message ?? '오류가 발생했습니다.', 'error');
+        return;
+      }
+
+      if (mode === 'signup' && json.data?.needsEmailConfirmation) {
+        showAlert('인증 메일을 발송했습니다. 이메일을 확인하세요.', 'success');
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect') || '/shop';
+      window.location.href = redirectTo;
+    } catch {
+      showAlert('서버 연결에 실패했습니다.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  async function handleOAuthLogin(provider: 'google' | 'kakao', label: string) {
+    setLoading(true);
+    hideAlert();
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect') || '/shop';
+
+      const res = await fetch(`/api/auth/${provider}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectTo }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        showAlert(json.error?.message ?? `${label} 로그인에 실패했습니다.`, 'error');
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = json.data.url;
+    } catch {
+      showAlert('서버 연결에 실패했습니다.', 'error');
+      setLoading(false);
+    }
+  }
+
+  googleBtn.addEventListener('click', () => handleOAuthLogin('google', 'Google'));
+  kakaoBtn.addEventListener('click', () => handleOAuthLogin('kakao', '카카오'));
+
+  const errorParam = new URLSearchParams(window.location.search).get('error');
+  if (errorParam === 'auth_failed') {
+    showAlert('인증에 실패했습니다. 다시 시도하세요.', 'error');
+  } else if (errorParam === 'missing_code') {
+    showAlert('인증 코드가 누락되었습니다.', 'error');
+  }
+</script>

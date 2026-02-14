@@ -100,7 +100,6 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // 로그인 성공 감사 로그
     PaymentLogger.info('AUTH_LOGIN_SUCCESS', {
       user_id: data.user.id,
       email: data.user.email,
@@ -108,13 +107,23 @@ export const POST: APIRoute = async ({ request }) => {
       user_agent: userAgent,
     });
 
-    // 세션 쿠키가 포함된 응답
+    const profileResult = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id' as never, data.user.id)
+      .limit(1);
+
+    const profile = (profileResult.data as Array<{ display_name?: string; avatar_url?: string; provider?: string }> | null)?.[0];
+
     const jsonResponse = new Response(JSON.stringify({
       success: true,
       data: {
         user: {
           id: data.user.id,
           email: data.user.email,
+          displayName: profile?.display_name ?? data.user.email?.split('@')[0],
+          avatarUrl: profile?.avatar_url ?? null,
+          provider: profile?.provider ?? 'email',
         },
       },
     }), {

@@ -14,10 +14,16 @@ import { createAstroServerClient } from '../../lib/supabase-server';
 
 export const GET: APIRoute = async ({ request, redirect, url }) => {
   const code = url.searchParams.get('code');
-  const next = url.searchParams.get('next') ?? '/admin';
+  const next = url.searchParams.get('next') ?? '/shop';
+
+  const ALLOWED_PATHS = ['/admin', '/shop', '/', '/shop/login'];
+  const isAllowedRedirect = ALLOWED_PATHS.some(p => next.startsWith(p));
+  const safeDest = isAllowedRedirect ? next : '/shop';
+
+  const errorRedirect = next.startsWith('/admin') ? '/admin/login' : '/shop/login';
 
   if (!code) {
-    return redirect('/admin/login?error=missing_code');
+    return redirect(`${errorRedirect}?error=missing_code`);
   }
 
   const { supabase, response } = createAstroServerClient(request);
@@ -26,18 +32,14 @@ export const GET: APIRoute = async ({ request, redirect, url }) => {
 
   if (error) {
     console.error('Auth callback error:', error.message);
-    return redirect('/admin/login?error=auth_failed');
+    return redirect(`${errorRedirect}?error=auth_failed`);
   }
 
-  // 세션 쿠키가 설정된 리다이렉트 응답
   const redirectResponse = new Response(null, {
     status: 302,
-    headers: {
-      Location: next,
-    },
+    headers: { Location: safeDest },
   });
 
-  // Supabase Set-Cookie 헤더 병합
   response.headers.forEach((value, key) => {
     redirectResponse.headers.append(key, value);
   });
