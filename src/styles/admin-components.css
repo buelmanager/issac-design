@@ -1224,6 +1224,33 @@
   white-space: nowrap;
 }
 
+/* Column layout for drag items with sub-content (images, accordions, etc.) */
+.admin-drag-item-content.admin-drag-item-column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-drag-item-column .admin-drag-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-drag-item-column .admin-drag-item-row .admin-form-group {
+  flex: 1;
+  min-width: 0;
+}
+
+/* FAQ accordion inside drag list — full width, vertical layout */
+.admin-drag-item:has(.admin-faq-accordion-item) {
+  align-items: flex-start;
+}
+
+.admin-drag-item .admin-faq-accordion-item {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ========================================
    Modal Enhancements
    ======================================== */
@@ -2223,3 +2250,750 @@ body.admin-modal-open {
     min-height: 220px;
   }
 }
+
+/* ========================================
+   Payment Page Styles
+   ======================================== */
+
+/* --- Payment Status Badges --- */
+.payment-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.payment-status-badge svg {
+  flex-shrink: 0;
+}
+
+.payment-status-badge-init {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.payment-status-badge-pending {
+  color: #d97706;
+  background-color: #fef3c7;
+}
+
+.payment-status-badge-paid {
+  color: #059669;
+  background-color: #d1fae5;
+}
+
+.payment-status-badge-failed {
+  color: #dc2626;
+  background-color: #fee2e2;
+}
+
+.payment-status-badge-canceled {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.payment-status-badge-refund_pending {
+  color: #d97706;
+  background-color: #fef3c7;
+}
+
+.payment-status-badge-refunded {
+  color: #7c3aed;
+  background-color: #ede9fe;
+}
+
+/* --- Payment Timeline --- */
+.payment-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.payment-timeline-line {
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background-color: var(--admin-border, #e5e7eb);
+}
+
+.payment-timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.payment-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.payment-timeline-dot {
+  position: absolute;
+  left: -20px;
+  top: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.payment-timeline-dot-init,
+.payment-timeline-dot-canceled {
+  background-color: #6b7280;
+  box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2);
+}
+
+.payment-timeline-dot-pending,
+.payment-timeline-dot-refund_pending {
+  background-color: #d97706;
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+}
+
+.payment-timeline-dot-paid {
+  background-color: #059669;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+}
+
+.payment-timeline-dot-failed {
+  background-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.payment-timeline-dot-refunded {
+  background-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+.payment-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-timeline-statuses {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-timeline-arrow {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.payment-timeline-meta {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payment-timeline-actor {
+  background-color: #f3f4f6;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.payment-timeline-reason {
+  margin-top: 4px;
+  padding: 8px 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* --- Payment Log Entry --- */
+.payment-log-entry {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  background-color: #f9fafb;
+}
+
+.payment-log-entry-error {
+  background-color: #fff7ed;
+}
+
+.payment-log-entry-critical {
+  background-color: #fef2f2;
+}
+
+.payment-log-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.payment-log-entry-action {
+  font-weight: 600;
+}
+
+.payment-log-entry-duration {
+  color: #6b7280;
+  font-family: monospace;
+}
+
+.payment-log-entry-time {
+  color: #9ca3af;
+  margin-left: auto;
+  font-family: monospace;
+}
+
+.payment-log-entry-error-text {
+  color: #dc2626;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+/* --- Payment Log Level Badges --- */
+.payment-log-level {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.payment-log-level-info {
+  color: #2563eb;
+  background-color: #dbeafe;
+}
+
+.payment-log-level-warn {
+  color: #d97706;
+  background-color: #fef3c7;
+}
+
+.payment-log-level-error {
+  color: #dc2626;
+  background-color: #fee2e2;
+}
+
+.payment-log-level-critical {
+  color: #ffffff;
+  background-color: #dc2626;
+}
+
+/* --- Payment Filter Group --- */
+.payment-filter-group {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.payment-filter-btn {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  background-color: #fff;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 400;
+  transition: all 0.15s ease;
+}
+
+.payment-filter-btn:hover {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+.payment-filter-btn-active {
+  border: 2px solid #111827;
+  background-color: #111827;
+  color: #fff;
+  font-weight: 600;
+}
+
+.payment-filter-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* --- Payment Actions (Detail View) --- */
+.payment-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- Payment Code (monospace display) --- */
+.payment-code {
+  font-family: monospace;
+  font-size: 12px;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+/* --- Payment Info Grid (2-column detail layout) --- */
+.payment-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .payment-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Payment Date Range Preset Buttons --- */
+.payment-date-range {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.payment-date-range-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  background-color: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  font-weight: 400;
+  transition: all 0.15s ease;
+}
+
+.payment-date-range-btn:hover {
+  border-color: #d1d5db;
+}
+
+.payment-date-range-btn-active {
+  border: 2px solid var(--admin-accent, #6366f1);
+  background-color: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
+}
+
+/* --- Payment Export Button --- */
+.payment-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  background-color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.payment-export-btn:hover {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+/* --- Payment PG Response Code Block --- */
+.payment-pg-response {
+  background-color: #1f2937;
+  color: #d1d5db;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 300px;
+  font-family: monospace;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* --- Payment Stack Trace --- */
+.payment-stack-trace {
+  padding: 8px 12px;
+  background-color: #1f2937;
+  border-radius: 6px;
+  font-size: 10px;
+  color: #d1d5db;
+  font-family: monospace;
+  overflow: auto;
+  max-height: 200px;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* --- Payment Detail JSON Block --- */
+.payment-detail-json {
+  padding: 8px 12px;
+  background-color: #1f2937;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #d1d5db;
+  font-family: monospace;
+  overflow: auto;
+  max-height: 200px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* --- Payment Log Expanded Row --- */
+.payment-log-expanded {
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.payment-log-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.payment-log-meta-item-label {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.payment-log-meta-item-value {
+  font-size: 12px;
+  color: #374151;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.payment-log-error-block {
+  padding: 8px 12px;
+  background-color: #fef2f2;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #991b1b;
+  font-family: monospace;
+}
+
+.payment-log-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+/* --- Payment Stat Card (for log stats) --- */
+.payment-stat-card {
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #fff;
+}
+
+.payment-stat-card-alert {
+  border: 2px solid #dc2626;
+  background-color: #fef2f2;
+}
+
+.payment-stat-card-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.payment-stat-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.payment-stat-card-suffix {
+  font-size: 14px;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 2px;
+}
+
+/* --- Payment Auto-Refresh Controls --- */
+.payment-auto-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-auto-refresh-label {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.payment-auto-refresh-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  background-color: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  font-weight: 400;
+  transition: all 0.15s ease;
+}
+
+.payment-auto-refresh-btn:hover {
+  border-color: #d1d5db;
+}
+
+.payment-auto-refresh-btn-active {
+  border: 2px solid #059669;
+  background-color: #d1fae5;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* --- Payment Log Table --- */
+.payment-log-table-wrapper {
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.payment-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.payment-log-table thead tr {
+  background-color: #f9fafb;
+  border-bottom: 1px solid var(--admin-border, #e5e7eb);
+}
+
+.payment-log-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.payment-log-table td {
+  padding: 8px 12px;
+}
+
+.payment-log-table tr {
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.1s ease;
+}
+
+.payment-log-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.payment-log-table-row-error {
+  background-color: #fffbeb;
+}
+
+.payment-log-table-row-critical {
+  background-color: #fef2f2;
+}
+
+.payment-log-table-cell-mono {
+  font-family: monospace;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.payment-log-table-cell-truncate {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.payment-log-table-cell-center {
+  text-align: center;
+}
+
+.payment-log-table-empty {
+  padding: 48px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* --- Payment Search Bar (for logs) --- */
+.payment-search-wrapper {
+  position: relative;
+  max-width: 400px;
+}
+
+.payment-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.payment-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.payment-search-input:focus {
+  border-color: var(--admin-accent, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* --- Payment Toolbar Separator --- */
+.payment-toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background-color: var(--admin-border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+/* --- Payment Summary Stats --- */
+.payment-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* --- Payment Refund/Cancel Confirm Input --- */
+.payment-confirm-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border, #e5e7eb);
+  font-size: 13px;
+  margin-top: 12px;
+  box-sizing: border-box;
+}
+
+.payment-confirm-input:focus {
+  outline: none;
+  border-color: var(--admin-accent, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* --- Payment Detail Column Stack --- */
+.payment-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- Payment Detail Value Variants --- */
+.admin-detail-value-highlight {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.admin-detail-value-error {
+  color: var(--admin-danger, #ef4444);
+}
+
+/* --- Payment Table Cell Variants --- */
+.admin-table-td-number {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-table-td-sm {
+  font-size: 12px;
+}
+
+/* --- Payment Log Detail Column --- */
+.payment-log-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- Payment Empty Center Text --- */
+.payment-empty-center {
+  text-align: center;
+  padding: 32px 0;
+}
+
+/* --- Payment Search Wrapper Spacing --- */
+.payment-search-wrapper-mb {
+  margin-bottom: 16px;
+}
+
+/* --- Payment Log Table Header Widths --- */
+.payment-log-th-toggle { width: 28px; }
+.payment-log-th-time { width: 160px; }
+.payment-log-th-level { width: 80px; }
+.payment-log-th-duration { width: 80px; }
+.payment-log-th-request { width: 100px; }
+
+/* --- Payment Log Row Styles --- */
+.payment-log-table-row-no-border {
+  border-bottom: none;
+}
+
+.payment-log-table-action {
+  font-weight: 500;
+}
+
+.payment-log-table-cell-tabular {
+  font-family: monospace;
+  font-size: 11px;
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+
+.payment-log-error-text {
+  color: var(--admin-danger, #ef4444);
+}
+
+/* --- Payment Log Expanded Cell --- */
+.payment-log-expanded-cell {
+  padding: 0 12px 16px 40px;
+}
+
+.payment-log-meta-grid-mb {
+  margin-bottom: 12px;
+}
+
+.payment-log-section-mb {
+  margin-bottom: 8px;
+}
+
+.payment-log-section-label-error {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--admin-danger, #ef4444);
+  margin-bottom: 4px;
+}
+
+/* --- Payment Stat Card Value Color Variants --- */
+.payment-stat-value-dark { color: #111827; }
+.payment-stat-value-blue { color: #2563EB; }
+.payment-stat-value-amber { color: #D97706; }
+.payment-stat-value-red { color: #DC2626; }
+.payment-stat-value-green { color: #059669; }
+.payment-stat-value-purple { color: #7C3AED; }
+.payment-stat-value-cyan { color: #0891B2; }

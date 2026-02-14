@@ -62,6 +62,66 @@ export const GET: APIRoute = async ({ request, url }) => {
       Math.max(parseInt(url.searchParams.get('page_size') ?? '20', 10), 1),
       100
     );
+    const fromDate = url.searchParams.get('from');
+    const toDate = url.searchParams.get('to');
+    const exportFormat = url.searchParams.get('export');
+
+    if (exportFormat === 'csv') {
+      let exportQuery = supabase
+        .from('payments')
+        .select('*, orders(*)')
+        .order('created_at', { ascending: false })
+        .limit(5000);
+
+      if (status && status !== 'all') exportQuery = exportQuery.eq('status', status);
+      if (fromDate) exportQuery = exportQuery.gte('created_at', fromDate);
+      if (toDate) exportQuery = exportQuery.lte('created_at', toDate);
+      if (search) {
+        exportQuery = exportQuery.or(
+          `pg_payment_id.ilike.%${search}%,idempotency_key.ilike.%${search}%`
+        );
+      }
+
+      const { data: exportData, error: exportError } = await exportQuery;
+
+      if (exportError) {
+        return jsonResponse(500, {
+          success: false,
+          error: { code: 'QUERY_ERROR', message: '내보내기 데이터 조회 실패' },
+        });
+      }
+
+      const rows = exportData ?? [];
+      const csvHeaders = ['주문번호', '고객명', '금액', '결제상태', 'PG사', '결제수단', '생성일', '결제일'];
+      const csvRows = rows.map((p) => {
+        const order = p.orders as { order_number?: string; customer_name?: string } | null;
+        return [
+          order?.order_number ?? '',
+          order?.customer_name ?? '',
+          String(p.amount ?? 0),
+          p.status ?? '',
+          p.pg_provider ?? '',
+          p.method ?? '',
+          p.created_at ?? '',
+          p.paid_at ?? '',
+        ].map((v) =>
+          v.includes(',') || v.includes('"') || v.includes('\n')
+            ? `"${v.replace(/"/g, '""')}"`
+            : v
+        ).join(',');
+      });
+
+      const bom = '\uFEFF';
+      const csvContent = bom + [csvHeaders.join(','), ...csvRows].join('\n');
+
+      return new Response(csvContent, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="payments-${new Date().toISOString().slice(0, 10)}.csv"`,
+        },
+      });
+    }
 
     let query = supabase
       .from('payments')
@@ -71,6 +131,14 @@ export const GET: APIRoute = async ({ request, url }) => {
 
     if (status && status !== 'all') {
       query = query.eq('status', status);
+    }
+
+    if (fromDate) {
+      query = query.gte('created_at', fromDate);
+    }
+
+    if (toDate) {
+      query = query.lte('created_at', toDate);
     }
 
     if (search) {
@@ -98,7 +166,7 @@ export const GET: APIRoute = async ({ request, url }) => {
       },
     });
   } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
+    const _unused = err instanceof Error ? err : new Error(String(err));
     return jsonResponse(500, {
       success: false,
       error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다' },
