@@ -54,6 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
       business_name,
       shipping_address,
       items,
+      quote_id,
     } = body;
 
     if (!customer_name || typeof customer_name !== 'string' || !customer_name.trim()) {
@@ -174,6 +175,7 @@ export const POST: APIRoute = async ({ request }) => {
       business_name: business_name?.trim() || undefined,
       shipping_address: shipping_address ?? {},
       items: orderItems,
+      quote_id: quote_id || undefined,
     });
 
     const idempotencyKey = `${order.id}_${Date.now()}`;

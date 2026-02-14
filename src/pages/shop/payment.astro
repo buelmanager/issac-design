@@ -126,16 +126,54 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
     }
 
     let cartItems: Array<{ name: string; quantity: number; unit_price: number; options?: Record<string, string> }> = [];
+    let quoteId: string | null = null;
+
+    // 견적 기반 결제인지 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const quoteIdParam = urlParams.get('quote_id');
+
     try {
-      const raw = localStorage.getItem(CART_KEY);
-      if (!raw) {
-        showEmpty();
-        return;
+      if (quoteIdParam) {
+        // 견적 기반 결제: pendingPayment에서 데이터 로드
+        const pendingRaw = localStorage.getItem('pendingPayment');
+        if (pendingRaw) {
+          const pending = JSON.parse(pendingRaw);
+          if (pending.type === 'quote' && pending.quoteId) {
+            quoteId = pending.quoteId;
+            cartItems = (pending.products || []).map((p: any) => ({
+              name: p.productName || '견적 제품',
+              quantity: p.quantity || 1,
+              unit_price: Math.round(pending.totalAmount / (pending.products?.length || 1)),
+              options: p.options || {},
+            }));
+            // 총액이 정확하도록 마지막 아이템에서 보정
+            if (cartItems.length > 0) {
+              const sumSoFar = cartItems.reduce((s: number, it: any) => s + it.unit_price * it.quantity, 0);
+              const diff = pending.totalAmount - sumSoFar;
+              if (diff !== 0) {
+                cartItems[cartItems.length - 1].unit_price += diff;
+              }
+            }
+            // 제품이 없으면 단일 견적 아이템으로 생성
+            if (cartItems.length === 0) {
+              cartItems = [{ name: '견적 결제', quantity: 1, unit_price: pending.totalAmount }];
+            }
+          }
+        }
       }
-      cartItems = JSON.parse(raw);
-      if (!Array.isArray(cartItems) || cartItems.length === 0) {
-        showEmpty();
-        return;
+
+      // 견적 데이터가 없으면 일반 장바구니에서 로드
+      if (cartItems.length === 0) {
+        const raw = localStorage.getItem(CART_KEY);
+        if (!raw) {
+          showEmpty();
+          return;
+        }
+        cartItems = JSON.parse(raw);
+        if (!Array.isArray(cartItems) || cartItems.length === 0) {
+          showEmpty();
+          return;
+        }
       }
     } catch {
       showEmpty();
@@ -144,6 +182,17 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
 
     let customerName = '고객';
     let customerEmail: string | undefined;
+    try {
+      // 로그인된 사용자 정보 가져오기
+      const authRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
+      const authData = await authRes.json();
+      if (authData.authenticated && authData.user) {
+        customerName = authData.user.displayName || authData.user.email?.split('@')[0] || '고객';
+        customerEmail = authData.user.email;
+      }
+    } catch {
+      // noop
+    }
     try {
       const infoRaw = localStorage.getItem('paymentCustomerInfo');
       if (infoRaw) {
@@ -159,18 +208,24 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
       showLoading();
 
       try {
+        const orderPayload: Record<string, unknown> = {
+          customer_name: customerName,
+          customer_phone: '000-0000-0000',
+          customer_email: customerEmail,
+          items: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+          })),
+        };
+        if (quoteId) {
+          orderPayload.quote_id = quoteId;
+        }
+
         const res = await fetch('/api/payment/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customer_name: customerName,
-            customer_phone: '000-0000-0000',
-            items: cartItems.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              unit_price: item.unit_price,
-            })),
-          }),
+          body: JSON.stringify(orderPayload),
         });
 
         if (!res.ok) {

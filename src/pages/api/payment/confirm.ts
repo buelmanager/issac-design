@@ -119,6 +119,34 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       raw_response: confirmResult.raw_response,
     }, 'system');
 
+    // 견적 기반 결제인 경우 quote_requests 상태를 completed로 업데이트
+    try {
+      const { data: order } = await supabase
+        .from('orders')
+        .select('quote_id')
+        .eq('id', orderId)
+        .single();
+
+      if (order?.quote_id) {
+        await supabase
+          .from('quote_requests')
+          .update({ status: 'completed', updated_at: new Date().toISOString() })
+          .eq('id', order.quote_id);
+
+        PaymentLogger.info('QUOTE_STATUS_UPDATED', {
+          quote_id: order.quote_id,
+          new_status: 'completed',
+          order_id: orderId,
+        });
+      }
+    } catch (quoteErr) {
+      // 견적 상태 업데이트 실패해도 결제 자체는 성공이므로 로그만 남김
+      PaymentLogger.warn('QUOTE_STATUS_UPDATE_FAILED', {
+        order_id: orderId,
+        error: quoteErr instanceof Error ? quoteErr.message : String(quoteErr),
+      });
+    }
+
     PaymentLogger.info('PAYMENT_CONFIRMED_SUCCESS', {
       payment_id: payment.id,
       amount: requestedAmount,
