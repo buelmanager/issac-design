@@ -14,15 +14,22 @@ import type { ApiResponse } from '../../../lib/payment/types';
 const { service: paymentService } = getPaymentService();
 
 export const GET: APIRoute = async ({ request, url }) => {
-  const auth = await verifyAdminAuth(request);
-  if (!auth.authorized) {
-    return unauthorizedResponse(auth.error);
-  }
+  const startTime = performance.now();
+  const cleanup = PaymentLogger.apiRequest(request, '/api/payment/status');
 
   try {
+    const auth = await verifyAdminAuth(request);
+    if (!auth.authorized) {
+      PaymentLogger.apiResponse(401, startTime);
+      cleanup();
+      return unauthorizedResponse(auth.error);
+    }
+
     const orderId = url.searchParams.get('order_id');
 
     if (!orderId || !isValidUUID(orderId)) {
+      PaymentLogger.apiResponse(400, startTime, { reason: 'invalid_order_id' });
+      cleanup();
       return jsonResponse<ApiResponse>(400, {
         success: false,
         error: { code: 'VALIDATION_ERROR', message: 'Valid order_id is required' },
@@ -31,6 +38,8 @@ export const GET: APIRoute = async ({ request, url }) => {
 
     const result = await paymentService.getPaymentStatus(orderId);
 
+    PaymentLogger.apiResponse(200, startTime, { order_id: orderId });
+    cleanup();
     return jsonResponse<ApiResponse>(200, {
       success: true,
       data: result,
@@ -40,6 +49,8 @@ export const GET: APIRoute = async ({ request, url }) => {
     PaymentLogger.error('API_STATUS_ERROR', error);
 
     const status = error.message.includes('not found') ? 404 : 500;
+    PaymentLogger.apiResponse(status, startTime, { error: error.message });
+    cleanup();
     return jsonResponse<ApiResponse>(status, {
       success: false,
       error: { code: 'STATUS_ERROR', message: error.message },

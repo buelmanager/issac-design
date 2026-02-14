@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
-import { DataTable, SearchInput, StatusBadge, Pagination, LoadingSpinner, EmptyState } from '../ui';
+import { SearchInput, Pagination, LoadingSpinner, EmptyState } from '../ui';
 import toast from 'react-hot-toast';
 import {
   CreditCard, RefreshCw, Eye, ArrowLeft,
   CheckCircle, Clock, XCircle, RotateCcw,
-  Activity, FileText,
+  Activity, FileText, Search, ChevronDown, ChevronRight, Timer,
 } from 'lucide-react';
 
 // ─── 타입 ────────────────────────────────────────
@@ -51,6 +51,23 @@ interface StatusLogRow {
   actor: string;
   metadata: Record<string, unknown>;
   created_at: string;
+}
+
+interface SystemLogEntry {
+  timestamp: string;
+  level: string;
+  action: string;
+  payment_id?: string;
+  order_id?: string;
+  request_id?: string;
+  details: Record<string, unknown>;
+  error?: string;
+  stack?: string;
+  duration_ms?: number;
+  actor_ip?: string;
+  http_method?: string;
+  http_path?: string;
+  http_status?: number;
 }
 
 type ViewMode = 'list' | 'detail' | 'logs';
@@ -99,6 +116,21 @@ const LOG_LEVEL_CONFIG: Record<string, { label: string; color: string; bgColor: 
   ERROR: { label: 'ERROR', color: '#DC2626', bgColor: '#FEE2E2' },
   CRITICAL: { label: 'CRITICAL', color: '#FFFFFF', bgColor: '#DC2626' },
 };
+
+const DATE_RANGE_PRESETS = [
+  { label: '1시간', value: 1 },
+  { label: '24시간', value: 24 },
+  { label: '7일', value: 24 * 7 },
+  { label: '30일', value: 24 * 30 },
+  { label: '전체', value: 0 },
+];
+
+const AUTO_REFRESH_OPTIONS = [
+  { label: '꺼짐', value: 0 },
+  { label: '10초', value: 10 },
+  { label: '30초', value: 30 },
+  { label: '60초', value: 60 },
+];
 
 // ─── 유틸 ────────────────────────────────────────
 function formatDateTime(dateStr: string | null): string {
@@ -155,8 +187,14 @@ export default function PaymentsPage() {
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
   const [statusLogs, setStatusLogs] = useState<StatusLogRow[]>([]);
-  const [systemLogs, setSystemLogs] = useState<unknown[]>([]);
-  const [logStats, setLogStats] = useState<{ total: number; by_level: Record<string, number>; recent_errors: number } | null>(null);
+  const [systemLogs, setSystemLogs] = useState<SystemLogEntry[]>([]);
+  const [logStats, setLogStats] = useState<{
+    total: number;
+    by_level: Record<string, number>;
+    recent_errors: number;
+    avg_api_duration_ms?: number;
+    pg_call_count?: number;
+  } | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -164,7 +202,17 @@ export default function PaymentsPage() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
+  // 로그 관련 상태
   const [logFilter, setLogFilter] = useState<{ level: string; view: string }>({ level: 'all', view: 'all' });
+  const [logSearch, setLogSearch] = useState('');
+  const [logDateRange, setLogDateRange] = useState(0); // hours, 0 = all
+  const [expandedLogIndex, setExpandedLogIndex] = useState<number | null>(null);
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState(0);
+  const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 결제 상세 - 시스템 로그 탭
+  const [detailTab, setDetailTab] = useState<'timeline' | 'systemlogs'>('timeline');
+  const [detailSystemLogs, setDetailSystemLogs] = useState<SystemLogEntry[]>([]);
 
   // ─── 결제 목록 조회 ─────────────────────────
   const fetchPayments = useCallback(async () => {
@@ -203,6 +251,7 @@ export default function PaymentsPage() {
   const openDetail = async (payment: PaymentRow) => {
     setSelectedPayment(payment);
     setView('detail');
+    setDetailTab('timeline');
 
     // 상태 변경 로그 조회
     const { data: logs } = await supabase
@@ -213,6 +262,30 @@ export default function PaymentsPage() {
 
     setStatusLogs((logs ?? []) as unknown as StatusLogRow[]);
   };
+
+  // ─── 결제 상세 - 시스템 로그 탭 ───────────────
+  const fetchDetailSystemLogs = useCallback(async (paymentId: string) => {
+    try {
+      const params = new URLSearchParams({
+        payment_id: paymentId,
+        limit: '100',
+      });
+      const res = await fetch(`/api/payment/logs?${params.toString()}`);
+      const json = await res.json();
+      if (json.success) {
+        setDetailSystemLogs(json.data.logs ?? []);
+      }
+    } catch {
+      toast.error('시스템 로그 조회 실패');
+    }
+  }, []);
+
+  // 탭 변경 시 시스템 로그 로드
+  useEffect(() => {
+    if (detailTab === 'systemlogs' && selectedPayment) {
+      fetchDetailSystemLogs(selectedPayment.id);
+    }
+  }, [detailTab, selectedPayment, fetchDetailSystemLogs]);
 
   // ─── 시스템 로그 조회 ───────────────────────
   const openLogs = async () => {
@@ -226,6 +299,11 @@ export default function PaymentsPage() {
       const params = new URLSearchParams();
       if (logFilter.level !== 'all') params.set('level', logFilter.level);
       if (logFilter.view !== 'all') params.set('view', logFilter.view);
+      if (logSearch) params.set('search', logSearch);
+      if (logDateRange > 0) {
+        const from = new Date(Date.now() - logDateRange * 60 * 60 * 1000).toISOString();
+        params.set('from', from);
+      }
       params.set('limit', '100');
 
       const res = await fetch(`/api/payment/logs?${params.toString()}`);
@@ -236,7 +314,7 @@ export default function PaymentsPage() {
     } catch {
       toast.error('시스템 로그 조회 실패');
     }
-  }, [logFilter]);
+  }, [logFilter, logSearch, logDateRange]);
 
   const fetchLogStats = async () => {
     try {
@@ -253,6 +331,26 @@ export default function PaymentsPage() {
   useEffect(() => {
     if (view === 'logs') fetchSystemLogs();
   }, [logFilter, fetchSystemLogs, view]);
+
+  // ─── 자동 새로고침 ─────────────────────────
+  useEffect(() => {
+    if (autoRefreshRef.current) {
+      clearInterval(autoRefreshRef.current);
+      autoRefreshRef.current = null;
+    }
+    if (autoRefreshInterval > 0 && view === 'logs') {
+      autoRefreshRef.current = setInterval(() => {
+        fetchSystemLogs();
+        fetchLogStats();
+      }, autoRefreshInterval * 1000);
+    }
+    return () => {
+      if (autoRefreshRef.current) {
+        clearInterval(autoRefreshRef.current);
+        autoRefreshRef.current = null;
+      }
+    };
+  }, [autoRefreshInterval, view, fetchSystemLogs]);
 
   // ═══════════════════════════════════════════════
   // 메인 뷰: 결제 목록
@@ -321,7 +419,7 @@ export default function PaymentsPage() {
             <SearchInput
               value={search}
               onChange={(v) => { setSearch(v); setPage(1); }}
-              placeholder="PG 결제 ID, 멱등키로 검색..."
+              placeholder="PG 결제 ID, 멱등키로 검색\u2026"
             />
           </div>
         </div>
@@ -419,7 +517,7 @@ export default function PaymentsPage() {
   }
 
   // ═══════════════════════════════════════════════
-  // 상세 뷰: 결제 상세 + 상태 타임라인
+  // 상세 뷰: 결제 상세 + 상태 타임라인 + 시스템 로그
   // ═══════════════════════════════════════════════
   if (view === 'detail' && selectedPayment) {
     const p = selectedPayment;
@@ -507,68 +605,147 @@ export default function PaymentsPage() {
             )}
           </div>
 
-          {/* 우: 상태 변경 타임라인 */}
+          {/* 우: 탭 전환 - 타임라인 / 시스템 로그 */}
           <div>
-            <div style={{ border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Activity size={18} /> 상태 변경 타임라인
-              </h3>
+            {/* 탭 헤더 */}
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
+              <button
+                onClick={() => setDetailTab('timeline')}
+                style={{
+                  padding: '8px 16px', borderRadius: '8px 8px 0 0', fontSize: '14px', fontWeight: 600,
+                  border: '1px solid #E5E7EB', borderBottom: detailTab === 'timeline' ? '2px solid #111827' : '1px solid #E5E7EB',
+                  backgroundColor: detailTab === 'timeline' ? '#fff' : '#F9FAFB',
+                  color: detailTab === 'timeline' ? '#111827' : '#6B7280',
+                  cursor: 'pointer',
+                }}
+              >
+                <Activity size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} aria-hidden="true" />
+                상태 타임라인
+              </button>
+              <button
+                onClick={() => setDetailTab('systemlogs')}
+                style={{
+                  padding: '8px 16px', borderRadius: '8px 8px 0 0', fontSize: '14px', fontWeight: 600,
+                  border: '1px solid #E5E7EB', borderBottom: detailTab === 'systemlogs' ? '2px solid #111827' : '1px solid #E5E7EB',
+                  backgroundColor: detailTab === 'systemlogs' ? '#fff' : '#F9FAFB',
+                  color: detailTab === 'systemlogs' ? '#111827' : '#6B7280',
+                  cursor: 'pointer',
+                }}
+              >
+                <FileText size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} aria-hidden="true" />
+                시스템 로그
+              </button>
+            </div>
 
-              {statusLogs.length === 0 ? (
-                <p style={{ color: '#9CA3AF', fontSize: '14px', textAlign: 'center', padding: '32px 0' }}>
-                  상태 변경 기록이 없습니다
-                </p>
-              ) : (
-                <div style={{ position: 'relative', paddingLeft: '24px' }}>
-                  {/* 타임라인 라인 */}
-                  <div style={{
-                    position: 'absolute', left: '8px', top: '4px', bottom: '4px',
-                    width: '2px', backgroundColor: '#E5E7EB',
-                  }} />
+            {/* 탭 컨텐츠 */}
+            {detailTab === 'timeline' ? (
+              <div style={{ border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Activity size={18} /> 상태 변경 타임라인
+                </h3>
 
-                  {statusLogs.map((log, i) => {
-                    const toConfig = PAYMENT_STATUS_CONFIG[log.to_status] ?? PAYMENT_STATUS_CONFIG.INIT;
-                    return (
-                      <div key={log.id} style={{ position: 'relative', marginBottom: i < statusLogs.length - 1 ? '24px' : '0' }}>
-                        {/* 타임라인 도트 */}
-                        <div style={{
-                          position: 'absolute', left: '-20px', top: '2px',
-                          width: '12px', height: '12px', borderRadius: '50%',
-                          backgroundColor: toConfig.color, border: '2px solid #fff',
-                          boxShadow: '0 0 0 2px ' + toConfig.color + '33',
-                        }} />
+                {statusLogs.length === 0 ? (
+                  <p style={{ color: '#9CA3AF', fontSize: '14px', textAlign: 'center', padding: '32px 0' }}>
+                    상태 변경 기록이 없습니다
+                  </p>
+                ) : (
+                  <div style={{ position: 'relative', paddingLeft: '24px' }}>
+                    <div style={{
+                      position: 'absolute', left: '8px', top: '4px', bottom: '4px',
+                      width: '2px', backgroundColor: '#E5E7EB',
+                    }} />
 
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                            <PaymentStatusBadge status={log.from_status} />
-                            <span style={{ color: '#9CA3AF', fontSize: '14px' }}>→</span>
-                            <PaymentStatusBadge status={log.to_status} />
+                    {statusLogs.map((log, i) => {
+                      const toConfig = PAYMENT_STATUS_CONFIG[log.to_status] ?? PAYMENT_STATUS_CONFIG.INIT;
+                      return (
+                        <div key={log.id} style={{ position: 'relative', marginBottom: i < statusLogs.length - 1 ? '24px' : '0' }}>
+                          <div style={{
+                            position: 'absolute', left: '-20px', top: '2px',
+                            width: '12px', height: '12px', borderRadius: '50%',
+                            backgroundColor: toConfig.color, border: '2px solid #fff',
+                            boxShadow: '0 0 0 2px ' + toConfig.color + '33',
+                          }} />
+
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <PaymentStatusBadge status={log.from_status} />
+                              <span style={{ color: '#9CA3AF', fontSize: '14px' }}>\u2192</span>
+                              <PaymentStatusBadge status={log.to_status} />
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>
+                              <span>{formatDateTime(log.created_at)}</span>
+                              <span style={{ margin: '0 6px' }}>|</span>
+                              <span style={{
+                                backgroundColor: '#F3F4F6', padding: '1px 6px',
+                                borderRadius: '4px', fontFamily: 'monospace',
+                              }}>
+                                {log.actor}
+                              </span>
+                            </div>
+                            {log.reason && (
+                              <div style={{
+                                marginTop: '6px', padding: '8px 12px', backgroundColor: '#F9FAFB',
+                                borderRadius: '6px', fontSize: '13px', color: '#374151',
+                              }}>
+                                {log.reason}
+                              </div>
+                            )}
                           </div>
-                          <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>
-                            <span>{formatDateTime(log.created_at)}</span>
-                            <span style={{ margin: '0 6px' }}>|</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* 시스템 로그 탭 */
+              <div style={{ border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={18} /> 이 결제의 시스템 로그
+                </h3>
+
+                {detailSystemLogs.length === 0 ? (
+                  <p style={{ color: '#9CA3AF', fontSize: '14px', textAlign: 'center', padding: '32px 0' }}>
+                    시스템 로그가 없습니다
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {detailSystemLogs.map((log, i) => {
+                      const levelConfig = LOG_LEVEL_CONFIG[log.level] ?? LOG_LEVEL_CONFIG.INFO;
+                      return (
+                        <div
+                          key={`${log.timestamp}-${log.action}-${i}`}
+                          style={{
+                            padding: '10px 12px', borderRadius: '8px', fontSize: '12px',
+                            backgroundColor: log.level === 'CRITICAL' ? '#FEF2F2' : log.level === 'ERROR' ? '#FFF7ED' : '#F9FAFB',
+                            border: '1px solid #E5E7EB',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                             <span style={{
-                              backgroundColor: '#F3F4F6', padding: '1px 6px',
-                              borderRadius: '4px', fontFamily: 'monospace',
+                              padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 700,
+                              color: levelConfig.color, backgroundColor: levelConfig.bgColor,
                             }}>
-                              {log.actor}
+                              {log.level}
+                            </span>
+                            <span style={{ fontWeight: 600 }}>{log.action}</span>
+                            {log.duration_ms != null && (
+                              <span style={{ color: '#6B7280', fontFamily: 'monospace' }}>{log.duration_ms}ms</span>
+                            )}
+                            <span style={{ color: '#9CA3AF', marginLeft: 'auto', fontFamily: 'monospace' }}>
+                              {getRelativeTime(log.timestamp)}
                             </span>
                           </div>
-                          {log.reason && (
-                            <div style={{
-                              marginTop: '6px', padding: '8px 12px', backgroundColor: '#F9FAFB',
-                              borderRadius: '6px', fontSize: '13px', color: '#374151',
-                            }}>
-                              {log.reason}
-                            </div>
+                          {log.error && (
+                            <div style={{ color: '#DC2626', fontSize: '11px', marginTop: '2px' }}>{log.error}</div>
                           )}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -583,7 +760,7 @@ export default function PaymentsPage() {
       <div style={{ padding: '24px' }}>
         {/* 헤더 */}
         <button
-          onClick={() => setView('list')}
+          onClick={() => { setView('list'); setAutoRefreshInterval(0); }}
           aria-label="결제 관리 목록으로 돌아가기"
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
@@ -594,12 +771,36 @@ export default function PaymentsPage() {
           <ArrowLeft size={16} aria-hidden="true" /> 결제 관리로
         </button>
 
-        <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '24px' }}>결제 시스템 로그</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>결제 시스템 로그</h1>
+          {/* 자동 새로고침 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Timer size={14} aria-hidden="true" style={{ color: '#6B7280' }} />
+            <span style={{ fontSize: '12px', color: '#6B7280' }}>자동 새로고침:</span>
+            {AUTO_REFRESH_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setAutoRefreshInterval(opt.value)}
+                style={{
+                  padding: '4px 10px', borderRadius: '6px', fontSize: '11px',
+                  border: autoRefreshInterval === opt.value ? '2px solid #059669' : '1px solid #E5E7EB',
+                  backgroundColor: autoRefreshInterval === opt.value ? '#D1FAE5' : '#fff',
+                  color: autoRefreshInterval === opt.value ? '#059669' : '#6B7280',
+                  cursor: 'pointer', fontWeight: autoRefreshInterval === opt.value ? 600 : 400,
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {/* 로그 통계 카드 */}
+        {/* 로그 통계 카드 - 반응형 그리드 */}
         {logStats && (
           <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '12px',
             marginBottom: '24px',
           }}>
             <StatCard label="전체 로그" value={logStats.total} color="#111827" />
@@ -612,11 +813,18 @@ export default function PaymentsPage() {
               color={logStats.recent_errors > 0 ? '#DC2626' : '#059669'}
               alert={logStats.recent_errors > 0}
             />
+            {logStats.avg_api_duration_ms != null && (
+              <StatCard label="평균 API 응답" value={logStats.avg_api_duration_ms} color="#7C3AED" suffix="ms" />
+            )}
+            {logStats.pg_call_count != null && (
+              <StatCard label="PG 호출 수" value={logStats.pg_call_count} color="#0891B2" />
+            )}
           </div>
         )}
 
-        {/* 로그 필터 */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {/* 로그 필터 바 */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* 레벨 필터 */}
           <div style={{ display: 'flex', gap: '4px' }}>
             {['all', 'INFO', 'WARN', 'ERROR', 'CRITICAL'].map((lvl) => (
               <button
@@ -634,8 +842,34 @@ export default function PaymentsPage() {
               </button>
             ))}
           </div>
+
+          {/* 구분선 */}
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#E5E7EB' }} />
+
+          {/* 날짜 범위 프리셋 */}
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {DATE_RANGE_PRESETS.map((preset) => (
+              <button
+                key={preset.value}
+                onClick={() => setLogDateRange(preset.value)}
+                style={{
+                  padding: '6px 10px', borderRadius: '6px', fontSize: '11px',
+                  border: logDateRange === preset.value ? '2px solid #6366F1' : '1px solid #E5E7EB',
+                  backgroundColor: logDateRange === preset.value ? '#EEF2FF' : '#fff',
+                  color: logDateRange === preset.value ? '#4338CA' : '#6B7280',
+                  cursor: 'pointer', fontWeight: logDateRange === preset.value ? 600 : 400,
+                }}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 구분선 */}
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#E5E7EB' }} />
+
           <button
-            onClick={fetchSystemLogs}
+            onClick={() => { fetchSystemLogs(); fetchLogStats(); }}
             aria-label="시스템 로그 새로고침"
             style={{
               padding: '6px 12px', borderRadius: '8px',
@@ -648,60 +882,171 @@ export default function PaymentsPage() {
           </button>
         </div>
 
+        {/* 검색 바 */}
+        <div style={{ marginBottom: '16px', maxWidth: '400px' }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF' }} aria-hidden="true" />
+            <input
+              type="text"
+              value={logSearch}
+              onChange={(e) => setLogSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') fetchSystemLogs(); }}
+              placeholder="action, error, payment_id, request_id\u2026"
+              aria-label="로그 검색"
+              style={{
+                width: '100%', padding: '8px 12px 8px 34px', borderRadius: '8px',
+                border: '1px solid #E5E7EB', fontSize: '13px', outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        </div>
+
         {/* 로그 테이블 */}
         <div style={{ border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                <th style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 600, color: '#6B7280', width: '28px' }} />
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280', width: '160px' }}>시간</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280', width: '80px' }}>레벨</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280' }}>액션</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280', width: '120px' }}>Payment</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280' }}>상세</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280', width: '80px' }}>소요시간</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280', width: '100px' }}>Request</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#6B7280' }}>요약</th>
               </tr>
             </thead>
             <tbody>
-              {(systemLogs as Array<{
-                timestamp: string;
-                level: string;
-                action: string;
-                payment_id?: string;
-                order_id?: string;
-                details: Record<string, unknown>;
-                error?: string;
-              }>).map((log, i) => {
+              {systemLogs.map((log, i) => {
                 const levelConfig = LOG_LEVEL_CONFIG[log.level] ?? LOG_LEVEL_CONFIG.INFO;
+                const isExpanded = expandedLogIndex === i;
                 return (
-                  <tr key={`${log.timestamp}-${log.action}-${i}`} style={{
-                    borderBottom: '1px solid #F3F4F6',
-                    backgroundColor: log.level === 'CRITICAL' ? '#FEF2F2' : log.level === 'ERROR' ? '#FFFBEB' : 'transparent',
-                  }}>
-                    <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontSize: '11px', color: '#6B7280' }}>
-                      {formatDateTime(log.timestamp)}
-                    </td>
-                    <td style={{ padding: '8px 12px' }}>
-                      <span style={{
-                        display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
-                        fontSize: '11px', fontWeight: 700, fontFamily: 'monospace',
-                        color: levelConfig.color, backgroundColor: levelConfig.bgColor,
-                      }}>
-                        {log.level}
-                      </span>
-                    </td>
-                    <td style={{ padding: '8px 12px', fontWeight: 500 }}>
-                      {log.action}
-                    </td>
-                    <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontSize: '11px', color: '#6B7280' }}>
-                      {log.payment_id ? log.payment_id.slice(0, 8) + '\u2026' : '-'}
-                    </td>
-                    <td style={{ padding: '8px 12px', fontSize: '12px', color: '#6B7280', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {log.error ? (
-                        <span style={{ color: '#DC2626' }}>{log.error}</span>
-                      ) : (
-                        JSON.stringify(log.details).slice(0, 100)
-                      )}
-                    </td>
-                  </tr>
+                  <>
+                    <tr
+                      key={`${log.timestamp}-${log.action}-${i}`}
+                      role="row"
+                      tabIndex={0}
+                      aria-label={`${log.level} ${log.action}`}
+                      onClick={() => setExpandedLogIndex(isExpanded ? null : i)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedLogIndex(isExpanded ? null : i); } }}
+                      style={{
+                        borderBottom: isExpanded ? 'none' : '1px solid #F3F4F6',
+                        backgroundColor: log.level === 'CRITICAL' ? '#FEF2F2' : log.level === 'ERROR' ? '#FFFBEB' : 'transparent',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <td style={{ padding: '8px', textAlign: 'center' }}>
+                        {isExpanded
+                          ? <ChevronDown size={14} aria-hidden="true" style={{ color: '#6B7280' }} />
+                          : <ChevronRight size={14} aria-hidden="true" style={{ color: '#9CA3AF' }} />
+                        }
+                      </td>
+                      <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontSize: '11px', color: '#6B7280' }}>
+                        {formatDateTime(log.timestamp)}
+                      </td>
+                      <td style={{ padding: '8px 12px' }}>
+                        <span style={{
+                          display: 'inline-block', padding: '2px 8px', borderRadius: '4px',
+                          fontSize: '11px', fontWeight: 700, fontFamily: 'monospace',
+                          color: levelConfig.color, backgroundColor: levelConfig.bgColor,
+                        }}>
+                          {log.level}
+                        </span>
+                      </td>
+                      <td style={{ padding: '8px 12px', fontWeight: 500 }}>
+                        {log.action}
+                      </td>
+                      <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontSize: '11px', color: '#6B7280', fontVariantNumeric: 'tabular-nums' }}>
+                        {log.duration_ms != null ? `${log.duration_ms}ms` : '-'}
+                      </td>
+                      <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontSize: '11px', color: '#6B7280' }}>
+                        {log.request_id ? log.request_id.slice(0, 8) + '\u2026' : '-'}
+                      </td>
+                      <td style={{ padding: '8px 12px', fontSize: '12px', color: '#6B7280', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {log.error ? (
+                          <span style={{ color: '#DC2626' }}>{log.error}</span>
+                        ) : (
+                          JSON.stringify(log.details).slice(0, 80)
+                        )}
+                      </td>
+                    </tr>
+                    {/* 확장된 상세 정보 */}
+                    {isExpanded && (
+                      <tr key={`expanded-${i}`} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                        <td colSpan={7} style={{ padding: '0 12px 16px 40px' }}>
+                          <div style={{
+                            backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '16px',
+                            border: '1px solid #E5E7EB',
+                          }}>
+                            {/* 메타 정보 */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px', marginBottom: log.error || Object.keys(log.details).length > 0 ? '12px' : '0' }}>
+                              {log.request_id && (
+                                <MetaItem label="Request ID" value={log.request_id} />
+                              )}
+                              {log.payment_id && (
+                                <MetaItem label="Payment ID" value={log.payment_id} />
+                              )}
+                              {log.order_id && (
+                                <MetaItem label="Order ID" value={log.order_id} />
+                              )}
+                              {log.http_method && (
+                                <MetaItem label="HTTP" value={`${log.http_method} ${log.http_path ?? ''} → ${log.http_status ?? ''}`} />
+                              )}
+                              {log.actor_ip && (
+                                <MetaItem label="IP" value={log.actor_ip} />
+                              )}
+                              {log.duration_ms != null && (
+                                <MetaItem label="소요시간" value={`${log.duration_ms}ms`} />
+                              )}
+                            </div>
+
+                            {/* 에러 메시지 */}
+                            {log.error && (
+                              <div style={{ marginBottom: '8px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: '#DC2626', marginBottom: '4px' }}>Error</div>
+                                <div style={{
+                                  padding: '8px 12px', backgroundColor: '#FEF2F2', borderRadius: '6px',
+                                  fontSize: '12px', color: '#991B1B', fontFamily: 'monospace',
+                                }}>
+                                  {log.error}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 스택 트레이스 */}
+                            {log.stack && (
+                              <div style={{ marginBottom: '8px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>Stack Trace</div>
+                                <pre style={{
+                                  padding: '8px 12px', backgroundColor: '#1F2937', borderRadius: '6px',
+                                  fontSize: '10px', color: '#D1D5DB', fontFamily: 'monospace',
+                                  overflow: 'auto', maxHeight: '200px', lineHeight: 1.5,
+                                  margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+                                }}>
+                                  {log.stack}
+                                </pre>
+                              </div>
+                            )}
+
+                            {/* Details JSON */}
+                            {Object.keys(log.details).length > 0 && (
+                              <div>
+                                <div style={{ fontSize: '11px', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>Details</div>
+                                <pre style={{
+                                  padding: '8px 12px', backgroundColor: '#1F2937', borderRadius: '6px',
+                                  fontSize: '11px', color: '#D1D5DB', fontFamily: 'monospace',
+                                  overflow: 'auto', maxHeight: '200px', lineHeight: 1.4,
+                                  margin: 0,
+                                }}>
+                                  {JSON.stringify(log.details, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 );
               })}
             </tbody>
@@ -744,11 +1089,12 @@ function InfoRow({ label, value, mono, highlight, error }: {
   );
 }
 
-function StatCard({ label, value, color, alert }: {
+function StatCard({ label, value, color, alert, suffix }: {
   label: string;
   value: number;
   color: string;
   alert?: boolean;
+  suffix?: string;
 }) {
   return (
     <div style={{
@@ -757,9 +1103,18 @@ function StatCard({ label, value, color, alert }: {
       backgroundColor: alert ? '#FEF2F2' : '#fff',
     }}>
       <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>{label}</div>
-      <div style={{ fontSize: '28px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>
-        {value.toLocaleString()}
+      <div style={{ fontSize: '24px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>
+        {value.toLocaleString()}{suffix && <span style={{ fontSize: '14px', fontWeight: 400, color: '#9CA3AF', marginLeft: '2px' }}>{suffix}</span>}
       </div>
+    </div>
+  );
+}
+
+function MetaItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div style={{ fontSize: '10px', color: '#9CA3AF', fontWeight: 600, textTransform: 'uppercase', marginBottom: '2px' }}>{label}</div>
+      <div style={{ fontSize: '12px', color: '#374151', fontFamily: 'monospace', wordBreak: 'break-all' }}>{value}</div>
     </div>
   );
 }

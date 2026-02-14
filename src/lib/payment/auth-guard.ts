@@ -26,6 +26,7 @@ export async function verifyAdminAuth(request: Request): Promise<AuthResult> {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     PaymentLogger.warn('AUTH_MISSING_TOKEN', {
       path: new URL(request.url).pathname,
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? undefined,
     });
     return { authorized: false, error: 'Authorization header required' };
   }
@@ -44,6 +45,7 @@ export async function verifyAdminAuth(request: Request): Promise<AuthResult> {
       PaymentLogger.warn('AUTH_INVALID_TOKEN', {
         path: new URL(request.url).pathname,
         error: authError?.message,
+        ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? undefined,
       });
       return { authorized: false, error: 'Invalid or expired token' };
     }
@@ -59,14 +61,24 @@ export async function verifyAdminAuth(request: Request): Promise<AuthResult> {
       PaymentLogger.warn('AUTH_NOT_ADMIN', {
         user_id: user.id,
         path: new URL(request.url).pathname,
+        ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? undefined,
       });
       return { authorized: false, error: 'Admin access required' };
     }
 
+    // 인증 성공 로깅 (보안 감사)
+    PaymentLogger.info('AUTH_SUCCESS', {
+      user_id: user.id,
+      path: new URL(request.url).pathname,
+    });
+
     return { authorized: true, userId: user.id };
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
-    PaymentLogger.error('AUTH_VERIFICATION_ERROR', error);
+    PaymentLogger.error('AUTH_VERIFICATION_ERROR', error, {
+      path: new URL(request.url).pathname,
+      ip: request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? undefined,
+    });
     return { authorized: false, error: 'Authentication failed' };
   }
 }

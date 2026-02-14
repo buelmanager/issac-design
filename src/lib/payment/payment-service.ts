@@ -176,16 +176,20 @@ export class PaymentService {
       provider: this.gateway.provider,
     }, { payment_id: paymentId, order_id: payment.order_id });
 
-    // PG에 결제 세션 생성
-    const pgResult = await this.gateway.createPayment({
-      order_id: payment.order_id,
-      amount: payment.amount as number,
-      currency: payment.currency as string,
-      order_name: `ISSAC Design 주문 ${(order?.order_number as string) ?? ''}`,
-      customer_name: order?.customer_name as string,
-      customer_email: order?.customer_email as string | undefined,
-      idempotency_key: payment.idempotency_key as string,
-    });
+    // PG에 결제 세션 생성 (타이밍 측정)
+    const pgResult = await PaymentLogger.measurePgCall(
+      'PG_CALL_CREATE_PAYMENT',
+      () => this.gateway.createPayment({
+        order_id: payment.order_id,
+        amount: payment.amount as number,
+        currency: payment.currency as string,
+        order_name: `ISSAC Design 주문 ${(order?.order_number as string) ?? ''}`,
+        customer_name: order?.customer_name as string,
+        customer_email: order?.customer_email as string | undefined,
+        idempotency_key: payment.idempotency_key as string,
+      }),
+      { payment_id: paymentId, order_id: payment.order_id }
+    );
 
     if (!pgResult.success) {
       PaymentLogger.error(
@@ -242,8 +246,12 @@ export class PaymentService {
       throw new Error(`Amount mismatch: expected ${payment.amount}, received ${pgAmount}`);
     }
 
-    // PG 확인 API 호출
-    const confirmResult = await this.gateway.confirmPayment(pgPaymentId, pgAmount);
+    // PG 확인 API 호출 (타이밍 측정)
+    const confirmResult = await PaymentLogger.measurePgCall(
+      'PG_CALL_CONFIRM_PAYMENT',
+      () => this.gateway.confirmPayment(pgPaymentId, pgAmount),
+      { payment_id: payment.id, order_id: payment.order_id }
+    );
 
     if (!confirmResult.success) {
       await this.transitionStatus(payment.id, PAYMENT_STATUS.PENDING, PAYMENT_STATUS.FAILED, actor, confirmResult.error_message);
@@ -311,9 +319,13 @@ export class PaymentService {
 
     PaymentLogger.info('PAYMENT_CANCEL_START', { reason }, { payment_id: paymentId, order_id: payment.order_id });
 
-    // PG 취소 호출 (pg_payment_id가 있으면)
+    // PG 취소 호출 (pg_payment_id가 있으면, 타이밍 측정)
     if (payment.pg_payment_id) {
-      const cancelResult = await this.gateway.cancelPayment(payment.pg_payment_id as string, reason);
+      const cancelResult = await PaymentLogger.measurePgCall(
+        'PG_CALL_CANCEL_PAYMENT',
+        () => this.gateway.cancelPayment(payment.pg_payment_id as string, reason),
+        { payment_id: paymentId, order_id: payment.order_id }
+      );
       if (!cancelResult.success) {
         PaymentLogger.error(
           'PG_CANCEL_FAILED',
@@ -368,11 +380,15 @@ export class PaymentService {
       reason,
     }, { payment_id: paymentId, order_id: payment.order_id });
 
-    // PG 환불 호출
-    const refundResult = await this.gateway.refundPayment(
-      payment.pg_payment_id as string,
-      refundAmount,
-      reason
+    // PG 환불 호출 (타이밍 측정)
+    const refundResult = await PaymentLogger.measurePgCall(
+      'PG_CALL_REFUND_PAYMENT',
+      () => this.gateway.refundPayment(
+        payment.pg_payment_id as string,
+        refundAmount,
+        reason
+      ),
+      { payment_id: paymentId, order_id: payment.order_id }
     );
 
     if (!refundResult.success) {

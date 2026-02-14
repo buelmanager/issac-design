@@ -230,14 +230,20 @@ export interface TransitionResult {
   message?: string;
 }
 
-// ─── 시스템 로그 (파일 로그 + 관리자 화면용) ──────
+// ─── 시스템 로그 (DB 영구 저장 + 관리자 화면용) ──────
 export interface SystemLog {
   timestamp: string;
   level: LogLevel;
   action: string;
   payment_id?: string;
   order_id?: string;
+  request_id?: string;
   details: Record<string, unknown>;
   error?: string;
   stack?: string;
+  duration_ms?: number;
+  actor_ip?: string;
+  http_method?: string;
+  http_path?: string;
+  http_status?: number;
 }
