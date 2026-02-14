@@ -358,8 +358,6 @@ if (user) {
 </style>
 
 <script>
-  import { supabaseBrowser } from '../../lib/supabase-browser';
-
   const ALLOWED_PREFIXES = ['/admin', '/shop', '/simulator'];
   function validateRedirect(input: string | null): string {
     if (!input || !input.startsWith('/') || input.startsWith('//') || input.includes('..')) return '/shop';
@@ -459,50 +457,26 @@ if (user) {
     setLoading(true);
     hideAlert();
 
-    console.log(`[AUTH] ${label} OAuth 시작 (클라이언트 SDK)`, { provider, timestamp: new Date().toISOString() });
-
     try {
       const params = new URLSearchParams(window.location.search);
       const redirectTo = validateRedirect(params.get('redirect'));
 
-      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
-      console.log(`[AUTH] callbackUrl:`, callbackUrl);
-
-      const oauthOptions: Record<string, unknown> = {
-        redirectTo: callbackUrl,
-      };
-
-      // 카카오는 scope 제한
-      if (provider === 'kakao') {
-        oauthOptions.scopes = 'profile_nickname profile_image';
-      }
-
-      // Google은 access_type, prompt 설정
-      if (provider === 'google') {
-        oauthOptions.queryParams = {
-          access_type: 'offline',
-          prompt: 'consent',
-        };
-      }
-
-      const { data, error } = await supabaseBrowser.auth.signInWithOAuth({
-        provider,
-        options: oauthOptions as any,
+      const res = await fetch(`/api/auth/${provider}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectTo }),
       });
 
-      if (error) {
-        console.error(`[AUTH] OAuth 에러:`, { message: error.message, status: error.status });
-        showAlert(`${label} 로그인 실패: ${error.message}`, 'error');
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        showAlert(json.error?.message ?? `${label} 로그인에 실패했습니다.`, 'error');
         setLoading(false);
         return;
       }
 
-      if (data.url) {
-        console.log(`[AUTH] OAuth 리다이렉트:`, data.url);
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error(`[AUTH] OAuth 예외:`, err);
+      window.location.href = json.data.url;
+    } catch {
       showAlert('서버 연결에 실패했습니다.', 'error');
       setLoading(false);
     }

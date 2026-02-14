@@ -4,7 +4,7 @@ import { validateRedirect } from '../../../lib/auth/validate-redirect';
 import { PaymentLogger } from '../../../lib/payment/logger';
 
 export const POST: APIRoute = async ({ request, url }) => {
-  const { supabase } = createAstroServerClient(request);
+  const { supabase, response } = createAstroServerClient(request);
   const ip = request.headers.get('x-real-ip')
     ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? 'unknown';
@@ -39,16 +39,21 @@ export const POST: APIRoute = async ({ request, url }) => {
       redirect: redirectTo,
       callback_url: callbackUrl.toString(),
     });
+    const errHeaders = new Headers(response.headers);
+    errHeaders.set('Content-Type', 'application/json');
     return new Response(JSON.stringify({
       success: false,
       error: { code: 'OAUTH_ERROR', message: '카카오 로그인을 시작할 수 없습니다.' },
-    }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    }), { status: 500, headers: errHeaders });
   }
 
   PaymentLogger.info('OAUTH_KAKAO_REDIRECT', { ip, oauth_url: data.url });
 
+  // PKCE code_verifier 쿠키를 응답에 포함
+  const resHeaders = new Headers(response.headers);
+  resHeaders.set('Content-Type', 'application/json');
   return new Response(JSON.stringify({
     success: true,
     data: { url: data.url },
-  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }), { status: 200, headers: resHeaders });
 };

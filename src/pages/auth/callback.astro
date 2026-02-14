@@ -1,175 +1,68 @@
 ---
 /**
- * /auth/callback
+ * GET /auth/callback
  *
- * Supabase Auth PKCE 콜백 핸들러 (클라이언트 렌더링)
+ * Supabase Auth PKCE 콜백 핸들러 (서버 사이드)
  *
  * 흐름:
  * 1. OAuth provider가 ?code=xxx 로 리다이렉트
- * 2. 브라우저에서 code + PKCE code_verifier(localStorage)로 세션 교환
- * 3. 성공 시 next 파라미터로 리다이렉트
+ * 2. 서버에서 code + PKCE code_verifier(쿠키)로 세션 교환
+ * 3. 세션 쿠키 설정 후 목적지로 302 리다이렉트
  *
- * PKCE code_verifier는 브라우저 localStorage에 저장되므로
- * 반드시 클라이언트에서 exchangeCodeForSession을 호출해야 합니다.
+ * PKCE code_verifier는 /api/auth/{provider} 호출 시
+ * 서버 클라이언트가 Set-Cookie로 저장하므로,
+ * 반드시 서버에서 exchangeCodeForSession을 호출해야 합니다.
  */
 export const prerender = false;
+
+import { createAstroServerClient } from '../../lib/supabase-server';
+import { validateRedirect } from '../../lib/auth/validate-redirect';
+
+const code = Astro.url.searchParams.get('code');
+const errorParam = Astro.url.searchParams.get('error');
+const errorDescription = Astro.url.searchParams.get('error_description');
+const safeDest = validateRedirect(Astro.url.searchParams.get('next'));
+const errorRedirect = safeDest.startsWith('/admin') ? '/admin/login' : '/shop/login';
+
+// OAuth provider에서 에러로 돌아온 경우
+if (errorParam) {
+  const errParams = new URLSearchParams({
+    error: errorParam,
+    ...(errorDescription ? { error_desc: errorDescription } : {}),
+    stage: 'oauth_provider',
+  });
+  return Astro.redirect(`${errorRedirect}?${errParams.toString()}`);
+}
+
+// code가 없는 경우
+if (!code) {
+  return Astro.redirect(`${errorRedirect}?error=missing_code&stage=callback_no_code`);
+}
+
+// 서버에서 code exchange (PKCE code_verifier는 쿠키에서 자동 사용)
+const { supabase, response } = createAstroServerClient(Astro.request);
+const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+if (error) {
+  console.error('Auth callback error:', error.message);
+  const errParams = new URLSearchParams({
+    error: 'auth_failed',
+    error_desc: error.message,
+    error_code: String(error.status ?? 400),
+    stage: 'code_exchange',
+  });
+  return Astro.redirect(`${errorRedirect}?${errParams.toString()}`);
+}
+
+// 성공 — 세션 쿠키 포함하여 목적지로 리다이렉트
+const redirectResponse = new Response(null, {
+  status: 302,
+  headers: { Location: safeDest },
+});
+
+response.headers.forEach((value, key) => {
+  redirectResponse.headers.append(key, value);
+});
+
+return redirectResponse;
 ---
-
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>로그인 처리 중...</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0a0a0a;
-      color: #e5e5e5;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    .callback {
-      text-align: center;
-      max-width: 420px;
-      padding: 2rem;
-    }
-    .callback__spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #1a4d2e;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1.5rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .callback__title { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .callback__desc { font-size: 0.875rem; color: #999; }
-    .callback__error {
-      display: none;
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: rgba(239,68,68,0.1);
-      border: 1px solid rgba(239,68,68,0.3);
-      border-radius: 8px;
-      color: #fca5a5;
-      font-size: 0.813rem;
-      text-align: left;
-      white-space: pre-line;
-      word-break: break-all;
-    }
-    .callback__link {
-      display: inline-block;
-      margin-top: 1rem;
-      color: #1a4d2e;
-      font-size: 0.875rem;
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-  <div class="callback">
-    <div class="callback__spinner" id="spinner"></div>
-    <p class="callback__title" id="title">로그인 처리 중...</p>
-    <p class="callback__desc" id="desc">잠시만 기다려주세요</p>
-    <div class="callback__error" id="errorBox"></div>
-    <a href="/shop/login" class="callback__link" id="backLink" style="display:none;">로그인 페이지로 돌아가기</a>
-  </div>
-
-  <script>
-    import { supabaseBrowser } from '../../lib/supabase-browser';
-
-    const ALLOWED_PREFIXES = ['/admin', '/shop', '/simulator'];
-    function validateRedirect(input: string | null): string {
-      if (!input || !input.startsWith('/') || input.startsWith('//') || input.includes('..')) return '/shop';
-      if (input === '/') return input;
-      return ALLOWED_PREFIXES.some(p => input === p || input.startsWith(p + '/')) ? input : '/shop';
-    }
-
-    async function handleCallback() {
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get('code');
-      const errorParam = url.searchParams.get('error');
-      const errorDescription = url.searchParams.get('error_description');
-      const safeDest = validateRedirect(url.searchParams.get('next'));
-      const errorRedirect = safeDest.startsWith('/admin') ? '/admin/login' : '/shop/login';
-
-      console.log('[AUTH_CALLBACK] 시작', {
-        has_code: !!code,
-        has_error: !!errorParam,
-        error: errorParam,
-        error_description: errorDescription,
-        next: safeDest,
-      });
-
-      // OAuth provider에서 에러로 돌아온 경우
-      if (errorParam) {
-        console.error('[AUTH_CALLBACK] OAuth 에러:', { error: errorParam, description: errorDescription });
-        const errParams = new URLSearchParams({
-          error: errorParam,
-          ...(errorDescription ? { error_desc: errorDescription } : {}),
-          stage: 'oauth_provider',
-        });
-        window.location.href = `${errorRedirect}?${errParams.toString()}`;
-        return;
-      }
-
-      // code가 없는 경우
-      if (!code) {
-        console.error('[AUTH_CALLBACK] code 파라미터 누락');
-        window.location.href = `${errorRedirect}?error=missing_code&stage=callback_no_code`;
-        return;
-      }
-
-      // 클라이언트에서 code exchange (PKCE code_verifier는 localStorage에서 자동 사용)
-      console.log('[AUTH_CALLBACK] code exchange 시작...');
-
-      try {
-        const { data, error } = await supabaseBrowser.auth.exchangeCodeForSession(code);
-
-        if (error) {
-          console.error('[AUTH_CALLBACK] code exchange 실패:', {
-            message: error.message,
-            status: error.status,
-            name: error.name,
-          });
-          showError(`코드 교환 실패: ${error.message}\n코드: ${error.status ?? 'N/A'}\n단계: code_exchange`);
-          return;
-        }
-
-        console.log('[AUTH_CALLBACK] 로그인 성공:', {
-          user_id: data.user?.id,
-          email: data.user?.email,
-          provider: data.user?.app_metadata?.provider,
-        });
-
-        // 성공 — 목적지로 이동
-        window.location.href = safeDest;
-      } catch (err) {
-        console.error('[AUTH_CALLBACK] 예외 발생:', err);
-        showError(`예외 발생: ${err instanceof Error ? err.message : String(err)}`);
-      }
-    }
-
-    function showError(message: string) {
-      const spinner = document.getElementById('spinner')!;
-      const title = document.getElementById('title')!;
-      const desc = document.getElementById('desc')!;
-      const errorBox = document.getElementById('errorBox')!;
-      const backLink = document.getElementById('backLink')!;
-
-      spinner.style.display = 'none';
-      title.textContent = '로그인 실패';
-      desc.textContent = '아래 정보를 확인해주세요';
-      errorBox.textContent = message;
-      errorBox.style.display = 'block';
-      backLink.style.display = 'inline-block';
-    }
-
-    handleCallback();
-  </script>
-</body>
-</html>
