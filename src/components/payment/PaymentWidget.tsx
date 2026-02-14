@@ -31,7 +31,8 @@ interface TossPayments {
 declare global {
   interface Window {
     __TOSS_CLIENT_KEY__?: string;
-    loadTossPayments: (clientKey: string) => Promise<TossPayments>;
+    TossPayments: (clientKey: string) => TossPayments;
+    loadTossPayments?: (clientKey: string) => Promise<TossPayments>;
   }
 }
 
@@ -65,7 +66,7 @@ export default function PaymentWidget({
           return;
         }
 
-        if (!window.loadTossPayments) {
+        if (!window.TossPayments) {
           await new Promise<void>((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://js.tosspayments.com/v2/standard';
@@ -75,7 +76,7 @@ export default function PaymentWidget({
           });
         }
 
-        const tossPayments = await window.loadTossPayments(clientKey);
+        const tossPayments = window.TossPayments(clientKey);
         const widgets = tossPayments.widgets({ customerKey: 'ANONYMOUS' });
         widgetsRef.current = widgets;
 
