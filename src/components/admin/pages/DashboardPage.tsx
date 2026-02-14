@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from '../ui';
 import {
@@ -11,7 +12,7 @@ import {
   AlertCircle,
   Clock,
   MessageSquare,
-  Eye,
+  ChevronRight,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -148,6 +149,7 @@ function RevenueTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const { accessToken } = useAuth();
   const [stats, setStats] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,6 +211,7 @@ export default function DashboardPage() {
       change: kpiStats.totalRevenueChange,
       icon: <DollarSign size={24} />,
       color: 'blue' as const,
+      link: '/payments',
     },
     {
       label: '오늘 주문',
@@ -216,6 +219,7 @@ export default function DashboardPage() {
       change: kpiStats.todayOrdersChange,
       icon: <ShoppingCart size={24} />,
       color: 'amber' as const,
+      link: '/payments',
     },
     {
       label: '신규 회원',
@@ -223,6 +227,7 @@ export default function DashboardPage() {
       change: kpiStats.newMembersChange,
       icon: <Users size={24} />,
       color: 'green' as const,
+      link: '/members',
     },
     {
       label: '대기 견적',
@@ -230,6 +235,7 @@ export default function DashboardPage() {
       change: 0,
       icon: <FileText size={24} />,
       color: 'purple' as const,
+      link: '/quotes',
     },
   ];
 
@@ -241,7 +247,11 @@ export default function DashboardPage() {
 
       <div className="admin-dashboard-stats">
         {kpiCards.map((card) => (
-          <div key={card.label} className="admin-stat-card">
+          <div
+            key={card.label}
+            className="admin-stat-card admin-stat-card-clickable"
+            onClick={() => navigate(card.link)}
+          >
             <div className={`admin-stat-icon admin-stat-icon-${card.color}`}>{card.icon}</div>
             <div className="admin-stat-number">{card.value}</div>
             <div className="admin-stat-footer">
@@ -261,18 +271,23 @@ export default function DashboardPage() {
         <div className="admin-chart-card">
           <div className="admin-chart-header">
             <h2 className="admin-card-title">매출 추이</h2>
-            <div className="admin-chart-toggle">
-              <button
-                className={`admin-chart-toggle-btn ${periodDays === 7 ? 'active' : ''}`}
-                onClick={() => setPeriodDays(7)}
-              >
-                7일
-              </button>
-              <button
-                className={`admin-chart-toggle-btn ${periodDays === 30 ? 'active' : ''}`}
-                onClick={() => setPeriodDays(30)}
-              >
-                30일
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div className="admin-chart-toggle">
+                <button
+                  className={`admin-chart-toggle-btn ${periodDays === 7 ? 'active' : ''}`}
+                  onClick={() => setPeriodDays(7)}
+                >
+                  7일
+                </button>
+                <button
+                  className={`admin-chart-toggle-btn ${periodDays === 30 ? 'active' : ''}`}
+                  onClick={() => setPeriodDays(30)}
+                >
+                  30일
+                </button>
+              </div>
+              <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => navigate('/payments')}>
+                상세 <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -318,7 +333,12 @@ export default function DashboardPage() {
         <div className="admin-chart-card">
           <div className="admin-chart-header">
             <h2 className="admin-card-title">주문 현황</h2>
-            <span className="admin-chart-total">총 {totalOrders}건</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="admin-chart-total">총 {totalOrders}건</span>
+              <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => navigate('/payments')}>
+                상세 <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
           <div className="admin-chart-body admin-chart-body-pie">
             {orderStatusDistribution.length === 0 ? (
@@ -369,7 +389,12 @@ export default function DashboardPage() {
 
       <div className="admin-dashboard-grid">
         <div className="admin-card">
-          <h2 className="admin-card-title">최근 주문</h2>
+          <div className="admin-card-header">
+            <h2 className="admin-card-title">최근 주문</h2>
+            <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => navigate('/payments')}>
+              전체보기 <ChevronRight size={14} />
+            </button>
+          </div>
           {recentOrders.length === 0 ? (
             <p className="admin-empty-text">주문이 없습니다</p>
           ) : (
@@ -385,7 +410,11 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {recentOrders.map((order) => (
-                  <tr key={order.order_number}>
+                  <tr
+                    key={order.order_number}
+                    className="admin-table-row-clickable"
+                    onClick={() => navigate('/payments')}
+                  >
                     <td style={{ fontFamily: 'monospace', fontSize: 13 }}>{order.order_number}</td>
                     <td>{order.customer_name}</td>
                     <td>{formatCurrency(order.total_amount)}</td>
@@ -403,9 +432,11 @@ export default function DashboardPage() {
         </div>
 
         <div className="admin-card">
-          <h2 className="admin-card-title">빠른 조치</h2>
+          <div className="admin-card-header">
+            <h2 className="admin-card-title">빠른 조치</h2>
+          </div>
           <div className="admin-pending-list">
-            <div className="admin-pending-item">
+            <div className="admin-pending-item" onClick={() => navigate('/quotes')}>
               <div className="admin-pending-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
                 <FileText size={20} />
               </div>
@@ -413,9 +444,9 @@ export default function DashboardPage() {
                 <span className="admin-pending-label">대기 견적</span>
                 <span className="admin-pending-count">{pendingActions.pendingQuotes}건</span>
               </div>
-              <Eye size={16} className="admin-pending-arrow" />
+              <ChevronRight size={16} className="admin-pending-arrow" />
             </div>
-            <div className="admin-pending-item">
+            <div className="admin-pending-item" onClick={() => navigate('/inquiries')}>
               <div className="admin-pending-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                 <MessageSquare size={20} />
               </div>
@@ -423,9 +454,9 @@ export default function DashboardPage() {
                 <span className="admin-pending-label">새 문의</span>
                 <span className="admin-pending-count">{pendingActions.newInquiries}건</span>
               </div>
-              <Eye size={16} className="admin-pending-arrow" />
+              <ChevronRight size={16} className="admin-pending-arrow" />
             </div>
-            <div className="admin-pending-item">
+            <div className="admin-pending-item" onClick={() => navigate('/payments')}>
               <div className="admin-pending-icon" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>
                 <Clock size={20} />
               </div>
@@ -433,7 +464,7 @@ export default function DashboardPage() {
                 <span className="admin-pending-label">처리 필요 주문</span>
                 <span className="admin-pending-count">{pendingActions.processingOrders}건</span>
               </div>
-              <Eye size={16} className="admin-pending-arrow" />
+              <ChevronRight size={16} className="admin-pending-arrow" />
             </div>
           </div>
         </div>
