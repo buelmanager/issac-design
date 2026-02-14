@@ -1904,3 +1904,203 @@
   gap: 8px;
   color: #6366f1;
 }
+
+/* ========================================
+   Dashboard Charts & KPI Enhancements
+   ======================================== */
+
+.admin-stat-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.admin-stat-trend-up {
+  color: #22c55e;
+}
+
+.admin-stat-trend-down {
+  color: #ef4444;
+}
+
+.admin-chart-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-chart-total {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.admin-chart-toggle {
+  display: inline-flex;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.admin-chart-toggle-btn {
+  padding: 4px 12px;
+  border: none;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-chart-toggle-btn:not(:last-child) {
+  border-right: 1px solid #e5e7eb;
+}
+
+.admin-chart-toggle-btn:hover {
+  background: #f9fafb;
+}
+
+.admin-chart-toggle-btn.active {
+  background: #6366f1;
+  color: #fff;
+}
+
+.admin-chart-body {
+  min-height: 280px;
+}
+
+.admin-chart-body-pie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-chart-tooltip {
+  background: #1f2937;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.admin-chart-tooltip-label {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.admin-chart-tooltip-value {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.admin-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 20px;
+}
+
+.admin-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.admin-chart-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.admin-chart-legend-label {
+  color: #6b7280;
+}
+
+.admin-chart-legend-count {
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.admin-pending-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.admin-pending-item:hover {
+  border-color: #e5e7eb;
+  background: #fafbfc;
+}
+
+.admin-pending-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.admin-pending-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.admin-pending-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.admin-pending-count {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.admin-pending-arrow {
+  color: #d1d5db;
+  flex-shrink: 0;
+}

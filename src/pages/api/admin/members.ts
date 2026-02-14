@@ -1,20 +1,25 @@
 /**
  * GET /api/admin/members
  *
- * 어드민 회원 목록/상세 조회 API (관리자 전용, 인증 필수)
+ * 어드민 회원 목록/상세/통계 조회 API (관리자 전용, 인증 필수)
  * service_role_key로 RLS를 우회하여 모든 회원 데이터를 조회한다.
  *
  * 쿼리 파라미터:
+ * - view=stats: 회원 통계만 반환 (전체/상태별 수, 총 매출)
  * - member_id: 특정 회원 상세 조회 (프로필 + 주문 내역)
  * - search: 이메일, 이름, 전화번호 검색
  * - provider: 로그인 제공자 필터 (email, google, kakao)
- * - status: 상태 필터 (active, suspended, withdrawn) — 현재 모두 active로 처리
+ * - status: 상태 필터 (active, suspended, withdrawn)
+ * - date_from: 가입일 시작 (ISO 8601)
+ * - date_to: 가입일 종료 (ISO 8601)
  * - sort: 정렬 컬럼 (created_at, email, display_name) 기본: created_at
  * - sort_dir: 정렬 방향 (asc, desc) 기본: desc
  * - page: 페이지 번호 (1-based, 기본 1)
  * - page_size: 페이지 크기 (기본 20, 최대 100)
  *
- * TODO: PATCH 엔드포인트 추가 예정 (메모 수정, 상태 변경 등)
+ * PATCH /api/admin/members
+ * 회원 상태 변경 및 관리자 메모 수정
+ * Body: { member_id, status?, admin_notes? }
  */
 import type { APIRoute } from 'astro';
 import { createAdminClient } from '../../../lib/supabase';
@@ -28,7 +33,50 @@ export const GET: APIRoute = async ({ request, url }) => {
 
   try {
     const supabase = createAdminClient();
+    const view = url.searchParams.get('view');
 
+    // ─── 통계 모드 ───────────────────────────────────
+    if (view === 'stats') {
+      const { data: allProfiles, error: statsError } = await supabase
+        .from('profiles')
+        .select('status');
+
+      if (statsError) {
+        return jsonResponse(500, {
+          success: false,
+          error: { code: 'QUERY_ERROR', message: '통계 조회 실패' },
+        });
+      }
+
+      const profiles = allProfiles ?? [];
+      const total = profiles.length;
+      const active = profiles.filter((p: { status: string }) => p.status === 'active').length;
+      const suspended = profiles.filter((p: { status: string }) => p.status === 'suspended').length;
+      const withdrawn = profiles.filter((p: { status: string }) => p.status === 'withdrawn').length;
+
+      // 총 매출 집계
+      const { data: revenueData } = await supabase
+        .from('orders')
+        .select('total_amount');
+
+      const totalRevenue = (revenueData ?? []).reduce(
+        (sum: number, o: { total_amount?: number }) => sum + (o.total_amount ?? 0),
+        0
+      );
+
+      return jsonResponse(200, {
+        success: true,
+        data: {
+          total,
+          active,
+          suspended,
+          withdrawn,
+          total_revenue: totalRevenue,
+        },
+      });
+    }
+
+    // ─── 회원 상세 ───────────────────────────────────
     const memberId = url.searchParams.get('member_id');
 
     if (memberId) {
@@ -91,8 +139,12 @@ export const GET: APIRoute = async ({ request, url }) => {
       });
     }
 
+    // ─── 회원 목록 ───────────────────────────────────
     const search = url.searchParams.get('search');
     const provider = url.searchParams.get('provider');
+    const status = url.searchParams.get('status');
+    const dateFrom = url.searchParams.get('date_from');
+    const dateTo = url.searchParams.get('date_to');
     const sortColumn = url.searchParams.get('sort') ?? 'created_at';
     const sortDir = url.searchParams.get('sort_dir') ?? 'desc';
     const page = Math.max(parseInt(url.searchParams.get('page') ?? '1', 10), 1);
@@ -121,7 +173,20 @@ export const GET: APIRoute = async ({ request, url }) => {
       query = query.eq('provider' as never, provider as never);
     }
 
-    // TODO: profiles.status 컬럼 추가 후 status 필터 구현
+    if (status && status !== 'all') {
+      const allowedStatuses = ['active', 'suspended', 'withdrawn'];
+      if (allowedStatuses.includes(status)) {
+        query = query.eq('status' as never, status as never);
+      }
+    }
+
+    if (dateFrom) {
+      query = query.gte('created_at' as never, dateFrom as never);
+    }
+
+    if (dateTo) {
+      query = query.lte('created_at' as never, (dateTo + 'T23:59:59.999Z') as never);
+    }
 
     const { data: members, count, error } = await query;
 
@@ -134,7 +199,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 
     // 회원별 주문 통계 집계 (별도 쿼리)
     const emails = (members ?? []).map((m: { email: string }) => m.email).filter(Boolean);
-    let orderStatsMap = new Map<string, { order_count: number; total_spent: number }>();
+    const orderStatsMap = new Map<string, { order_count: number; total_spent: number }>();
 
     if (emails.length > 0) {
       const { data: orderStats } = await supabase
@@ -180,8 +245,80 @@ export const GET: APIRoute = async ({ request, url }) => {
   }
 };
 
-// TODO: PATCH 엔드포인트 — 회원 메모 수정, 상태 변경 등 추가 예정
-// export const PATCH: APIRoute = async ({ request }) => { ... };
+// ─── PATCH: 회원 상태/메모 수정 ─────────────────────
+export const PATCH: APIRoute = async ({ request }) => {
+  const auth = await verifyAdminAuth(request);
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error);
+  }
+
+  try {
+    const body = await request.json();
+    const { member_id, status, admin_notes } = body as {
+      member_id?: string;
+      status?: string;
+      admin_notes?: string;
+    };
+
+    if (!member_id) {
+      return jsonResponse(400, {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'member_id는 필수입니다' },
+      });
+    }
+
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+    if (status !== undefined) {
+      const allowedStatuses = ['active', 'suspended', 'withdrawn'];
+      if (!allowedStatuses.includes(status)) {
+        return jsonResponse(400, {
+          success: false,
+          error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 상태입니다' },
+        });
+      }
+      updates.status = status;
+    }
+
+    if (admin_notes !== undefined) {
+      updates.admin_notes = admin_notes;
+    }
+
+    if (Object.keys(updates).length <= 1) {
+      return jsonResponse(400, {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: '변경할 내용이 없습니다' },
+      });
+    }
+
+    const supabase = createAdminClient();
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates as never)
+      .eq('id' as never, member_id as never)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return jsonResponse(500, {
+        success: false,
+        error: { code: 'UPDATE_ERROR', message: '회원 정보 업데이트 실패' },
+      });
+    }
+
+    return jsonResponse(200, {
+      success: true,
+      data,
+    });
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    return jsonResponse(500, {
+      success: false,
+      error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다' },
+    });
+  }
+};
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

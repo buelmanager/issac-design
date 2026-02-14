@@ -1150,6 +1150,8 @@ export interface Database {
           avatar_url: string | null;
           phone: string | null;
           provider: string;
+          status: string;
+          admin_notes: string;
           created_at: string;
           updated_at: string;
         };
@@ -1160,6 +1162,8 @@ export interface Database {
           avatar_url?: string | null;
           phone?: string | null;
           provider?: string;
+          status?: string;
+          admin_notes?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -1170,6 +1174,8 @@ export interface Database {
           avatar_url?: string | null;
           phone?: string | null;
           provider?: string;
+          status?: string;
+          admin_notes?: string;
           created_at?: string;
           updated_at?: string;
         };
