@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { SearchInput, Pagination, LoadingSpinner, EmptyState } from '../ui';
 import toast from 'react-hot-toast';
 import {
@@ -183,6 +184,7 @@ function PaymentStatusBadge({ status }: { status: string }) {
 
 // ─── 컴포넌트 ────────────────────────────────────
 export default function PaymentsPage() {
+  const { accessToken } = useAuth();
   const [view, setView] = useState<ViewMode>('list');
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
@@ -270,7 +272,9 @@ export default function PaymentsPage() {
         payment_id: paymentId,
         limit: '100',
       });
-      const res = await fetch(`/api/payment/logs?${params.toString()}`);
+      const res = await fetch(`/api/payment/logs?${params.toString()}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
       const json = await res.json();
       if (json.success) {
         setDetailSystemLogs(json.data.logs ?? []);
@@ -278,7 +282,7 @@ export default function PaymentsPage() {
     } catch {
       toast.error('시스템 로그 조회 실패');
     }
-  }, []);
+  }, [accessToken]);
 
   // 탭 변경 시 시스템 로그 로드
   useEffect(() => {
@@ -306,7 +310,9 @@ export default function PaymentsPage() {
       }
       params.set('limit', '100');
 
-      const res = await fetch(`/api/payment/logs?${params.toString()}`);
+      const res = await fetch(`/api/payment/logs?${params.toString()}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
       const json = await res.json();
       if (json.success) {
         setSystemLogs(json.data.logs ?? []);
@@ -314,11 +320,13 @@ export default function PaymentsPage() {
     } catch {
       toast.error('시스템 로그 조회 실패');
     }
-  }, [logFilter, logSearch, logDateRange]);
+  }, [logFilter, logSearch, logDateRange, accessToken]);
 
   const fetchLogStats = async () => {
     try {
-      const res = await fetch('/api/payment/logs?view=stats');
+      const res = await fetch('/api/payment/logs?view=stats', {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
       const json = await res.json();
       if (json.success) {
         setLogStats(json.data);

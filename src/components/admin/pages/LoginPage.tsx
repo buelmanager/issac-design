@@ -16,6 +16,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // 서버사이드 로그인 API 호출 (Rate Limiting + 감사 로깅 + 쿠키 세션 설정)
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        if (res.status === 429) {
+          setError(json.error?.message ?? '로그인 시도가 너무 많습니다. 잠시 후 다시 시도하세요.');
+        } else {
+          setError(json.error?.message ?? '로그인에 실패했습니다.');
+        }
+        return;
+      }
+
+      // 서버에서 세션 쿠키가 설정됨. 클라이언트에서도 세션 동기화.
       await signIn(email, password);
       navigate('/', { replace: true });
     } catch (err) {

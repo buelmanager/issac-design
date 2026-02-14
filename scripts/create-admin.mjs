@@ -18,8 +18,15 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const EMAIL = 'admin@issac.design';
-const PASSWORD = '12344321';
+const EMAIL = process.env.ADMIN_EMAIL || 'admin@issac.design';
+const PASSWORD = process.env.ADMIN_INITIAL_PASSWORD;
+
+if (!PASSWORD) {
+  console.error('❌ ADMIN_INITIAL_PASSWORD 환경변수가 설정되지 않았습니다.');
+  console.error('   사용법: ADMIN_INITIAL_PASSWORD=your_password node scripts/create-admin.mjs');
+  console.error('   또는 .env.local 파일에 ADMIN_INITIAL_PASSWORD=your_password 추가');
+  process.exit(1);
+}
 
 async function main() {
   console.log(`Creating admin user: ${EMAIL}...`);
@@ -64,7 +71,7 @@ async function ensureAdminRow(userId) {
   console.log(`✅ admin_users row created for ${userId}`);
   console.log(`\n🎉 Admin account ready!`);
   console.log(`   Email: ${EMAIL}`);
-  console.log(`   Password: ${PASSWORD}`);
+  console.log(`   Password: ********** (환경변수로 설정한 비밀번호)`);
 }
 
 main();

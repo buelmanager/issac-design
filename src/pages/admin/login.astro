@@ -2,10 +2,9 @@
 export const prerender = false;
 import AdminApp from '../../components/admin/AdminApp';
 
-// 미들웨어에서 이미 인증 체크를 하지만, 방어적 이중 체크
-// 미들웨어 우회 시나리오 방지 (CVE-2025-64765 등)
-if (!Astro.locals.user) {
-  return Astro.redirect('/admin/login');
+// 이미 로그인된 사용자는 대시보드로 리다이렉트 (미들웨어에서도 처리하지만 방어적 체크)
+if (Astro.locals.user) {
+  return Astro.redirect('/admin');
 }
 ---
 
@@ -14,7 +13,7 @@ if (!Astro.locals.user) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>issac.design Admin</title>
+    <title>issac.design Admin - 로그인</title>
   </head>
   <body>
     <div id="admin-root">
