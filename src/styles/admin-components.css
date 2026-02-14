@@ -1249,6 +1249,14 @@
   max-width: 600px;
 }
 
+.admin-modal-body .admin-card {
+  padding: 16px 20px;
+}
+
+.admin-modal-body .admin-card-title {
+  margin: 0 0 12px;
+}
+
 /* ========================================
    Detail View (Quotes / Inquiries)
    ======================================== */
