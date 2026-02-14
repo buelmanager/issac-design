@@ -843,6 +843,18 @@ const { categories } = await getProducts();
             }
           });
 
+          // Ensure dropdown link items navigate properly
+          authDropdown.querySelectorAll('a.shop-navbar__auth-dropdown-item').forEach((link) => {
+            link.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              const href = (link as HTMLAnchorElement).getAttribute('href');
+              if (href) {
+                authDropdown.classList.remove('is-open');
+                window.location.href = href;
+              }
+            });
+          });
+
           if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
               try {
