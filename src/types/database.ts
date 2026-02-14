@@ -974,6 +974,174 @@ export interface Database {
         };
         Relationships: [];
       };
+      orders: {
+        Row: {
+          id: string;
+          order_number: string;
+          quote_id: string | null;
+          customer_name: string;
+          customer_email: string | null;
+          customer_phone: string;
+          business_name: string | null;
+          shipping_address: Json;
+          items: Json;
+          total_amount: number;
+          currency: string;
+          status: string;
+          admin_notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_number?: string;
+          quote_id?: string | null;
+          customer_name: string;
+          customer_email?: string | null;
+          customer_phone: string;
+          business_name?: string | null;
+          shipping_address?: Json;
+          items?: Json;
+          total_amount: number;
+          currency?: string;
+          status?: string;
+          admin_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_number?: string;
+          quote_id?: string | null;
+          customer_name?: string;
+          customer_email?: string | null;
+          customer_phone?: string;
+          business_name?: string | null;
+          shipping_address?: Json;
+          items?: Json;
+          total_amount?: number;
+          currency?: string;
+          status?: string;
+          admin_notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'orders_quote_id_fkey';
+            columns: ['quote_id'];
+            isOneToOne: false;
+            referencedRelation: 'quote_requests';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      payments: {
+        Row: {
+          id: string;
+          order_id: string;
+          idempotency_key: string;
+          amount: number;
+          currency: string;
+          status: string;
+          pg_provider: string | null;
+          pg_payment_id: string | null;
+          pg_response: Json;
+          method: string | null;
+          failed_reason: string | null;
+          paid_at: string | null;
+          canceled_at: string | null;
+          refunded_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          idempotency_key: string;
+          amount: number;
+          currency?: string;
+          status?: string;
+          pg_provider?: string | null;
+          pg_payment_id?: string | null;
+          pg_response?: Json;
+          method?: string | null;
+          failed_reason?: string | null;
+          paid_at?: string | null;
+          canceled_at?: string | null;
+          refunded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          idempotency_key?: string;
+          amount?: number;
+          currency?: string;
+          status?: string;
+          pg_provider?: string | null;
+          pg_payment_id?: string | null;
+          pg_response?: Json;
+          method?: string | null;
+          failed_reason?: string | null;
+          paid_at?: string | null;
+          canceled_at?: string | null;
+          refunded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'payments_order_id_fkey';
+            columns: ['order_id'];
+            isOneToOne: false;
+            referencedRelation: 'orders';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
+      payment_status_logs: {
+        Row: {
+          id: string;
+          payment_id: string;
+          from_status: string;
+          to_status: string;
+          reason: string | null;
+          actor: string;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          payment_id: string;
+          from_status: string;
+          to_status: string;
+          reason?: string | null;
+          actor?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          payment_id?: string;
+          from_status?: string;
+          to_status?: string;
+          reason?: string | null;
+          actor?: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'payment_status_logs_payment_id_fkey';
+            columns: ['payment_id'];
+            isOneToOne: false;
+            referencedRelation: 'payments';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     };
     Views: {};
     Functions: {};

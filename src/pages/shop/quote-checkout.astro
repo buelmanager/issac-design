@@ -785,6 +785,8 @@ const breadcrumbs = [
 </style>
 
 <script>
+  import { supabaseBrowser } from '../../lib/supabase-browser';
+
   document.addEventListener('DOMContentLoaded', () => {
     const STORAGE_KEY = 'quoteCart';
 
@@ -960,7 +962,7 @@ const breadcrumbs = [
     const submitBtn = document.querySelector('[data-submit-quote]') as HTMLButtonElement;
 
     if (submitBtn && formEl) {
-      submitBtn.addEventListener('click', () => {
+      submitBtn.addEventListener('click', async () => {
         // Clear previous errors
         formEl.querySelectorAll('.checkout__input--error').forEach(el => {
           el.classList.remove('checkout__input--error');
@@ -1027,6 +1029,36 @@ const breadcrumbs = [
         const currentCart = getCart();
         if (summaryItemCount) {
           summaryItemCount.textContent = `${currentCart.length}개`;
+        }
+
+        // Supabase에 견적 요청 저장
+        try {
+          const cartProducts = currentCart.map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            categoryName: item.categoryName,
+            priceRange: item.priceRange,
+            options: item.options,
+          }));
+
+          const { error: insertError } = await supabaseBrowser
+            .from('quote_requests')
+            .insert({
+              customer_name: nameInput?.value.trim() || '',
+              email: emailInput?.value.trim() || null,
+              phone: phoneInput?.value.trim() || null,
+              products: cartProducts,
+              message: addressInput?.value.trim()
+                ? `[배송주소] ${addressInput.value.trim()}`
+                : null,
+            });
+
+          if (insertError) {
+            console.error('Quote checkout submission error:', insertError);
+            // 저장 실패해도 UX는 계속 진행 (오프라인 등 대비)
+          }
+        } catch (err) {
+          console.error('Quote checkout submission error:', err);
         }
 
         // Clear cart

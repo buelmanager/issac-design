@@ -577,6 +577,8 @@ const { productName = '' } = Astro.props;
 </style>
 
 <script>
+  import { supabaseBrowser } from '../../lib/supabase-browser';
+
   // Quote Form Submission
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('[data-quote-form-element]') as HTMLFormElement;
@@ -790,10 +792,39 @@ const { productName = '' } = Astro.props;
       });
       const data = Object.fromEntries(formData.entries());
 
-      // Simulate form submission (replace with actual API call)
+      // Supabase에 견적 요청 저장
       try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const customerName = (data.name as string || '').trim();
+        const email = (data.email as string || '').trim();
+        const phone = (data.phone as string || '').trim();
+        const product = (data.product as string || '').trim();
+        const size = (data.size as string || '').trim();
+        const address = (data.address as string || '').trim();
+        const floor = (data.floor as string || '').trim();
+        const crane = data.crane === 'yes';
+        const designFile = data.designFile === 'yes';
+        const message = (data.message as string || '').trim();
+
+        const { error: insertError } = await supabaseBrowser
+          .from('quote_requests')
+          .insert({
+            customer_name: customerName,
+            email: email || null,
+            phone: phone || null,
+            request_type: product || '견적 문의',
+            message: [
+              message,
+              size ? `[사이즈] ${size}` : '',
+              address ? `[현장주소] ${address}` : '',
+              floor ? `[설치층수] ${floor}` : '',
+              crane ? '[크레인 필요]' : '',
+              designFile ? '[디자인파일 보유]' : '',
+            ].filter(Boolean).join('\n'),
+            products: product ? [{ name: product }] : [],
+            attachments: [],
+          });
+
+        if (insertError) throw insertError;
 
         // Show success message
         if (successMessage) {
@@ -807,8 +838,6 @@ const { productName = '' } = Astro.props;
           // Scroll to success message
           successMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-
-        console.log('Quote request submitted:', data);
       } catch (error) {
         // Show error message
         if (errorMessage) {

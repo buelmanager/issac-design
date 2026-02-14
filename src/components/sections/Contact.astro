@@ -795,6 +795,7 @@ try {
 <script>
   import { gsap } from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { supabaseBrowser } from '../../lib/supabase-browser';
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -836,23 +837,51 @@ try {
       });
     }
 
-    // Form handling (frontend only)
-    const contactForm = section.querySelector('#contactForm');
+    // Form handling — Supabase 연동
+    const contactForm = section.querySelector('#contactForm') as HTMLFormElement | null;
     if (contactForm) {
-      contactForm.addEventListener('submit', (e) => {
+      contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Visual feedback
-        const submitBtn = contactForm.querySelector('.contact__form-submit');
-        if (submitBtn) {
-          const originalText = submitBtn.innerHTML;
+
+        const submitBtn = contactForm.querySelector('.contact__form-submit') as HTMLButtonElement | null;
+        if (!submitBtn) return;
+
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>전송 중...</span>';
+        submitBtn.setAttribute('disabled', 'true');
+
+        const formData = new FormData(contactForm);
+        const name = (formData.get('name') as string || '').trim();
+        const email = (formData.get('email') as string || '').trim();
+        const phone = (formData.get('phone') as string || '').trim();
+        const inquiryType = (formData.get('inquiryType') as string || '').trim();
+        const message = (formData.get('message') as string || '').trim();
+
+        try {
+          const { error } = await supabaseBrowser
+            .from('contact_inquiries')
+            .insert({
+              name,
+              email: email || null,
+              phone: phone || null,
+              inquiry_type: inquiryType || null,
+              message,
+            });
+
+          if (error) throw error;
+
           submitBtn.innerHTML = '<span>전송 완료!</span>';
-          submitBtn.setAttribute('disabled', 'true');
-          
           setTimeout(() => {
             submitBtn.innerHTML = originalText;
             submitBtn.removeAttribute('disabled');
-            (contactForm as HTMLFormElement).reset();
+            contactForm.reset();
+          }, 2000);
+        } catch (err) {
+          console.error('Contact inquiry submission error:', err);
+          submitBtn.innerHTML = '<span>전송 실패</span>';
+          setTimeout(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.removeAttribute('disabled');
           }, 2000);
         }
       });
