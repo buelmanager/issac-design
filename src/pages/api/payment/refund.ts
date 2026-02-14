@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
       .from('payments')
       .select('id, status')
       .eq('order_id', order_id)
-      .eq('status', 'paid')
+      .eq('status', 'PAID')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
