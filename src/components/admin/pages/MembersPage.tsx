@@ -3,8 +3,8 @@ import { DataTable, SearchInput, Pagination, LoadingSpinner, EmptyState, TabNav,
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import {
-  Users, X, Mail, Phone, Calendar, ShoppingBag, CreditCard,
-  Download, FileText, UserCheck, AlertTriangle,
+  Users, Mail, Phone, Calendar, ShoppingBag, CreditCard,
+  Download, FileText, UserCheck, AlertTriangle, ArrowLeft,
 } from 'lucide-react';
 
 // ─── 타입 ────────────────────────────────────────
@@ -46,6 +46,8 @@ interface MemberStats {
   withdrawn: number;
   total_revenue: number;
 }
+
+type ViewMode = 'list' | 'detail';
 
 // ─── 상수 ────────────────────────────────────────
 const PAGE_SIZE = 20;
@@ -100,14 +102,36 @@ function formatCurrency(amount: number): string {
   return amount.toLocaleString('ko-KR') + '원';
 }
 
+// ─── StatCard 헬퍼 ────────────────────────────────
+function StatCard({ icon, label, value, colorClass, alert, suffix, isCurrency }: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  colorClass: string;
+  alert?: boolean;
+  suffix?: string;
+  isCurrency?: boolean;
+}) {
+  const displayValue = isCurrency ? value.toLocaleString('ko-KR') : value.toLocaleString();
+  return (
+    <div className={`member-stat-card ${alert ? 'member-stat-card-alert' : ''}`}>
+      <div className="member-stat-card-header">{icon}{label}</div>
+      <div className={`member-stat-card-value ${colorClass}`}>
+        {displayValue}
+        {suffix && <span className="member-stat-card-suffix">{suffix}</span>}
+      </div>
+    </div>
+  );
+}
+
 // ─── 컴포넌트 ────────────────────────────────────
 export default function MembersPage() {
   const { accessToken } = useAuth();
 
-  // 통계
+  const [view, setView] = useState<ViewMode>('list');
+
   const [stats, setStats] = useState<MemberStats | null>(null);
 
-  // 목록
   const [members, setMembers] = useState<MemberListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -120,21 +144,17 @@ export default function MembersPage() {
   const [sortColumn, setSortColumn] = useState('created_at');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // 상세 모달
   const [selectedMember, setSelectedMember] = useState<MemberListItem | null>(null);
   const [memberDetail, setMemberDetail] = useState<MemberDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // 상태 변경
   const [statusChangeTarget, setStatusChangeTarget] = useState('');
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
 
-  // 메모
   const [editNotes, setEditNotes] = useState('');
   const [noteSaving, setNoteSaving] = useState(false);
 
-  // CSV
   const [csvExporting, setCsvExporting] = useState(false);
 
   // ─── API 호출 ──────────────────────────────────
@@ -181,6 +201,7 @@ export default function MembersPage() {
     setSelectedMember(member);
     setEditNotes(member.admin_notes ?? '');
     setStatusChangeTarget(member.status);
+    setView('detail');
     setDetailLoading(true);
     try {
       const res = await fetch(`/api/admin/members?member_id=${member.id}`, {
@@ -198,6 +219,7 @@ export default function MembersPage() {
   }, [accessToken]);
 
   const closeDetail = useCallback(() => {
+    setView('list');
     setSelectedMember(null);
     setMemberDetail(null);
     setShowStatusConfirm(false);
@@ -298,7 +320,6 @@ export default function MembersPage() {
     setCsvExporting(false);
   }, [search, providerFilter, statusFilter, dateFrom, dateTo, sortColumn, sortDir, accessToken]);
 
-  // 컬럼 정렬 핸들러 (DataTable의 onSort 콜백)
   const handleSort = useCallback((column: string, direction: 'asc' | 'desc') => {
     setSortColumn(column);
     setSortDir(direction);
@@ -319,7 +340,6 @@ export default function MembersPage() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  // ─── 탭 데이터 ─────────────────────────────────
   const statusTabs = [
     { key: 'all', label: '전체', count: stats?.total },
     { key: 'active', label: '활성', count: stats?.active },
@@ -333,17 +353,17 @@ export default function MembersPage() {
       key: 'display_name',
       label: '회원',
       render: (row: MemberListItem) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="member-cell">
           {row.avatar_url ? (
-            <img src={row.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+            <img src={row.avatar_url} alt="" className="member-avatar" />
           ) : (
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: '#6b7280' }}>
+            <div className="member-avatar-placeholder">
               {(row.display_name ?? row.email)?.[0]?.toUpperCase() ?? '?'}
             </div>
           )}
           <div>
-            <div style={{ fontWeight: 500 }}>{row.display_name ?? '-'}</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>{row.email}</div>
+            <div className="member-cell-name">{row.display_name ?? '-'}</div>
+            <div className="member-cell-email">{row.email}</div>
           </div>
         </div>
       ),
@@ -388,47 +408,240 @@ export default function MembersPage() {
     },
   ];
 
-  // ─── 렌더 ──────────────────────────────────────
+  // ─── Detail View ───────────────────────────────
+  if (view === 'detail' && selectedMember) {
+    return (
+      <div className="admin-page">
+        <button className="admin-btn admin-btn-ghost" onClick={closeDetail}>
+          <ArrowLeft size={16} /> 목록으로
+        </button>
+
+        <div className="admin-page-header">
+          <div>
+            <h1 className="admin-page-title">회원 상세 - {selectedMember.display_name ?? selectedMember.email}</h1>
+            <p className="member-page-subtitle">{selectedMember.email}</p>
+          </div>
+          <div className="admin-page-header-actions">
+            <StatusBadge status={STATUS_LABELS[selectedMember.status] ?? selectedMember.status} variant={STATUS_VARIANTS[selectedMember.status]} />
+          </div>
+        </div>
+
+        {detailLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <div className="member-info-grid">
+            <div className="member-detail-col">
+              <div className="admin-card">
+                <h3 className="admin-card-title">회원 정보</h3>
+                <div className="admin-card-body">
+                  <div className="member-detail-header">
+                    {selectedMember.avatar_url ? (
+                      <img src={selectedMember.avatar_url} alt="" className="member-avatar member-avatar-lg" />
+                    ) : (
+                      <div className="member-avatar-placeholder member-avatar-placeholder-lg">
+                        {(selectedMember.display_name ?? selectedMember.email)?.[0]?.toUpperCase() ?? '?'}
+                      </div>
+                    )}
+                    <div>
+                      <div className="member-detail-name">{selectedMember.display_name ?? '-'}</div>
+                      <div className="member-detail-email">{selectedMember.email}</div>
+                    </div>
+                  </div>
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label"><Mail size={14} /> 이메일</span>
+                    <span className="admin-detail-value">{selectedMember.email}</span>
+                  </div>
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label"><Phone size={14} /> 연락처</span>
+                    <span className="admin-detail-value">{selectedMember.phone ?? '-'}</span>
+                  </div>
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">가입방법</span>
+                    <span className="admin-detail-value">
+                      <span className={`admin-badge admin-badge-${selectedMember.provider === 'google' ? 'info' : selectedMember.provider === 'kakao' ? 'warning' : 'default'}`}>
+                        {PROVIDER_LABELS[selectedMember.provider] ?? selectedMember.provider}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label"><Calendar size={14} /> 가입일</span>
+                    <span className="admin-detail-value">{formatDate(selectedMember.created_at)}</span>
+                  </div>
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">최근활동</span>
+                    <span className="admin-detail-value">{formatDate(selectedMember.updated_at)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-card">
+                <h3 className="admin-card-title">상태 관리</h3>
+                <div className="admin-card-body">
+                  <div className="member-status-section">
+                    <span className="member-status-current">현재 상태:</span>
+                    <StatusBadge status={STATUS_LABELS[selectedMember.status] ?? selectedMember.status} variant={STATUS_VARIANTS[selectedMember.status]} />
+                  </div>
+                  <div className="member-status-actions">
+                    <select
+                      className="admin-select"
+                      value={statusChangeTarget}
+                      onChange={(e) => setStatusChangeTarget(e.target.value)}
+                    >
+                      {STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-primary"
+                      disabled={statusChangeTarget === selectedMember.status}
+                      onClick={() => setShowStatusConfirm(true)}
+                    >
+                      상태 변경
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-card">
+                <h3 className="admin-card-title"><FileText size={16} /> 관리자 메모</h3>
+                <div className="admin-card-body">
+                  <textarea
+                    className="admin-textarea member-notes-textarea"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    placeholder="관리자 메모를 입력하세요..."
+                    rows={4}
+                  />
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-primary"
+                    onClick={handleNoteSave}
+                    disabled={noteSaving || editNotes === (selectedMember.admin_notes ?? '')}
+                  >
+                    {noteSaving ? '저장 중...' : '메모 저장'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="member-detail-col">
+              <div className="admin-card">
+                <h3 className="admin-card-title">구매 통계</h3>
+                <div className="admin-card-body">
+                  <div className="member-purchase-stats">
+                    <div className="member-purchase-stat">
+                      <ShoppingBag size={24} className="member-purchase-stat-icon" />
+                      <div className="member-purchase-stat-value">{memberDetail?.stats.order_count ?? selectedMember.order_count}</div>
+                      <div className="member-purchase-stat-label">총 주문</div>
+                    </div>
+                    <div className="member-purchase-stat">
+                      <CreditCard size={24} className="member-purchase-stat-icon" />
+                      <div className="member-purchase-stat-value">{formatCurrency(memberDetail?.stats.total_spent ?? selectedMember.total_spent)}</div>
+                      <div className="member-purchase-stat-label">총 구매액</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-card">
+                <h3 className="admin-card-title">주문 내역</h3>
+                <div className="admin-card-body">
+                  {!memberDetail || memberDetail.orders.length === 0 ? (
+                    <p className="member-orders-empty">주문 내역이 없습니다</p>
+                  ) : (
+                    <div className="admin-table-wrapper">
+                      <table className="admin-table">
+                        <thead>
+                          <tr>
+                            <th>주문번호</th>
+                            <th>금액</th>
+                            <th>상태</th>
+                            <th>날짜</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {memberDetail.orders.map((order) => {
+                            const statusVariant =
+                              order.status === 'delivered' || order.status === 'paid' ? 'success'
+                              : order.status === 'canceled' ? 'danger'
+                              : order.status === 'shipped' || order.status === 'processing' ? 'info'
+                              : 'warning';
+                            return (
+                              <tr key={order.id}>
+                                <td>{order.order_number}</td>
+                                <td>{formatCurrency(order.total_amount)}</td>
+                                <td>
+                                  <span className={`admin-badge admin-badge-${statusVariant}`}>
+                                    {ORDER_STATUS_LABELS[order.status] ?? order.status}
+                                  </span>
+                                </td>
+                                <td>{formatDate(order.created_at)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <ConfirmModal
+          isOpen={showStatusConfirm}
+          title="회원 상태 변경"
+          message={`"${selectedMember?.display_name ?? selectedMember?.email}" 회원의 상태를 "${STATUS_LABELS[statusChangeTarget]}"(으)로 변경하시겠습니까?`}
+          confirmLabel="변경"
+          cancelLabel="취소"
+          variant={statusChangeTarget === 'suspended' || statusChangeTarget === 'withdrawn' ? 'danger' : 'default'}
+          onConfirm={handleStatusChange}
+          onCancel={() => setShowStatusConfirm(false)}
+          loading={statusUpdating}
+        />
+      </div>
+    );
+  }
+
+  // ─── List View ─────────────────────────────────
   return (
     <div className="admin-page">
       <div className="admin-page-header">
         <h1 className="admin-page-title">회원 관리</h1>
-        <span style={{ fontSize: 14, color: '#6b7280' }}>총 {total}명</span>
+        <span className="member-page-subtitle">총 {total}명</span>
       </div>
 
-      {/* 통계 카드 */}
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
-          <StatCard icon={<Users size={18} />} label="전체 회원" value={stats.total} color="#111827" />
-          <StatCard icon={<UserCheck size={18} />} label="활성 회원" value={stats.active} color="#059669" />
-          <StatCard icon={<AlertTriangle size={18} />} label="정지 회원" value={stats.suspended} color="#DC2626" alert={stats.suspended > 0} />
-          <StatCard icon={<CreditCard size={18} />} label="총 매출" value={stats.total_revenue} color="#7C3AED" suffix="원" isCurrency />
+        <div className="member-summary-stats">
+          <StatCard icon={<Users size={18} />} label="전체 회원" value={stats.total} colorClass="member-stat-value-dark" />
+          <StatCard icon={<UserCheck size={18} />} label="활성 회원" value={stats.active} colorClass="member-stat-value-green" />
+          <StatCard icon={<AlertTriangle size={18} />} label="정지 회원" value={stats.suspended} colorClass="member-stat-value-red" alert={stats.suspended > 0} />
+          <StatCard icon={<CreditCard size={18} />} label="총 매출" value={stats.total_revenue} colorClass="member-stat-value-purple" suffix="원" isCurrency />
         </div>
       )}
 
-      {/* 상태 탭 */}
       <TabNav tabs={statusTabs} activeTab={statusFilter} onChange={setStatusFilter} />
 
-      {/* 필터 툴바 */}
-      <div className="admin-toolbar" style={{ flexWrap: 'wrap', gap: '8px' }}>
+      <div className="admin-toolbar">
         <SearchInput value={search} onChange={setSearch} placeholder="이메일, 이름, 연락처 검색..." />
         <select className="admin-select" value={providerFilter} onChange={(e) => setProviderFilter(e.target.value)}>
           {PROVIDER_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 13 }}>
-          <input type="date" className="admin-input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ width: 140 }} />
-          <span style={{ color: '#9ca3af' }}>~</span>
-          <input type="date" className="admin-input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ width: 140 }} />
+        <div className="member-toolbar-date">
+          <input type="date" className="admin-input" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <span className="member-toolbar-date-sep">~</span>
+          <input type="date" className="admin-input" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         </div>
-        <button type="button" className="admin-btn admin-btn-secondary" onClick={handleCsvExport} disabled={csvExporting} style={{ marginLeft: 'auto' }}>
+        <button type="button" className="admin-btn admin-btn-secondary member-export-btn" onClick={handleCsvExport} disabled={csvExporting}>
           <Download size={14} />
           {csvExporting ? '내보내는 중...' : 'CSV 내보내기'}
         </button>
       </div>
 
-      {/* 회원 목록 */}
       {!loading && members.length === 0 ? (
         <EmptyState icon={<Users size={48} />} title="회원이 없습니다" description="조건에 맞는 회원이 없습니다" />
       ) : (
@@ -436,227 +649,6 @@ export default function MembersPage() {
       )}
 
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} pageSize={PAGE_SIZE} totalItems={total} />
-
-      {/* 상세 모달 */}
-      {selectedMember && (
-        <div className="admin-modal-overlay" onClick={closeDetail}>
-          <div className="admin-modal" style={{ maxWidth: 640 }} onClick={(e) => e.stopPropagation()}>
-            <div className="admin-modal-header">
-              <h2 className="admin-modal-title">회원 상세 정보</h2>
-              <button type="button" className="admin-btn-icon" onClick={closeDetail}><X size={20} /></button>
-            </div>
-            <div className="admin-modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-              {detailLoading ? (
-                <LoadingSpinner />
-              ) : (
-                <>
-                  {/* 회원 정보 */}
-                  <div className="admin-card">
-                    <h3 className="admin-card-title">회원 정보</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 16 }}>
-                      {selectedMember.avatar_url ? (
-                        <img src={selectedMember.avatar_url} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 600, color: '#6b7280' }}>
-                          {(selectedMember.display_name ?? selectedMember.email)?.[0]?.toUpperCase() ?? '?'}
-                        </div>
-                      )}
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: 16 }}>{selectedMember.display_name ?? '-'}</div>
-                        <div style={{ fontSize: 13, color: '#6b7280' }}>{selectedMember.email}</div>
-                      </div>
-                    </div>
-                    <div className="admin-detail-row">
-                      <span className="admin-detail-label"><Mail size={14} /> 이메일</span>
-                      <span className="admin-detail-value">{selectedMember.email}</span>
-                    </div>
-                    <div className="admin-detail-row">
-                      <span className="admin-detail-label"><Phone size={14} /> 연락처</span>
-                      <span className="admin-detail-value">{selectedMember.phone ?? '-'}</span>
-                    </div>
-                    <div className="admin-detail-row">
-                      <span className="admin-detail-label">가입방법</span>
-                      <span className="admin-detail-value">
-                        <span className={`admin-badge admin-badge-${selectedMember.provider === 'google' ? 'info' : selectedMember.provider === 'kakao' ? 'warning' : 'default'}`}>
-                          {PROVIDER_LABELS[selectedMember.provider] ?? selectedMember.provider}
-                        </span>
-                      </span>
-                    </div>
-                    <div className="admin-detail-row">
-                      <span className="admin-detail-label"><Calendar size={14} /> 가입일</span>
-                      <span className="admin-detail-value">{formatDate(selectedMember.created_at)}</span>
-                    </div>
-                    <div className="admin-detail-row">
-                      <span className="admin-detail-label">최근활동</span>
-                      <span className="admin-detail-value">{formatDate(selectedMember.updated_at)}</span>
-                    </div>
-                  </div>
-
-                  {/* 상태 관리 */}
-                  <div className="admin-card">
-                    <h3 className="admin-card-title">상태 관리</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: 13, color: '#6b7280' }}>현재 상태:</span>
-                      <StatusBadge status={STATUS_LABELS[selectedMember.status] ?? selectedMember.status} variant={STATUS_VARIANTS[selectedMember.status]} />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: 12 }}>
-                      <select
-                        className="admin-select"
-                        value={statusChangeTarget}
-                        onChange={(e) => setStatusChangeTarget(e.target.value)}
-                      >
-                        {STATUS_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn-primary"
-                        disabled={statusChangeTarget === selectedMember.status}
-                        onClick={() => setShowStatusConfirm(true)}
-                      >
-                        상태 변경
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 관리자 메모 */}
-                  <div className="admin-card">
-                    <h3 className="admin-card-title">
-                      <FileText size={16} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-                      관리자 메모
-                    </h3>
-                    <textarea
-                      className="admin-textarea"
-                      value={editNotes}
-                      onChange={(e) => setEditNotes(e.target.value)}
-                      placeholder="관리자 메모를 입력하세요..."
-                      rows={3}
-                      style={{ width: '100%', resize: 'vertical', marginBottom: 8 }}
-                    />
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn-primary"
-                      onClick={handleNoteSave}
-                      disabled={noteSaving || editNotes === (selectedMember.admin_notes ?? '')}
-                    >
-                      {noteSaving ? '저장 중...' : '메모 저장'}
-                    </button>
-                  </div>
-
-                  {/* 구매 통계 */}
-                  <div className="admin-card">
-                    <h3 className="admin-card-title">구매 통계</h3>
-                    <div style={{ display: 'flex', gap: '24px' }}>
-                      <div style={{ flex: 1, textAlign: 'center' }}>
-                        <ShoppingBag size={20} style={{ color: '#6b7280', marginBottom: 4 }} />
-                        <div style={{ fontSize: 24, fontWeight: 700 }}>
-                          {memberDetail?.stats.order_count ?? selectedMember.order_count}
-                        </div>
-                        <div style={{ fontSize: 13, color: '#6b7280' }}>총 주문</div>
-                      </div>
-                      <div style={{ flex: 1, textAlign: 'center' }}>
-                        <CreditCard size={20} style={{ color: '#6b7280', marginBottom: 4 }} />
-                        <div style={{ fontSize: 24, fontWeight: 700 }}>
-                          {formatCurrency(memberDetail?.stats.total_spent ?? selectedMember.total_spent)}
-                        </div>
-                        <div style={{ fontSize: 13, color: '#6b7280' }}>총 구매액</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 주문 내역 */}
-                  <div className="admin-card">
-                    <h3 className="admin-card-title">주문 내역</h3>
-                    {!memberDetail || memberDetail.orders.length === 0 ? (
-                      <p style={{ fontSize: 14, color: '#9ca3af', textAlign: 'center', padding: '16px 0' }}>
-                        주문 내역이 없습니다
-                      </p>
-                    ) : (
-                      <div className="admin-table-wrapper">
-                        <table className="admin-table">
-                          <thead>
-                            <tr>
-                              <th>주문번호</th>
-                              <th>금액</th>
-                              <th>상태</th>
-                              <th>날짜</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {memberDetail.orders.map((order) => {
-                              const statusVariant =
-                                order.status === 'delivered' || order.status === 'paid' ? 'success'
-                                : order.status === 'canceled' ? 'danger'
-                                : order.status === 'shipped' || order.status === 'processing' ? 'info'
-                                : 'warning';
-                              return (
-                                <tr key={order.id}>
-                                  <td>{order.order_number}</td>
-                                  <td>{formatCurrency(order.total_amount)}</td>
-                                  <td>
-                                    <span className={`admin-badge admin-badge-${statusVariant}`}>
-                                      {ORDER_STATUS_LABELS[order.status] ?? order.status}
-                                    </span>
-                                  </td>
-                                  <td>{formatDate(order.created_at)}</td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 상태 변경 확인 모달 */}
-      <ConfirmModal
-        isOpen={showStatusConfirm}
-        title="회원 상태 변경"
-        message={`"${selectedMember?.display_name ?? selectedMember?.email}" 회원의 상태를 "${STATUS_LABELS[statusChangeTarget]}"(으)로 변경하시겠습니까?`}
-        confirmLabel="변경"
-        cancelLabel="취소"
-        variant={statusChangeTarget === 'suspended' || statusChangeTarget === 'withdrawn' ? 'danger' : 'default'}
-        onConfirm={handleStatusChange}
-        onCancel={() => setShowStatusConfirm(false)}
-        loading={statusUpdating}
-      />
-    </div>
-  );
-}
-
-// ─── StatCard 헬퍼 ────────────────────────────────
-function StatCard({ icon, label, value, color, alert, suffix, isCurrency }: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: string;
-  alert?: boolean;
-  suffix?: string;
-  isCurrency?: boolean;
-}) {
-  const displayValue = isCurrency ? value.toLocaleString('ko-KR') : value.toLocaleString();
-  return (
-    <div style={{
-      border: alert ? '2px solid #DC2626' : '1px solid #E5E7EB',
-      borderRadius: '12px',
-      padding: '16px',
-      backgroundColor: alert ? '#FEF2F2' : '#fff',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>
-        {icon}
-        {label}
-      </div>
-      <div style={{ fontSize: '24px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>
-        {displayValue}
-        {suffix && <span style={{ fontSize: '14px', fontWeight: 400, color: '#9CA3AF', marginLeft: '2px' }}>{suffix}</span>}
-      </div>
     </div>
   );
 }

@@ -2997,3 +2997,238 @@ body.admin-modal-open {
 .payment-stat-value-green { color: #059669; }
 .payment-stat-value-purple { color: #7C3AED; }
 .payment-stat-value-cyan { color: #0891B2; }
+
+/* ============================================
+   Members Page Styles
+   ============================================ */
+
+/* Member Summary Stats Grid — same as payment-summary-stats */
+.member-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Member Stat Card */
+.member-stat-card {
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #fff;
+  transition: box-shadow 0.15s ease;
+}
+.member-stat-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.member-stat-card-alert {
+  border: 2px solid var(--admin-danger, #ef4444);
+  background-color: #fef2f2;
+}
+
+.member-stat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.member-stat-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.member-stat-card-suffix {
+  font-size: 14px;
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 2px;
+}
+
+/* Member Stat Value Colors */
+.member-stat-value-dark { color: #111827; }
+.member-stat-value-green { color: #059669; }
+.member-stat-value-red { color: #DC2626; }
+.member-stat-value-purple { color: #7C3AED; }
+
+/* Member Avatar */
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.member-avatar-lg {
+  width: 56px;
+  height: 56px;
+}
+
+.member-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.member-avatar-placeholder-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+}
+
+/* Member Cell (table column avatar+name) */
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-cell-name {
+  font-weight: 500;
+}
+
+.member-cell-email {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Member Info Grid (detail 2-column) — reuse payment-info-grid pattern */
+.member-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .member-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Member Detail Column Stack */
+.member-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Member Detail Header (large avatar + name) */
+.member-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.member-detail-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #111827;
+}
+
+.member-detail-email {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Member Purchase Stats (in detail view) */
+.member-purchase-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.member-purchase-stat {
+  flex: 1;
+  text-align: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.member-purchase-stat-icon {
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.member-purchase-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.member-purchase-stat-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Member Status Management Section */
+.member-status-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-status-current {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.member-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Member Notes Section */
+.member-notes-textarea {
+  width: 100%;
+  resize: vertical;
+  margin-bottom: 8px;
+}
+
+/* Member Order History Empty */
+.member-orders-empty {
+  font-size: 14px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* Member Toolbar Date Range */
+.member-toolbar-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.member-toolbar-date-sep {
+  color: #9ca3af;
+}
+
+/* Member Page Subtitle */
+.member-page-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Member CSV Export Button (margin-left auto) */
+.member-export-btn {
+  margin-left: auto;
+}
