@@ -72,14 +72,15 @@ try {
     .order('order_index');
   
   if (!error && data && data.length > 0) {
-    signageTypes = data.map((s: any) => ({
+    const fallbackMap = Object.fromEntries(FALLBACK_SIGNAGE_TYPES.map((f, i) => [i, f.image]));
+    signageTypes = data.map((s: any, i: number) => ({
       id: s.id,
-      number: String(s.order_index).padStart(2, '0'),
-      title: s.name,
+      number: s.number_label || String(s.order_index).padStart(2, '0'),
+      title: s.title || s.name,
       desc: s.description,
-      link: `/shop?category=${s.slug}`,
-      image: s.image_url,
-      icon: s.icon || s.slug
+      link: s.link || `/shop?category=${s.slug}`,
+      image: s.image_url?.startsWith('http') ? s.image_url : (fallbackMap[i] || s.image_url),
+      icon: s.icon_key || s.icon || s.slug
     }));
   }
 } catch {}

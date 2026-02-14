@@ -1,5 +1,5 @@
 import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
-import type { LandingSection, HeroSlide, ServiceItem, SignageType, ClientProject, ProjectFilterTab } from '../../../types/admin';
+import type { LandingSection, HeroSlide, ServiceItem, SignageType, ClientProject, ProjectFilterTab, PortfolioItem, ClientLogo } from '../../../types/admin';
 import type { LandingFaq, InquiryType, NavigationItem, SiteConfig } from '../../../types/admin';
 import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';
 import toast from 'react-hot-toast';
@@ -166,8 +166,10 @@ function VideoUploader({ value, onChange, folder = 'landing' }: { value: string;
 const TABS = [
   { key: 'hero', label: 'Hero' },
   { key: 'services', label: 'Services' },
-  { key: 'signage', label: 'Signage Types' },
-  { key: 'clients', label: 'Client Showcase' },
+  { key: 'signage', label: 'Products' },
+  { key: 'clients', label: 'Works' },
+  { key: 'portfolio', label: 'Portfolio' },
+  { key: 'client-logos', label: 'Clients' },
   { key: 'faq', label: 'FAQ' },
   { key: 'contact', label: 'Contact' },
   { key: 'footer', label: 'Footer' },
@@ -190,6 +192,10 @@ export default function LandingPage() {
 
   const [clientProjects, setClientProjects] = useState<ClientProject[]>([]);
   const [filterTabs, setFilterTabs] = useState<ProjectFilterTab[]>([]);
+
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+
+  const [clientLogos, setClientLogos] = useState<ClientLogo[]>([]);
 
   const [faqs, setFaqs] = useState<LandingFaq[]>([]);
 
@@ -227,6 +233,16 @@ export default function LandingPage() {
         const tabRes = await supabase.from('project_filter_tabs').select('*').order('order_index');
         setClientProjects((projRes.data ?? []) as ClientProject[]);
         setFilterTabs((tabRes.data ?? []) as ProjectFilterTab[]);
+        break;
+      }
+      case 'portfolio': {
+        const { data } = await supabase.from('portfolio_items').select('*').order('order_index');
+        setPortfolioItems((data ?? []) as PortfolioItem[]);
+        break;
+      }
+      case 'client-logos': {
+        const { data } = await supabase.from('client_logos').select('*').order('order_index');
+        setClientLogos((data ?? []) as ClientLogo[]);
         break;
       }
       case 'faq': {
@@ -443,6 +459,76 @@ export default function LandingPage() {
     setClientProjects((prev) => [...prev, newItem]);
   };
 
+  const handleSavePortfolio = async () => {
+    setSaving(true);
+    const updates = portfolioItems.map((item, idx) =>
+      supabase.from('portfolio_items').upsert({ ...item, order_index: idx })
+    );
+    const results = await Promise.all(updates);
+    if (results.some((r) => r.error)) toast.error('저장 실패');
+    else toast.success('저장 완료');
+    setSaving(false);
+  };
+
+  const updatePortfolioItem = (id: string, field: keyof PortfolioItem, value: string | boolean) => {
+    setPortfolioItems((prev) => prev.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const addPortfolioItem = () => {
+    const newItem: PortfolioItem = {
+      id: crypto.randomUUID(),
+      title: '새 포트폴리오',
+      category: '',
+      description: '',
+      client_name: null,
+      location: null,
+      completed_date: null,
+      image_before: null,
+      image_after: null,
+      image_process: null,
+      product_used: null,
+      testimonial: null,
+      is_visible: true,
+      order_index: portfolioItems.length,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setPortfolioItems((prev) => [...prev, newItem]);
+  };
+
+  const handleSaveClientLogos = async () => {
+    setSaving(true);
+    let hasError = false;
+    for (let idx = 0; idx < clientLogos.length; idx++) {
+      const { error } = await supabase.from('client_logos').upsert({
+        ...clientLogos[idx],
+        order_index: idx,
+      });
+      if (error) hasError = true;
+    }
+    if (hasError) toast.error('저장 실패');
+    else toast.success('저장 완료');
+    setSaving(false);
+  };
+
+  const updateClientLogo = (id: string, field: keyof ClientLogo, value: string | boolean) => {
+    setClientLogos((prev) => prev.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const addClientLogo = () => {
+    const newLogo: ClientLogo = {
+      id: crypto.randomUUID(),
+      name: '새 로고',
+      logo_url: '',
+      website_url: null,
+      order_index: clientLogos.length,
+      is_visible: true,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setClientLogos((prev) => [...prev, newLogo]);
+  };
+
   const handleSaveFaqs = async () => {
     setSaving(true);
     const updates = faqs.map((faq, idx) =>
@@ -590,6 +676,12 @@ export default function LandingPage() {
       error = res.error;
     } else if (table === 'hero_slides') {
       const res = await supabase.from('hero_slides').delete().eq('id', id);
+      error = res.error;
+    } else if (table === 'portfolio_items') {
+      const res = await supabase.from('portfolio_items').delete().eq('id', id);
+      error = res.error;
+    } else if (table === 'client_logos') {
+      const res = await supabase.from('client_logos').delete().eq('id', id);
       error = res.error;
     }
     if (error) toast.error('삭제 실패');
@@ -820,6 +912,89 @@ export default function LandingPage() {
     </div>
   );
 
+  const renderPortfolioTab = () => (
+    <div>
+      <div className="admin-card-header">
+        <h2 className="admin-card-title">포트폴리오</h2>
+        <button className="admin-btn admin-btn-secondary" onClick={addPortfolioItem}>
+          <Plus size={16} /> 추가
+        </button>
+      </div>
+      <DragSortList
+        items={portfolioItems}
+        keyExtractor={(item) => item.id}
+        onReorder={setPortfolioItems}
+        renderItem={(item) => (
+          <div className="admin-drag-item-content admin-drag-item-column">
+            <div className="admin-drag-item-row">
+              <div className="admin-form-group">
+                <input className="admin-input" value={item.title ?? ''} placeholder="제목" onChange={(e) => updatePortfolioItem(item.id, 'title', e.target.value)} />
+                <input className="admin-input" value={item.category ?? ''} placeholder="카테고리 (LED Signage, Neon Sign, Banner, Outdoor, Total Solution)" onChange={(e) => updatePortfolioItem(item.id, 'category', e.target.value)} />
+                <input className="admin-input" value={item.description ?? ''} placeholder="짧은 설명" onChange={(e) => updatePortfolioItem(item.id, 'description', e.target.value)} />
+              </div>
+              <Toggle checked={item.is_visible} onChange={(v) => updatePortfolioItem(item.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'portfolio_items', id: item.id })}>
+                <Trash2 size={14} />
+              </button>
+            </div>
+            <FormField label="상세 설명 (모달)">
+              <textarea className="admin-textarea" value={item.testimonial ?? ''} placeholder="모달에 표시될 상세 설명" onChange={(e) => updatePortfolioItem(item.id, 'testimonial', e.target.value)} />
+            </FormField>
+            <FormField label="주요 사양 (쉼표로 구분)">
+              <input className="admin-input" value={item.product_used ?? ''} placeholder="예: LED Channel 방식, 150mm 아크릴, 5년 보증" onChange={(e) => updatePortfolioItem(item.id, 'product_used', e.target.value)} />
+            </FormField>
+            <FormField label="이미지">
+              <ImageUploader value={item.image_before ?? ''} onChange={(url) => updatePortfolioItem(item.id, 'image_before', url)} folder="portfolio" />
+            </FormField>
+          </div>
+        )}
+      />
+      <div className="admin-card-body">
+        <button className="admin-btn admin-btn-primary" disabled={saving} onClick={handleSavePortfolio}>
+          <Save size={16} /> 저장
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderClientLogosTab = () => (
+    <div>
+      <div className="admin-card-header">
+        <h2 className="admin-card-title">클라이언트 로고</h2>
+        <button className="admin-btn admin-btn-secondary" onClick={addClientLogo}>
+          <Plus size={16} /> 추가
+        </button>
+      </div>
+      <DragSortList
+        items={clientLogos}
+        keyExtractor={(item) => item.id}
+        onReorder={setClientLogos}
+        renderItem={(item) => (
+          <div className="admin-drag-item-content admin-drag-item-column">
+            <div className="admin-drag-item-row">
+              <div className="admin-form-group">
+                <input className="admin-input" value={item.name ?? ''} placeholder="이름" onChange={(e) => updateClientLogo(item.id, 'name', e.target.value)} />
+                <input className="admin-input" value={item.website_url ?? ''} placeholder="웹사이트 URL" onChange={(e) => updateClientLogo(item.id, 'website_url', e.target.value)} />
+              </div>
+              <Toggle checked={item.is_visible} onChange={(v) => updateClientLogo(item.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'client_logos', id: item.id })}>
+                <Trash2 size={14} />
+              </button>
+            </div>
+            <FormField label="로고 이미지">
+              <ImageUploader value={item.logo_url ?? ''} onChange={(url) => updateClientLogo(item.id, 'logo_url', url)} folder="logos" />
+            </FormField>
+          </div>
+        )}
+      />
+      <div className="admin-card-body">
+        <button className="admin-btn admin-btn-primary" disabled={saving} onClick={handleSaveClientLogos}>
+          <Save size={16} /> 저장
+        </button>
+      </div>
+    </div>
+  );
+
   const renderFaqTab = () => (
     <div>
       <div className="admin-card-header">
@@ -977,6 +1152,8 @@ export default function LandingPage() {
       case 'services': return renderServicesTab();
       case 'signage': return renderSignageTab();
       case 'clients': return renderClientsTab();
+      case 'portfolio': return renderPortfolioTab();
+      case 'client-logos': return renderClientLogosTab();
       case 'faq': return renderFaqTab();
       case 'contact': return renderContactTab();
       case 'footer': return renderFooterTab();

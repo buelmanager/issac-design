@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
+import { supabaseBrowser as supabase } from '../../lib/supabase-browser';
 import { marchingSquaresTrace } from '../simulator/lib/marchingSquares';
 import { processContoursToShapes } from '../simulator/lib/contourUtils';
 
@@ -508,6 +509,8 @@ export default function ProductSimulator() {
   // Background image
   const [showBgImage, setShowBgImage] = useState(true);
   const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
+  const [dbBgUrl, setDbBgUrl] = useState<string | null>(null);
+  const [dbDefaultImage, setDbDefaultImage] = useState<string | null>(null);
 
   const handleBgUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -932,12 +935,31 @@ export default function ProductSimulator() {
   }, []);
 
   const handleLoadTestPng = useCallback(() => {
-    setImageUrl('/images/test.png');
-  }, []);
+    setImageUrl(dbDefaultImage || '/images/test.png');
+  }, [dbDefaultImage]);
 
-  // Load default on mount
+  // Load settings from DB on mount
   useEffect(() => {
-    setImageUrl('/images/test.png');
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('simulator_config')
+          .select('key, value')
+          .in('key', ['background_image', 'default_image']);
+        if (cancelled) return;
+        for (const row of data ?? []) {
+          if (row.key === 'background_image' && typeof row.value === 'string' && row.value) setDbBgUrl(row.value);
+          if (row.key === 'default_image' && typeof row.value === 'string' && row.value) setDbDefaultImage(row.value);
+        }
+        const defaultImg = (data ?? []).find(r => r.key === 'default_image');
+        const imgVal = defaultImg && typeof defaultImg.value === 'string' && defaultImg.value ? defaultImg.value : '/images/test.png';
+        setImageUrl(imgVal);
+      } catch {
+        if (!cancelled) setImageUrl('/images/test.png');
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // Process image
@@ -979,7 +1001,7 @@ export default function ProductSimulator() {
             {showBgImage && !isAR && (
               <img
                 className="sim-bg-image"
-                src={customBgUrl || '/images/bg_sample.png'}
+                src={customBgUrl || dbBgUrl || '/images/bg_sample.png'}
                 alt=""
                 decoding="async"
                 width="1200"
@@ -1025,7 +1047,6 @@ export default function ProductSimulator() {
                 const next = !isNight;
                 setIsNight(next);
                 setBgColor(next ? '#0a0a1a' : '#e8e8e8');
-                setLightIntensity(next ? 1.5 : 2.5);
               }}
               type="button"
               data-tooltip={isNight ? '낮 모드' : '밤 모드'}

@@ -54,13 +54,16 @@ self.addEventListener('fetch', (event) => {
   // Skip external APIs and tracking
   if (url.hostname !== self.location.hostname) return;
 
+  // Skip Vite dev server requests
+  if (url.pathname.startsWith('/.vite/') || url.pathname.includes('/node_modules/.vite/')) return;
+
   // Cache-first: Astro bundles (content-hashed, immutable)
   if (url.pathname.startsWith('/_astro/')) {
     return event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
         return fetch(request).then((response) => {
-          if (!response.ok) return response;
+          if (response.status !== 200) return response;
           const clone = response.clone();
           caches.open(CACHES.precache).then((cache) => cache.put(request, clone));
           return response;
@@ -75,7 +78,7 @@ self.addEventListener('fetch', (event) => {
       caches.match(request).then((cached) => {
         if (cached) return cached;
         return fetch(request).then((response) => {
-          if (!response.ok) return response;
+          if (response.status !== 200) return response;
           const clone = response.clone();
           caches.open(CACHES.fonts).then((cache) => cache.put(request, clone));
           return response;
@@ -89,7 +92,7 @@ self.addEventListener('fetch', (event) => {
     return event.respondWith(
       caches.match(request).then((cached) => {
         const fetchPromise = fetch(request).then((response) => {
-          if (!response.ok) return response;
+          if (response.status !== 200) return response;
           const clone = response.clone();
           caches.open(CACHES.images).then((cache) => {
             cache.put(request, clone);
@@ -107,7 +110,7 @@ self.addEventListener('fetch', (event) => {
     return event.respondWith(
       fetch(request)
         .then((response) => {
-          if (!response.ok) return response;
+          if (response.status !== 200) return response;
           const clone = response.clone();
           caches.open(CACHES.precache).then((cache) => cache.put(request, clone));
           return response;
@@ -120,7 +123,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (!response.ok) return response;
+        if (response.status !== 200) return response;
         const clone = response.clone();
         caches.open(CACHES.precache).then((cache) => cache.put(request, clone));
         return response;

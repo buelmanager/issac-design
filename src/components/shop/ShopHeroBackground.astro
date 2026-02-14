@@ -5,8 +5,9 @@
  */
 
 import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
 
-const slides = [
+const FALLBACK_SLIDES = [
   {
     webm: '/videos/hero1-opt.webm',
     mp4: '/videos/hero1-opt.mp4',
@@ -28,6 +29,22 @@ const slides = [
     poster: '/videos/hero4-poster.jpg',
   },
 ];
+
+let slides = FALLBACK_SLIDES;
+try {
+  const { data: dbSlides, error } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .eq('page', 'shop')
+    .order('slide_index');
+  if (!error && dbSlides && dbSlides.length > 0) {
+    slides = dbSlides.map((s: any, i: number) => ({
+      webm: s.video_webm_url || FALLBACK_SLIDES[i]?.webm || '',
+      mp4: s.video_url || FALLBACK_SLIDES[i]?.mp4 || '',
+      poster: s.poster_url || FALLBACK_SLIDES[i]?.poster || '',
+    }));
+  }
+} catch {}
 ---
 
 <div class="shop-hero__bg" data-shop-hero-bg>

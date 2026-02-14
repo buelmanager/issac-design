@@ -4,6 +4,22 @@
  * Vertical/horizontal timeline showing the order process
  */
 
+import { supabase } from '../../lib/supabase';
+
+let sectionTitle = '주문 프로세스';
+let sectionSubtitle = '간판 제작, 이렇게 진행됩니다';
+try {
+  const { data } = await supabase
+    .from('landing_sections')
+    .select('*')
+    .eq('section_key', 'shop_process')
+    .single();
+  if (data) {
+    sectionTitle = data.title || sectionTitle;
+    sectionSubtitle = data.subtitle || sectionSubtitle;
+  }
+} catch {}
+
 const steps = [
   {
     number: 1,
@@ -43,12 +59,12 @@ const steps = [
 ];
 ---
 
-<section class="process-timeline" data-process-timeline>
+<section class="process-timeline" id="process" data-process-timeline data-section-index="3">
   <div class="process-timeline__container">
     <!-- Section Header -->
     <div class="process-timeline__header">
-      <h2 class="process-timeline__title">주문 프로세스</h2>
-      <p class="process-timeline__subtitle">간판 제작, 이렇게 진행됩니다</p>
+      <h2 class="process-timeline__title">{sectionTitle}</h2>
+      <p class="process-timeline__subtitle">{sectionSubtitle}</p>
     </div>
 
     <!-- Timeline -->

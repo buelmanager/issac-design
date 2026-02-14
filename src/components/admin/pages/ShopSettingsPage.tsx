@@ -158,9 +158,12 @@ function VideoUploader({ value, onChange, folder = 'shop' }: { value: string; on
 // ─── 탭 설정 ──────────────────────────────────
 const TABS = [
   { key: 'hero', label: 'Shop Hero' },
-  { key: 'featured', label: 'Featured Bento' },
-  { key: 'trust', label: 'Trust Indicators' },
-  { key: 'logos', label: 'Client Logos' },
+  { key: 'featured', label: '추천' },
+  { key: 'new-arrivals', label: '신제품' },
+  { key: 'products', label: '제품' },
+  { key: 'process', label: '프로세스' },
+  { key: 'trust', label: '신뢰' },
+  { key: 'clients', label: '고객' },
 ];
 
 export default function ShopSettingsPage() {
@@ -177,6 +180,10 @@ export default function ShopSettingsPage() {
 
   const [clientLogos, setClientLogos] = useState<ClientLogo[]>([]);
 
+  const [newArrivalsSection, setNewArrivalsSection] = useState<LandingSection | null>(null);
+  const [productsSection, setProductsSection] = useState<LandingSection | null>(null);
+  const [processSection, setProcessSection] = useState<LandingSection | null>(null);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     switch (activeTab) {
@@ -186,7 +193,7 @@ export default function ShopSettingsPage() {
         break;
       }
       case 'featured': {
-        const { data } = await supabase.from('landing_sections').select('*').ilike('section_key', '%featured%').single();
+        const { data } = await supabase.from('landing_sections').select('*').eq('section_key', 'shop_featured').single();
         setFeaturedSection((data ?? null) as LandingSection | null);
         break;
       }
@@ -195,7 +202,31 @@ export default function ShopSettingsPage() {
         setTrustIndicators((data ?? []) as TrustIndicator[]);
         break;
       }
-      case 'logos': {
+      case 'new-arrivals': {
+        const { data } = await supabase.from('landing_sections').select('*').eq('section_key', 'shop_new_arrivals').single();
+        setNewArrivalsSection(data ? (data as LandingSection) : {
+          id: '', section_key: 'shop_new_arrivals', title: '신제품', subtitle: '새롭게 출시된 제품을 만나보세요',
+          description: null, eyebrow: null, is_visible: true, order_index: 2, extra_data: null, is_seed: false, updated_at: '', updated_by: null,
+        } as LandingSection);
+        break;
+      }
+      case 'products': {
+        const { data } = await supabase.from('landing_sections').select('*').eq('section_key', 'shop_products').single();
+        setProductsSection(data ? (data as LandingSection) : {
+          id: '', section_key: 'shop_products', title: '전체 제품', subtitle: '다양한 간판 제품을 만나보세요',
+          description: null, eyebrow: null, is_visible: true, order_index: 3, extra_data: null, is_seed: false, updated_at: '', updated_by: null,
+        } as LandingSection);
+        break;
+      }
+      case 'process': {
+        const { data } = await supabase.from('landing_sections').select('*').eq('section_key', 'shop_process').single();
+        setProcessSection(data ? (data as LandingSection) : {
+          id: '', section_key: 'shop_process', title: '주문 프로세스', subtitle: '간판 제작, 이렇게 진행됩니다',
+          description: null, eyebrow: null, is_visible: true, order_index: 4, extra_data: null, is_seed: false, updated_at: '', updated_by: null,
+        } as LandingSection);
+        break;
+      }
+      case 'clients': {
         const { data } = await supabase.from('client_logos').select('*').order('order_index');
         setClientLogos((data ?? []) as ClientLogo[]);
         break;
@@ -211,9 +242,47 @@ export default function ShopSettingsPage() {
     setHeroSlides((prev) => prev.map((s) => s.id === id ? { ...s, [field]: value } : s));
   };
 
+  const addHeroSlide = () => {
+    const newSlide: HeroSlide = {
+      id: crypto.randomUUID(),
+      page: 'shop',
+      slide_index: heroSlides.length,
+      eyebrow: '',
+      title_line1: '새 슬라이드',
+      title_line2: '',
+      subtitle: '',
+      description: null,
+      cta_primary_text: null,
+      cta_primary_link: null,
+      cta_secondary_text: null,
+      cta_secondary_link: null,
+      video_url: null,
+      video_webm_url: null,
+      poster_url: null,
+      is_visible: true,
+      order_index: heroSlides.length,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setHeroSlides((prev) => [...prev, newSlide]);
+  };
+
+  const deleteHeroSlide = async (id: string) => {
+    const { error } = await supabase.from('hero_slides').delete().eq('id', id);
+    if (error) toast.error('삭제 실패');
+    else {
+      setHeroSlides((prev) => prev.filter((s) => s.id !== id));
+      toast.success('슬라이드 삭제 완료');
+    }
+  };
+
   const handleSaveHeroSlide = async (slide: HeroSlide) => {
     setSaving(true);
-    const { error } = await supabase.from('hero_slides').update({
+    const { error } = await supabase.from('hero_slides').upsert({
+      id: slide.id,
+      page: 'shop',
+      slide_index: slide.slide_index,
+      order_index: slide.slide_index,
       eyebrow: slide.eyebrow,
       title_line1: slide.title_line1,
       title_line2: slide.title_line2,
@@ -225,7 +294,7 @@ export default function ShopSettingsPage() {
       video_url: slide.video_url,
       video_webm_url: slide.video_webm_url,
       poster_url: slide.poster_url,
-    }).eq('id', slide.id);
+    });
     if (error) toast.error('저장 실패');
     else toast.success('슬라이드 저장 완료');
     setSaving(false);
@@ -234,8 +303,13 @@ export default function ShopSettingsPage() {
   const handleSaveAllHero = async () => {
     setSaving(true);
     let hasError = false;
-    for (const s of heroSlides) {
-      const { error } = await supabase.from('hero_slides').update({
+    for (let idx = 0; idx < heroSlides.length; idx++) {
+      const s = heroSlides[idx];
+      const { error } = await supabase.from('hero_slides').upsert({
+        id: s.id,
+        page: 'shop',
+        slide_index: idx,
+        order_index: idx,
         eyebrow: s.eyebrow,
         title_line1: s.title_line1,
         title_line2: s.title_line2,
@@ -247,7 +321,7 @@ export default function ShopSettingsPage() {
         video_url: s.video_url,
         video_webm_url: s.video_webm_url,
         poster_url: s.poster_url,
-      }).eq('id', s.id);
+      });
       if (error) hasError = true;
     }
     if (hasError) toast.error('일부 슬라이드 저장 실패');
@@ -265,6 +339,33 @@ export default function ShopSettingsPage() {
     }).eq('id', featuredSection.id);
     if (error) toast.error('저장 실패');
     else toast.success('저장 완료');
+    setSaving(false);
+  };
+
+  // ─── Section Header Save (generic) ──────────
+  const saveSectionHeader = async (
+    section: LandingSection | null,
+    sectionKey: string,
+    setter: (s: LandingSection | null) => void,
+  ) => {
+    if (!section) return;
+    setSaving(true);
+    const title = section.title ?? '';
+    const subtitle = section.subtitle ?? '';
+    if (section.id) {
+      const { error } = await supabase.from('landing_sections').update({ title, subtitle }).eq('id', section.id);
+      if (error) toast.error('저장 실패');
+      else toast.success('저장 완료');
+    } else {
+      const { data, error } = await supabase.from('landing_sections')
+        .upsert({ section_key: sectionKey, title, subtitle, is_visible: true, order_index: section.order_index }, { onConflict: 'section_key' })
+        .select().single();
+      if (error) toast.error('저장 실패');
+      else {
+        setter(data as LandingSection);
+        toast.success('저장 완료');
+      }
+    }
     setSaving(false);
   };
 
@@ -336,15 +437,32 @@ export default function ShopSettingsPage() {
     <div>
       <div className="admin-card-header">
         <h2 className="admin-card-title">Shop Hero 슬라이드</h2>
-        <button className="admin-btn admin-btn-primary" disabled={saving} onClick={handleSaveAllHero}>
-          <Save size={16} /> 전체 저장
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="admin-btn admin-btn-secondary" onClick={addHeroSlide}>
+            <Plus size={16} /> 추가
+          </button>
+          <button className="admin-btn admin-btn-primary" disabled={saving} onClick={handleSaveAllHero}>
+            <Save size={16} /> 전체 저장
+          </button>
+        </div>
       </div>
-      {heroSlides.map((slide) => (
+      {heroSlides.length === 0 && (
+        <div className="admin-card">
+          <div className="admin-card-body">
+            <p className="admin-empty-text">슬라이드가 없습니다. "추가" 버튼으로 새 슬라이드를 만드세요.</p>
+          </div>
+        </div>
+      )}
+      {heroSlides.map((slide, idx) => (
         <div key={slide.id} className="admin-card">
           <div className="admin-card-header" onClick={() => setExpandedSlide(expandedSlide === slide.id ? null : slide.id)}>
-            <h3 className="admin-card-title">슬라이드 {slide.slide_index + 1}: {slide.title_line1}</h3>
-            <span>{expandedSlide === slide.id ? '▲' : '▼'}</span>
+            <h3 className="admin-card-title">슬라이드 {idx + 1}: {slide.title_line1}</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={(e) => { e.stopPropagation(); deleteHeroSlide(slide.id); }}>
+                <Trash2 size={14} />
+              </button>
+              <span>{expandedSlide === slide.id ? '▲' : '▼'}</span>
+            </div>
           </div>
           {expandedSlide === slide.id && (
             <div className="admin-card-body">
@@ -445,7 +563,41 @@ export default function ShopSettingsPage() {
     </div>
   );
 
-  const renderLogosTab = () => (
+  const renderSectionTab = (
+    label: string,
+    section: LandingSection | null,
+    setter: (s: LandingSection | null) => void,
+    sectionKey: string,
+    description?: string,
+  ) => (
+    <div className="admin-card">
+      <div className="admin-card-header">
+        <h2 className="admin-card-title">{label} 섹션</h2>
+      </div>
+      <div className="admin-card-body">
+        <FormField label="제목">
+          <input
+            className="admin-input"
+            value={section?.title ?? ''}
+            onChange={(e) => setter(section ? { ...section, title: e.target.value } : null)}
+          />
+        </FormField>
+        <FormField label="부제">
+          <input
+            className="admin-input"
+            value={section?.subtitle ?? ''}
+            onChange={(e) => setter(section ? { ...section, subtitle: e.target.value } : null)}
+          />
+        </FormField>
+        {description && <p className="admin-form-description">{description}</p>}
+        <button className="admin-btn admin-btn-primary" disabled={saving} onClick={() => saveSectionHeader(section, sectionKey, setter)}>
+          <Save size={16} /> 저장
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderClientsTab = () => (
     <div>
       <div className="admin-card-header">
         <h2 className="admin-card-title">클라이언트 로고</h2>
@@ -488,8 +640,11 @@ export default function ShopSettingsPage() {
     switch (activeTab) {
       case 'hero': return renderHeroTab();
       case 'featured': return renderFeaturedTab();
+      case 'new-arrivals': return renderSectionTab('신제품', newArrivalsSection, setNewArrivalsSection, 'shop_new_arrivals', '신제품 표시는 제품 관리에서 isNew를 설정하면 자동으로 표시됩니다.');
+      case 'products': return renderSectionTab('제품', productsSection, setProductsSection, 'shop_products', '제품 목록은 제품 관리 페이지에서 관리합니다.');
+      case 'process': return renderSectionTab('프로세스', processSection, setProcessSection, 'shop_process', '주문 프로세스 단계(상담→디자인→제작→설치→A/S) 순서를 표시합니다.');
       case 'trust': return renderTrustTab();
-      case 'logos': return renderLogosTab();
+      case 'clients': return renderClientsTab();
       default: return null;
     }
   };
@@ -499,7 +654,7 @@ export default function ShopSettingsPage() {
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">쇼핑몰 설정</h1>
-          <p className="settings-page-subtitle">Shop Hero, Featured Bento, Trust Indicators, Client Logos 관리</p>
+          <p className="settings-page-subtitle">Shop Hero, 추천, 신제품, 제품, 프로세스, 신뢰, 고객 섹션 관리</p>
         </div>
       </div>
       <TabNav tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />

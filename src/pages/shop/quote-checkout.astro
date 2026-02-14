@@ -282,6 +282,10 @@ const breadcrumbs = [
     justify-content: center;
     gap: 0;
     margin-bottom: var(--space-3xl);
+    padding: var(--space-lg) var(--space-xl);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
   }
 
   .checkout__step {
@@ -289,7 +293,7 @@ const breadcrumbs = [
     align-items: center;
     gap: var(--space-sm);
     opacity: 0.4;
-    transition: opacity var(--transition-base);
+    transition: opacity 0.35s ease;
   }
 
   .checkout__step--active {
@@ -297,28 +301,29 @@ const breadcrumbs = [
   }
 
   .checkout__step--completed {
-    opacity: 0.7;
+    opacity: 0.75;
   }
 
   .checkout__step-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: var(--radius-full);
     background: var(--surface-light);
     color: var(--text-muted);
     font-size: var(--font-size-sm);
     font-weight: 700;
     border: 2px solid var(--border);
-    transition: all var(--transition-base);
+    transition: all 0.35s ease;
   }
 
   .checkout__step--active .checkout__step-badge {
     background: var(--primary);
     color: var(--text-primary);
     border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(26, 77, 46, 0.15);
   }
 
   .checkout__step--completed .checkout__step-badge {
@@ -331,11 +336,12 @@ const breadcrumbs = [
     font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--text-muted);
-    transition: color var(--transition-base);
+    transition: color 0.35s ease;
   }
 
   .checkout__step--active .checkout__step-label {
     color: var(--text-primary);
+    font-weight: 600;
   }
 
   .checkout__step-line {
@@ -343,7 +349,8 @@ const breadcrumbs = [
     height: 2px;
     background: var(--border);
     margin: 0 var(--space-sm);
-    transition: background var(--transition-base);
+    transition: background 0.35s ease;
+    position: relative;
   }
 
   .checkout__step-line--active {
@@ -352,13 +359,13 @@ const breadcrumbs = [
 
   /* ---- Panel ---- */
   .checkout__panel {
-    animation: checkoutFadeIn 0.3s ease;
+    animation: checkoutFadeIn 0.35s ease-out;
   }
 
   @keyframes checkoutFadeIn {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
@@ -371,6 +378,7 @@ const breadcrumbs = [
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-sm);
+    letter-spacing: -0.02em;
   }
 
   .checkout__panel-desc {
@@ -407,6 +415,12 @@ const breadcrumbs = [
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  :global(.checkout-item:hover) {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   }
 
   :global(.checkout-item__thumb) {
@@ -497,6 +511,11 @@ const breadcrumbs = [
     font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--text-secondary);
+    transition: color var(--transition-base);
+  }
+
+  .checkout__field:focus-within .checkout__label {
+    color: var(--text-primary);
   }
 
   .checkout__required {
@@ -514,7 +533,7 @@ const breadcrumbs = [
     color: var(--text-primary);
     font-size: var(--font-size-base);
     font-family: var(--font-family);
-    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     line-height: var(--line-height-normal);
   }
 
@@ -523,11 +542,17 @@ const breadcrumbs = [
     color: var(--text-muted);
   }
 
+  .checkout__input:hover,
+  .checkout__textarea:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
   .checkout__input:focus,
   .checkout__textarea:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.15);
+    background: var(--surface-light);
   }
 
   .checkout__input--error {
@@ -544,6 +569,12 @@ const breadcrumbs = [
     font-size: var(--font-size-xs);
     color: var(--error);
     display: none;
+    animation: checkoutErrorFadeIn 0.2s ease-out;
+  }
+
+  @keyframes checkoutErrorFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .checkout__error--visible {
@@ -618,6 +649,68 @@ const breadcrumbs = [
     background: rgba(72, 187, 120, 0.1);
     color: var(--success);
     margin-bottom: var(--space-xl);
+    position: relative;
+    animation: checkoutSuccessPop 0.5s ease-out 0.15s both;
+  }
+
+  @keyframes checkoutSuccessPop {
+    0% { opacity: 0; transform: scale(0.5); }
+    60% { transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .checkout__success-icon svg circle {
+    stroke-dasharray: 138;
+    stroke-dashoffset: 138;
+    animation: checkoutDrawCircle 0.5s ease-out 0.3s forwards;
+  }
+
+  .checkout__success-icon svg path {
+    stroke-dasharray: 36;
+    stroke-dashoffset: 36;
+    animation: checkoutDrawCheck 0.35s ease-out 0.65s forwards;
+  }
+
+  @keyframes checkoutDrawCircle {
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes checkoutDrawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+
+  .checkout__success-icon::before,
+  .checkout__success-icon::after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: var(--radius-full);
+    animation: checkoutConfetti 0.8s ease-out 0.5s both;
+  }
+
+  .checkout__success-icon::before {
+    background: var(--success);
+    box-shadow:
+      22px -26px 0 var(--primary),
+      -16px -30px 0 rgba(72, 187, 120, 0.6),
+      30px 10px 0 rgba(26, 77, 46, 0.5),
+      -26px 14px 0 var(--success);
+  }
+
+  .checkout__success-icon::after {
+    background: rgba(72, 187, 120, 0.4);
+    box-shadow:
+      -30px -10px 0 rgba(26, 77, 46, 0.4),
+      18px -34px 0 var(--success),
+      -22px 22px 0 rgba(72, 187, 120, 0.5),
+      34px 18px 0 rgba(26, 77, 46, 0.3);
+  }
+
+  @keyframes checkoutConfetti {
+    0% { opacity: 1; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.4); }
   }
 
   .checkout__success-title {
@@ -625,6 +718,8 @@ const breadcrumbs = [
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
+    letter-spacing: -0.02em;
+    animation: checkoutFadeIn 0.35s ease-out 0.4s both;
   }
 
   .checkout__success-desc {
@@ -632,6 +727,7 @@ const breadcrumbs = [
     color: var(--text-secondary);
     line-height: var(--line-height-relaxed);
     margin-bottom: var(--space-2xl);
+    animation: checkoutFadeIn 0.35s ease-out 0.5s both;
   }
 
   /* ---- Summary Card ---- */
@@ -643,6 +739,12 @@ const breadcrumbs = [
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     text-align: left;
+    animation: checkoutFadeIn 0.35s ease-out 0.6s both;
+    transition: box-shadow var(--transition-base);
+  }
+
+  .checkout__summary-card:hover {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   }
 
   .checkout__summary-heading {
@@ -680,6 +782,7 @@ const breadcrumbs = [
   .checkout__empty {
     text-align: center;
     padding: var(--space-4xl) 0;
+    animation: checkoutFadeIn 0.35s ease-out;
   }
 
   .checkout__empty-icon {
@@ -693,6 +796,12 @@ const breadcrumbs = [
     border: 2px solid var(--border);
     border-radius: var(--radius-full);
     color: var(--text-muted);
+    animation: checkoutEmptyPulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes checkoutEmptyPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.75; }
   }
 
   .checkout__empty-title {
@@ -700,6 +809,7 @@ const breadcrumbs = [
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
+    letter-spacing: -0.02em;
   }
 
   .checkout__empty-desc {
@@ -718,6 +828,7 @@ const breadcrumbs = [
 
     .checkout__progress {
       margin-bottom: var(--space-2xl);
+      padding: var(--space-md);
     }
 
     .checkout__step-label {
@@ -730,8 +841,12 @@ const breadcrumbs = [
       font-size: var(--font-size-xs);
     }
 
+    .checkout__step--active .checkout__step-badge {
+      box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.12);
+    }
+
     .checkout__step-line {
-      width: 24px;
+      width: 20px;
     }
 
     .checkout__panel-title {
@@ -781,6 +896,21 @@ const breadcrumbs = [
     .checkout__success-title {
       font-size: var(--font-size-xl);
     }
+  }
+
+  .checkout__btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  @keyframes checkout-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  :global(.checkout__btn-spinner) {
+    animation: checkout-spin 0.8s linear infinite;
   }
 </style>
 
@@ -962,6 +1092,8 @@ const breadcrumbs = [
     const submitBtn = document.querySelector('[data-submit-quote]') as HTMLButtonElement;
 
     if (submitBtn && formEl) {
+      const submitBtnOriginalHTML = submitBtn.innerHTML;
+
       submitBtn.addEventListener('click', async () => {
         // Clear previous errors
         formEl.querySelectorAll('.checkout__input--error').forEach(el => {
@@ -997,6 +1129,15 @@ const breadcrumbs = [
           if (firstError) firstError.focus();
           return;
         }
+
+        // Disable button + show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="checkout__btn-spinner" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="8" stroke-linecap="round"/>
+          </svg>
+          제출 중...
+        `;
 
         // Populate summary
         const summaryName = document.querySelector('[data-summary-name]') as HTMLElement;
@@ -1072,6 +1213,10 @@ const breadcrumbs = [
         } catch {
           // Silent fail
         }
+
+        // Re-enable button (in case user navigates back)
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = submitBtnOriginalHTML;
 
         // Go to step 3
         goToStep(3);

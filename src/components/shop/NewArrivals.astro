@@ -6,16 +6,32 @@
 
 import { getProducts } from '../../lib/data-fetchers';
 import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
+
 const { products } = await getProducts();
 const newProducts = products.filter(p => p.isNew);
+
+let sectionTitle = '신제품';
+let sectionSubtitle = '새롭게 출시된 제품을 만나보세요';
+try {
+  const { data } = await supabase
+    .from('landing_sections')
+    .select('*')
+    .eq('section_key', 'shop_new_arrivals')
+    .single();
+  if (data) {
+    sectionTitle = data.title || sectionTitle;
+    sectionSubtitle = data.subtitle || sectionSubtitle;
+  }
+} catch {}
 ---
 
-<section class="new-arrivals" data-new-arrivals>
+<section class="new-arrivals" id="new-arrivals" data-new-arrivals data-section-index="2">
   <div class="new-arrivals__container">
     <!-- Section Header -->
     <div class="new-arrivals__header">
-      <h2 class="new-arrivals__title">신제품</h2>
-      <p class="new-arrivals__subtitle">새롭게 출시된 제품을 만나보세요</p>
+      <h2 class="new-arrivals__title">{sectionTitle}</h2>
+      <p class="new-arrivals__subtitle">{sectionSubtitle}</p>
     </div>
 
     <!-- Scrollable Product Cards -->

@@ -7,16 +7,32 @@
 
 import { getProducts } from '../../lib/data-fetchers';
 import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
+
 const { products } = await getProducts();
 const featured = products.filter(p => p.isFeatured);
+
+let sectionTitle = '추천 제품';
+let sectionSubtitle = 'issac.design이 자신 있게 추천하는 프리미엄 제품';
+try {
+  const { data, error } = await supabase
+    .from('landing_sections')
+    .select('*')
+    .eq('section_key', 'shop_featured')
+    .single();
+  if (!error && data) {
+    sectionTitle = data.title || sectionTitle;
+    sectionSubtitle = data.subtitle || sectionSubtitle;
+  }
+} catch {}
 ---
 
-<section class="featured-bento">
+<section class="featured-bento" id="featured" data-section-index="1">
   <div class="featured-bento__container">
     <!-- Section Header -->
     <div class="featured-bento__header">
-      <h2 class="featured-bento__title">추천 제품</h2>
-      <p class="featured-bento__subtitle">issac.design이 자신 있게 추천하는 프리미엄 제품</p>
+      <h2 class="featured-bento__title">{sectionTitle}</h2>
+      <p class="featured-bento__subtitle">{sectionSubtitle}</p>
     </div>
 
     <!-- Bento Grid -->

@@ -13,7 +13,6 @@ import {
   Mail,
   Palette,
   Settings,
-  Menu,
   X,
   CreditCard,
   Users,
@@ -42,7 +41,7 @@ const navItems: NavItem[] = [
   { path: '/members', label: 'Members', icon: Users },
   { path: '/simulator', label: 'Simulator', icon: Palette },
   { path: '/settings', label: 'Settings', icon: Settings },
-  { path: '/navigation', label: 'Navigation', icon: Menu },
+
 ];
 
 interface SidebarProps {

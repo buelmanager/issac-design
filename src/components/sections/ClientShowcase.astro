@@ -36,11 +36,12 @@ try {
     .order('order_index');
   
   if (!projectsError && projectsData && projectsData.length > 0) {
-    clientProjects = projectsData.map((p: any) => ({
+    const fallbackMap = Object.fromEntries(FALLBACK_CLIENT_PROJECTS.map((f, i) => [i, f.image]));
+    clientProjects = projectsData.map((p: any, i: number) => ({
       category: p.category,
-      name: p.client_name,
-      type: p.description,
-      image: p.image_url
+      name: p.name || p.client_name,
+      type: p.project_type || p.description,
+      image: p.image_url?.startsWith('http') ? p.image_url : (fallbackMap[i] || p.image_url)
     }));
   }
 
@@ -54,7 +55,7 @@ try {
     filterTabs = [
       { id: 'all', label: '전체' },
       ...tabsData.map((t: any) => ({
-        id: t.filter_key,
+        id: t.tab_key,
         label: t.label
       }))
     ];

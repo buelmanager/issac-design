@@ -25,6 +25,7 @@ import SearchOverlay from '../../components/shop/SearchOverlay.astro';
 import ShopAnimations from '../../components/shop/ShopAnimations.astro';
 import ScrollProgress from '../../components/ScrollProgress.astro';
 import WarrantyBadge from '../../components/shop/WarrantyBadge.astro';
+import SideIndex from '../../components/shop/SideIndex.astro';
 import { getProducts } from '../../lib/data-fetchers';
 
 const { products, categories } = await getProducts();
@@ -39,6 +40,7 @@ const { products, categories } = await getProducts();
   <ShopNavbar />
   <Toast />
   <SearchOverlay />
+  <SideIndex />
 
   <main class="shop-page" id="main-content">
     <!-- Shop Hero Section -->

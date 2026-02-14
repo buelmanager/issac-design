@@ -90,21 +90,85 @@ function getItemSummary(items: any): string {
 
           {orders.map((order) => {
             const statusInfo = getStatusInfo(order.status);
+            const items = Array.isArray(order.items) ? order.items : [];
             return (
-              <div class="orders__card">
-                <div class="orders__card-header">
-                  <div class="orders__card-meta">
-                    <span class="orders__order-number">{order.order_number}</span>
-                    <span class="orders__date">{formatDate(order.created_at)}</span>
+              <div class="orders__card" data-order-card data-order-id={order.id} data-order-status={order.status}>
+                <button class="orders__card-toggle" type="button" aria-expanded="false">
+                  <div class="orders__card-header">
+                    <div class="orders__card-meta">
+                      <span class="orders__order-number">{order.order_number}</span>
+                      <span class="orders__date">{formatDate(order.created_at)}</span>
+                    </div>
+                    <div class="orders__card-header-right">
+                      <span class={`orders__status ${statusInfo.className}`} data-status-badge>
+                        {statusInfo.label}
+                      </span>
+                      <svg class="orders__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6l4 4 4-4"/>
+                      </svg>
+                    </div>
                   </div>
-                  <span class={`orders__status ${statusInfo.className}`}>
-                    {statusInfo.label}
-                  </span>
-                </div>
 
-                <div class="orders__card-body">
-                  <p class="orders__item-summary">{getItemSummary(order.items)}</p>
-                  <p class="orders__amount">{formatAmount(order.total_amount)}<span class="orders__currency">원</span></p>
+                  <div class="orders__card-body">
+                    <p class="orders__item-summary">{getItemSummary(order.items)}</p>
+                    <p class="orders__amount">{formatAmount(order.total_amount)}<span class="orders__currency">원</span></p>
+                  </div>
+                </button>
+
+                <div class="orders__detail" data-order-detail>
+                  <div class="orders__detail-section">
+                    <h3 class="orders__detail-heading">주문 상품</h3>
+                    {items.length > 0 ? (
+                      <ul class="orders__detail-items">
+                        {items.map((itm: any) => (
+                          <li class="orders__detail-item">
+                            <span class="orders__detail-item-name">{itm.name || itm.product_name || '상품'}</span>
+                            <span class="orders__detail-item-info">
+                              {itm.quantity && <span>수량: {itm.quantity}</span>}
+                              {itm.unit_price && <span>{formatAmount(itm.unit_price)}원</span>}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p class="orders__detail-empty">상품 정보가 없습니다.</p>
+                    )}
+                  </div>
+
+                  <div class="orders__detail-section">
+                    <h3 class="orders__detail-heading">주문 정보</h3>
+                    <div class="orders__detail-row">
+                      <span class="orders__detail-label">주문자</span>
+                      <span class="orders__detail-value">{order.customer_name || '-'}</span>
+                    </div>
+                    {order.customer_phone && (
+                      <div class="orders__detail-row">
+                        <span class="orders__detail-label">연락처</span>
+                        <span class="orders__detail-value">{order.customer_phone}</span>
+                      </div>
+                    )}
+                    <div class="orders__detail-row">
+                      <span class="orders__detail-label">결제 금액</span>
+                      <span class="orders__detail-value orders__detail-value--bold">{formatAmount(order.total_amount)}원</span>
+                    </div>
+                  </div>
+
+                  {order.status === 'paid' && (
+                    <div class="orders__detail-actions">
+                      <button
+                        class="orders__refund-btn"
+                        data-order-id={order.id}
+                        data-payment-amount={order.total_amount}
+                        type="button"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="1 4 1 10 7 10"/>
+                          <path d="M3.51 15a9 9 0 105.64-11.36L1 10"/>
+                        </svg>
+                        환불 요청
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -222,13 +286,30 @@ function getItemSummary(items: any): string {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: var(--space-lg) var(--space-xl);
     transition: all var(--transition-base);
+    overflow: hidden;
   }
 
   .orders__card:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .orders__card--expanded {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .orders__card-toggle {
+    display: block;
+    width: 100%;
+    padding: var(--space-lg) var(--space-xl);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    font-family: inherit;
   }
 
   .orders__card-header {
@@ -237,6 +318,23 @@ function getItemSummary(items: any): string {
     justify-content: space-between;
     gap: var(--space-md);
     margin-bottom: var(--space-md);
+  }
+
+  .orders__card-header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+  }
+
+  .orders__chevron {
+    color: var(--text-muted);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .orders__card--expanded .orders__chevron {
+    transform: rotate(180deg);
   }
 
   .orders__card-meta {
@@ -335,12 +433,154 @@ function getItemSummary(items: any): string {
     margin-left: 2px;
   }
 
+  /* ---- Order Detail (Expandable) ---- */
+  .orders__detail {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+
+  .orders__card--expanded .orders__detail {
+    grid-template-rows: 1fr;
+  }
+
+  .orders__detail > * {
+    overflow: hidden;
+  }
+
+  .orders__detail-section {
+    padding: 0 var(--space-xl);
+    margin-bottom: var(--space-md);
+  }
+
+  .orders__detail-section:first-child {
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+
+  .orders__detail-heading {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .orders__detail-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .orders__detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+  }
+
+  .orders__detail-item-name {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .orders__detail-item-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .orders__detail-empty {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .orders__detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-xs) 0;
+  }
+
+  .orders__detail-row + .orders__detail-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .orders__detail-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .orders__detail-value {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+
+  .orders__detail-value--bold {
+    font-weight: 700;
+  }
+
+  .orders__detail-actions {
+    padding: var(--space-sm) var(--space-xl) var(--space-lg);
+  }
+
+  .orders__refund-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-lg);
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .orders__refund-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .orders__refund-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Refunded status */
+  .orders__status--refunded {
+    background: rgba(168, 85, 247, 0.1);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+  }
+
   @media (max-width: 719px) {
     .orders {
       padding-top: calc(var(--header-height-mobile) + var(--space-xl));
     }
 
-    .orders__card {
+    .orders__card-toggle {
       padding: var(--space-md) var(--space-lg);
     }
 
@@ -348,6 +588,10 @@ function getItemSummary(items: any): string {
       flex-direction: column;
       align-items: flex-start;
       gap: var(--space-sm);
+    }
+
+    .orders__card-header-right {
+      align-self: flex-end;
     }
 
     .orders__card-meta {
@@ -365,5 +609,119 @@ function getItemSummary(items: any): string {
     .orders__amount {
       font-size: var(--font-size-base);
     }
+
+    .orders__detail-section {
+      padding: 0 var(--space-lg);
+    }
+
+    .orders__detail-actions {
+      padding: var(--space-sm) var(--space-lg) var(--space-md);
+    }
+
+    .orders__detail-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+  }
+</style>
+
+<script>
+  function initOrdersPage() {
+    // ---- Toggle expansion ----
+    document.querySelectorAll<HTMLButtonElement>('.orders__card-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('[data-order-card]');
+        if (!card) return;
+        const isExpanded = card.classList.toggle('orders__card--expanded');
+        btn.setAttribute('aria-expanded', String(isExpanded));
+      });
+    });
+
+    // ---- Refund buttons ----
+    document.querySelectorAll<HTMLButtonElement>('.orders__refund-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+
+        const orderId = btn.dataset.orderId;
+        const amount = Number(btn.dataset.paymentAmount);
+        if (!orderId || !amount) return;
+
+        const formattedAmount = new Intl.NumberFormat('ko-KR').format(amount);
+        const confirmed = window.confirm(
+          `${formattedAmount}원을 환불 요청하시겠습니까?\n\n환불 처리는 결제 수단에 따라 1~5영업일이 소요될 수 있습니다.`
+        );
+        if (!confirmed) return;
+
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `
+          <svg class="orders__refund-spinner" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="8" stroke-linecap="round"/>
+          </svg>
+          처리 중...
+        `;
+
+        try {
+          const res = await fetch('/api/payment/refund', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              order_id: orderId,
+              amount: amount,
+              reason: '고객 요청에 의한 환불',
+            }),
+          });
+
+          const data = await res.json().catch(() => null);
+
+          if (res.ok && data?.success) {
+            // Update the status badge
+            const card = btn.closest('[data-order-card]');
+            if (card) {
+              const badge = card.querySelector('[data-status-badge]');
+              if (badge) {
+                badge.className = 'orders__status orders__status--refunded';
+                badge.textContent = '환불됨';
+              }
+              card.setAttribute('data-order-status', 'refunded');
+            }
+
+            // Remove refund button
+            const actionsEl = btn.closest('.orders__detail-actions');
+            if (actionsEl) {
+              actionsEl.innerHTML = '<p style="font-size:var(--font-size-sm);color:#c084fc;">환불이 요청되었습니다.</p>';
+            }
+
+            alert('환불 요청이 완료되었습니다.');
+          } else {
+            const errorMsg = data?.error || data?.message || '환불 처리 중 오류가 발생했습니다.';
+            alert(`환불 실패: ${errorMsg}`);
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
+        } catch (err) {
+          alert('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initOrdersPage);
+  } else {
+    initOrdersPage();
+  }
+</script>
+
+<style>
+  @keyframes orders-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  :global(.orders__refund-spinner) {
+    animation: orders-spin 0.8s linear infinite;
   }
 </style>

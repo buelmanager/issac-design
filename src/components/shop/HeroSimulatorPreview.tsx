@@ -4,6 +4,7 @@ import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { marchingSquaresTrace } from '../simulator/lib/marchingSquares';
 import { processContoursToShapes } from '../simulator/lib/contourUtils';
+import { supabaseBrowser as supabase } from '../../lib/supabase-browser';
 
 /**
  * HeroSimulatorPreview — Lightweight 3D signage preview for ShopHero
@@ -357,7 +358,22 @@ export default function HeroSimulatorPreview() {
   }, []);
 
   useEffect(() => {
-    processImage('/images/test.png');
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('simulator_config')
+          .select('key, value')
+          .eq('key', 'default_image')
+          .single();
+        if (cancelled) return;
+        const url = data && typeof data.value === 'string' && data.value ? data.value : '/images/test.png';
+        processImage(url);
+      } catch {
+        if (!cancelled) processImage('/images/test.png');
+      }
+    })();
+    return () => { cancelled = true; };
   }, [processImage]);
 
   if (!ready || shapes.length === 0) {

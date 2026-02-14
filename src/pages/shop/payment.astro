@@ -53,6 +53,25 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
         <div class="payment-widget__spinner"></div>
         <p class="payment-widget__loading-text">주문 정보를 준비하는 중...</p>
       </div>
+
+      <div class="payment-page__error" id="payment-error" style="display: none;">
+        <div class="payment-page__error-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h2 class="payment-page__error-title">주문 생성에 실패했습니다</h2>
+        <p class="payment-page__error-desc" id="payment-error-msg">일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+        <button class="payment-page__error-retry" id="payment-retry" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 105.64-11.36L1 10"/>
+          </svg>
+          다시 시도
+        </button>
+      </div>
     </div>
   </main>
 
@@ -74,19 +93,36 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
     const loadingEl = document.getElementById('payment-loading');
     const contentEl = document.getElementById('payment-content');
     const emptyEl = document.getElementById('payment-empty');
+    const errorEl = document.getElementById('payment-error');
+    const errorMsgEl = document.getElementById('payment-error-msg');
+    const retryBtn = document.getElementById('payment-retry');
 
-    function hideLoading() {
+    function hideAll() {
       if (loadingEl) loadingEl.style.display = 'none';
+      if (contentEl) contentEl.style.display = 'none';
+      if (emptyEl) emptyEl.style.display = 'none';
+      if (errorEl) errorEl.style.display = 'none';
     }
 
     function showEmpty() {
-      hideLoading();
+      hideAll();
       if (emptyEl) emptyEl.style.display = 'block';
     }
 
     function showContent() {
-      hideLoading();
+      hideAll();
       if (contentEl) contentEl.style.display = 'grid';
+    }
+
+    function showError(message?: string) {
+      hideAll();
+      if (errorEl) errorEl.style.display = 'flex';
+      if (errorMsgEl && message) errorMsgEl.textContent = message;
+    }
+
+    function showLoading() {
+      hideAll();
+      if (loadingEl) loadingEl.style.display = 'flex';
     }
 
     let cartItems: Array<{ name: string; quantity: number; unit_price: number; options?: Record<string, string> }> = [];
@@ -119,71 +155,93 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
       // noop
     }
 
-    try {
-      const res = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_name: customerName,
-          customer_phone: '000-0000-0000',
-          items: cartItems.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-          })),
-        }),
-      });
+    async function createOrderAndRender() {
+      showLoading();
 
-      if (!res.ok) {
-        showEmpty();
-        return;
-      }
-
-      const data = await res.json();
-      if (!data.success || !data.data) {
-        showEmpty();
-        return;
-      }
-
-      const { order_id, order_number, amount } = data.data;
-      const orderName = cartItems.length === 1
-        ? cartItems[0].name
-        : `${cartItems[0].name} 외 ${cartItems.length - 1}건`;
-
-      showContent();
-
-      const summaryMount = document.getElementById('summary-mount');
-      if (summaryMount) {
-        const summaryRoot = createRoot(summaryMount);
-        summaryRoot.render(
-          createElement(OrderSummary, {
+      try {
+        const res = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_name: customerName,
+            customer_phone: '000-0000-0000',
             items: cartItems.map(item => ({
               name: item.name,
               quantity: item.quantity,
-              unitPrice: item.unit_price,
-              options: item.options,
+              unit_price: item.unit_price,
             })),
-            totalAmount: amount,
-          })
-        );
-      }
+          }),
+        });
 
-      const widgetMount = document.getElementById('widget-mount');
-      if (widgetMount) {
-        const widgetRoot = createRoot(widgetMount);
-        widgetRoot.render(
-          createElement(PaymentWidget, {
-            orderId: order_id,
-            orderName,
-            amount,
-            customerName,
-            customerEmail,
-          })
-        );
+        if (!res.ok) {
+          let errorMessage = `서버 오류가 발생했습니다 (${res.status}).`;
+          try {
+            const errData = await res.json();
+            if (errData.error || errData.message) {
+              errorMessage = errData.error || errData.message;
+            }
+          } catch {
+            // use default message
+          }
+          showError(errorMessage);
+          return;
+        }
+
+        const data = await res.json();
+        if (!data.success || !data.data) {
+          showError(data.error || data.message || '주문 데이터를 생성할 수 없습니다.');
+          return;
+        }
+
+        const { order_id, order_number, amount } = data.data;
+        const orderName = cartItems.length === 1
+          ? cartItems[0].name
+          : `${cartItems[0].name} 외 ${cartItems.length - 1}건`;
+
+        showContent();
+
+        const summaryMount = document.getElementById('summary-mount');
+        if (summaryMount) {
+          const summaryRoot = createRoot(summaryMount);
+          summaryRoot.render(
+            createElement(OrderSummary, {
+              items: cartItems.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unitPrice: item.unit_price,
+                options: item.options,
+              })),
+              totalAmount: amount,
+            })
+          );
+        }
+
+        const widgetMount = document.getElementById('widget-mount');
+        if (widgetMount) {
+          const widgetRoot = createRoot(widgetMount);
+          widgetRoot.render(
+            createElement(PaymentWidget, {
+              orderId: order_id,
+              orderName,
+              amount,
+              customerName,
+              customerEmail,
+            })
+          );
+        }
+      } catch {
+        showError('네트워크 오류가 발생했습니다. 인터넷 연결을 확인한 후 다시 시도해주세요.');
       }
-    } catch {
-      showEmpty();
     }
+
+    // Retry button
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => {
+        createOrderAndRender();
+      });
+    }
+
+    await createOrderAndRender();
   }
 
   if (document.readyState === 'loading') {
@@ -195,4 +253,55 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
 
 <style>
   @import '../../styles/payment.css';
+
+  .payment-page__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-4xl) var(--space-xl);
+    gap: var(--space-md);
+  }
+
+  .payment-page__error-icon {
+    color: #f87171;
+    opacity: 0.8;
+    margin-bottom: var(--space-sm);
+  }
+
+  .payment-page__error-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .payment-page__error-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 400px;
+  }
+
+  .payment-page__error-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-xl);
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .payment-page__error-retry:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+  }
 </style>

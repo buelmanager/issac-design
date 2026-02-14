@@ -1,0 +1,275 @@
+---
+/**
+ * SideIndex Component
+ * Fixed side navigation dots that highlight based on scroll position
+ * Shows section names and indices for the shop page
+ */
+
+const sections = [
+  { id: 'featured', label: '추천', index: 1 },
+  { id: 'new-arrivals', label: '신제품', index: 2 },
+  { id: 'products', label: '제품', index: 3 },
+  { id: 'process', label: '프로세스', index: 4 },
+  { id: 'trust', label: '신뢰', index: 5 },
+  { id: 'clients', label: '고객', index: 6 },
+];
+---
+
+<nav class="side-index" data-side-index aria-label="섹션 네비게이션">
+  <div class="side-index__track">
+    {sections.map((section) => (
+      <a
+        href={`#${section.id}`}
+        class="side-index__item"
+        data-side-index-item={section.id}
+        aria-label={section.label}
+      >
+        <span class="side-index__label">
+          <span class="side-index__number">{String(section.index).padStart(2, '0')}</span>
+          <span class="side-index__text">{section.label}</span>
+        </span>
+        <span class="side-index__dot"></span>
+      </a>
+    ))}
+    <div class="side-index__line"></div>
+  </div>
+</nav>
+
+<style is:global>
+  /* ============================================
+     SideIndex - Fixed Side Navigation
+     ============================================ */
+
+  .side-index {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .side-index.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .side-index__track {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-end;
+  }
+
+  /* Vertical line connecting dots */
+  .side-index__line {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    z-index: 0;
+  }
+
+  /* Each nav item */
+  .side-index__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  /* Dot */
+  .side-index__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .side-index__item:hover .side-index__dot {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.4);
+  }
+
+  .side-index__item.is-active .side-index__dot {
+    background: #4caf50;
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5), 0 0 20px rgba(76, 175, 80, 0.2);
+    transform: scale(1.5);
+  }
+
+  /* Label (number + text) */
+  .side-index__label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transform: translateX(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+  }
+
+  .side-index__item:hover .side-index__label {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .side-index__item.is-active .side-index__label {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .side-index__number {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #4caf50;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .side-index__text {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+
+  .side-index__item:hover .side-index__text {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .side-index__item.is-active .side-index__text {
+    color: #fff;
+  }
+
+  /* Tablet & Mobile: hide */
+  @media (max-width: 1199px) {
+    .side-index {
+      display: none;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .side-index {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .side-index__dot,
+    .side-index__label {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initSideIndex() {
+    const nav = document.querySelector('[data-side-index]') as HTMLElement;
+    if (!nav) return;
+
+    // Prevent duplicate init
+    if (nav.dataset.initialized === 'true') return;
+    nav.dataset.initialized = 'true';
+
+    const items = nav.querySelectorAll<HTMLElement>('[data-side-index-item]');
+    const sectionIds = Array.from(items).map((item) => item.dataset.sideIndexItem!);
+    const sectionEls = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (sectionEls.length === 0) return;
+
+    let currentActive = '';
+
+    // Use scroll-based detection (more reliable than IntersectionObserver for this use case)
+    function updateActiveSection() {
+      const scrollY = window.scrollY;
+      const viewportCenter = scrollY + window.innerHeight * 0.4;
+
+      let bestSection = '';
+      let bestDistance = Infinity;
+
+      sectionEls.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const sectionTop = rect.top + scrollY;
+        const sectionCenter = sectionTop + rect.height / 2;
+        const distance = Math.abs(viewportCenter - sectionCenter);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestSection = section.id;
+        }
+      });
+
+      if (bestSection && bestSection !== currentActive) {
+        currentActive = bestSection;
+        items.forEach((item) => {
+          const isActive = item.dataset.sideIndexItem === bestSection;
+          item.classList.toggle('is-active', isActive);
+        });
+      }
+    }
+
+    // Show/hide based on scroll position (hide in hero area)
+    function handleScroll() {
+      const scrollY = window.scrollY;
+      const heroHeight = window.innerHeight * 0.7;
+      const isVisible = scrollY > heroHeight;
+      nav.classList.toggle('is-visible', isVisible);
+
+      if (isVisible) {
+        updateActiveSection();
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial check
+    handleScroll();
+
+    // Smooth scroll on click
+    items.forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = item.dataset.sideIndexItem;
+        if (!targetId) return;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        const headerOffset = 80;
+        const elementPosition = target.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initSideIndex);
+  document.addEventListener('astro:page-load', initSideIndex);
+</script>

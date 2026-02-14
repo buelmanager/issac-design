@@ -227,29 +227,26 @@ const { product } = Astro.props;
 
     if (!configurator) return options;
 
-    // Read selected size
-    const sizeEl =
-      configurator.querySelector<HTMLSelectElement>('[data-option="size"]') ||
-      configurator.querySelector<HTMLInputElement>('input[name="size"]:checked');
-    if (sizeEl) options.size = sizeEl.value || sizeEl.textContent?.trim();
+    // Read selected options from active buttons (pills/cards/swatches with --active class)
+    const activeSize = configurator.querySelector<HTMLElement>(
+      '.configurator__pill--active[data-option="size"], [data-option="size"].configurator__card--active'
+    );
+    if (activeSize?.dataset.value) options.size = activeSize.dataset.value;
 
-    // Read selected material
-    const materialEl =
-      configurator.querySelector<HTMLSelectElement>('[data-option="material"]') ||
-      configurator.querySelector<HTMLInputElement>('input[name="material"]:checked');
-    if (materialEl) options.material = materialEl.value || materialEl.textContent?.trim();
+    const activeMaterial = configurator.querySelector<HTMLElement>(
+      '.configurator__card--active[data-option="material"]'
+    );
+    if (activeMaterial?.dataset.value) options.material = activeMaterial.dataset.value;
 
-    // Read selected finish
-    const finishEl =
-      configurator.querySelector<HTMLSelectElement>('[data-option="finish"]') ||
-      configurator.querySelector<HTMLInputElement>('input[name="finish"]:checked');
-    if (finishEl) options.finish = finishEl.value || finishEl.textContent?.trim();
+    const activeFinish = configurator.querySelector<HTMLElement>(
+      '.configurator__swatch--active[data-option="finish"]'
+    );
+    if (activeFinish?.dataset.value) options.finish = activeFinish.dataset.value;
 
-    // Read selected lighting
-    const lightingEl =
-      configurator.querySelector<HTMLSelectElement>('[data-option="lighting"]') ||
-      configurator.querySelector<HTMLInputElement>('input[name="lighting"]:checked');
-    if (lightingEl) options.lighting = lightingEl.value || lightingEl.textContent?.trim();
+    const activeLighting = configurator.querySelector<HTMLElement>(
+      '.configurator__card--active[data-option="lighting"]'
+    );
+    if (activeLighting?.dataset.value) options.lighting = activeLighting.dataset.value;
 
     return options;
   }

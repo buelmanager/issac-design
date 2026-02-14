@@ -5,7 +5,9 @@
  * Pure CSS - no JavaScript
  */
 
-const trustItems = [
+import { supabase } from '../../lib/supabase';
+
+const FALLBACK_TRUST_ITEMS = [
   {
     number: "No.1",
     label: "Design Sensibility",
@@ -27,14 +29,42 @@ const trustItems = [
     description: "설치 이후에도 함께합니다",
   },
 ];
+
+let trustItems = FALLBACK_TRUST_ITEMS;
+let sectionTitle = '왜 issac.design인가?';
+let sectionSubtitle = '감각적인 디자인과 세심한 소통으로 브랜드를 빛냅니다';
+try {
+  const { data: dbItems, error } = await supabase
+    .from('trust_indicators')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  if (!error && dbItems && dbItems.length > 0) {
+    trustItems = dbItems.map((item: any) => ({
+      number: item.number_text ?? '',
+      label: item.label ?? '',
+      description: item.description ?? '',
+    }));
+  }
+  const { data: sectionData } = await supabase
+    .from('landing_sections')
+    .select('*')
+    .eq('section_key', 'shop_trust')
+    .limit(1)
+    .single();
+  if (sectionData) {
+    sectionTitle = sectionData.title || sectionTitle;
+    sectionSubtitle = sectionData.subtitle || sectionSubtitle;
+  }
+} catch {}
 ---
 
-<section class="trust" data-trust-section>
+<section class="trust" id="trust" data-trust-section data-section-index="4">
   <div class="trust__container">
     <!-- Section Header -->
     <div class="trust__header">
-      <h2 class="trust__title">왜 issac.design인가?</h2>
-      <p class="trust__subtitle">감각적인 디자인과 세심한 소통으로 브랜드를 빛냅니다</p>
+      <h2 class="trust__title">{sectionTitle}</h2>
+      <p class="trust__subtitle">{sectionSubtitle}</p>
     </div>
 
     <!-- Trust Grid -->

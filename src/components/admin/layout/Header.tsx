@@ -16,7 +16,6 @@ const pageTitles: Record<string, string> = {
   '/inquiries': 'Inquiries',
   '/simulator': 'Simulator',
   '/settings': 'Settings',
-  '/navigation': 'Navigation',
 };
 
 interface HeaderProps {

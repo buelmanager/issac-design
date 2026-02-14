@@ -582,10 +582,52 @@ const hasLighting = product.options.lightingTypes && product.options.lightingTyp
 </style>
 
 <script>
+  // Inline quote cart helpers (same localStorage logic as AddToQuoteButton / quoteCartStore)
+  const CART_STORAGE_KEY = 'quoteCart';
+
+  function _generateCartId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  function _getCart(): any[] {
+    try {
+      const raw = localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function _saveCart(items: any[]): void {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      window.dispatchEvent(
+        new CustomEvent('quote-cart-updated', {
+          detail: { items, count: items.length },
+        })
+      );
+    } catch {
+      console.warn('[QuoteCart] Failed to save cart.');
+    }
+  }
+
   function initConfigurator() {
     const configurators = document.querySelectorAll<HTMLElement>('[data-configurator]');
 
     configurators.forEach((configurator) => {
+      // Prevent double-binding
+      if (configurator.dataset.configuratorBound === 'true') return;
+      configurator.dataset.configuratorBound = 'true';
+
       const productName = configurator.dataset.productName || '';
       const productSlug = configurator.dataset.productSlug || '';
 
@@ -644,31 +686,53 @@ const hasLighting = product.options.lightingTypes && product.options.lightingTyp
         updateSummary(configurator, selections);
       });
 
-      // Add to quote button
-      const addToQuoteBtn = configurator.querySelector('[data-add-to-quote]');
+      // Add to quote button — directly save to localStorage
+      const addToQuoteBtn = configurator.querySelector<HTMLButtonElement>('[data-add-to-quote]');
       if (addToQuoteBtn) {
-        addToQuoteBtn.addEventListener('click', () => {
-          const detail = {
-            product: {
-              name: productName,
-              slug: productSlug,
-            },
-            selections: { ...selections },
-          };
+        addToQuoteBtn.addEventListener('click', (e) => {
+          // Prevent AddToQuoteButton's global handler from also firing (it reads missing data-product-* attrs)
+          e.stopPropagation();
 
-          configurator.dispatchEvent(
-            new CustomEvent('add-to-quote', {
-              detail,
-              bubbles: true,
-              composed: true,
-            })
-          );
+          const cart = _getCart();
+          cart.push({
+            id: _generateCartId(),
+            productId: productSlug,  // use slug as ID (products.json uses slug as primary key)
+            productSlug,
+            productName,
+            thumbnail: '',
+            categoryName: '',
+            priceRange: '',
+            options: {
+              size: selections.size || '',
+              material: selections.material || '',
+              finish: selections.finish || '',
+              lighting: selections.lighting || '',
+            },
+            quantity: 1,
+            memo: '',
+            addedAt: new Date().toISOString(),
+          });
+          _saveCart(cart);
+
+          // Visual feedback on the button
+          const btnTextEl = addToQuoteBtn.querySelector('span');
+          const originalText = btnTextEl?.textContent || '';
+          if (btnTextEl) {
+            btnTextEl.textContent = '추가됨 ✓';
+            addToQuoteBtn.style.pointerEvents = 'none';
+            addToQuoteBtn.style.opacity = '0.7';
+            setTimeout(() => {
+              btnTextEl.textContent = originalText;
+              addToQuoteBtn.style.pointerEvents = '';
+              addToQuoteBtn.style.opacity = '';
+            }, 1500);
+          }
 
           // Show toast if available
           if (typeof (window as any).showToast === 'function') {
             (window as any).showToast({
               title: '견적함에 추가되었습니다',
-              message: `${productName} - ${Object.values(selections).join(', ')}`,
+              message: `${productName} - ${Object.values(selections).filter(Boolean).join(', ')}`,
               type: 'success',
             });
           }

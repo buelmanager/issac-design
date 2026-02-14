@@ -5,8 +5,9 @@
  * Pure CSS infinite scroll - no JavaScript
  */
 import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
 
-const logos = [
+const FALLBACK_LOGOS = [
   {
     name: "맛있는 레스토랑",
     type: "Restaurant",
@@ -56,15 +57,41 @@ const logos = [
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 34V12l14-7 14 7v22"/><path d="M6 34h28"/><rect x="16" y="24" width="8" height="10"/><path d="M13 16h2v2h-2z"/><path d="M25 16h2v2h-2z"/><path d="M13 22h2v2h-2z"/><path d="M25 22h2v2h-2z"/></svg>`,
   },
 ];
+
+let logos = FALLBACK_LOGOS;
+let sectionTitle = '다양한 공간에 어울리는 사인을 만듭니다';
+let sectionSubtitle = '카페, 레스토랑, 클리닉, 갤러리까지<br class="mobile-br-hide" />각 공간의 분위기에 맞는 감각적인 사인을 디자인합니다';
+try {
+  const { data: dbLogos, error } = await supabase
+    .from('client_logos')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  if (!error && dbLogos && dbLogos.length > 0) {
+    logos = dbLogos.map((item: any, i: number) => ({
+      name: item.name ?? '',
+      type: FALLBACK_LOGOS[i]?.type ?? '',
+      image: item.logo_url ?? '',
+      icon: FALLBACK_LOGOS[i]?.icon ?? '',
+    }));
+  }
+  const { data: sectionData } = await supabase
+    .from('landing_sections')
+    .select('*')
+    .eq('section_key', 'shop_clients')
+    .limit(1)
+    .single();
+  if (sectionData) {
+    sectionTitle = sectionData.title || sectionTitle;
+    sectionSubtitle = sectionData.subtitle || sectionSubtitle;
+  }
+} catch {}
 ---
 
-<section class="client-logos" data-client-logos>
+<section class="client-logos" id="clients" data-client-logos data-section-index="5">
   <div class="client-logos__container">
-    <h3 class="client-logos__title">다양한 공간에 어울리는 사인을 만듭니다</h3>
-    <p class="client-logos__subtitle">
-      카페, 레스토랑, 클리닉, 갤러리까지<br class="mobile-br-hide" />
-      각 공간의 분위기에 맞는 감각적인 사인을 디자인합니다
-    </p>
+    <h3 class="client-logos__title">{sectionTitle}</h3>
+    <p class="client-logos__subtitle" set:html={sectionSubtitle} />
   </div>
 
   <div class="client-logos__track-wrapper">

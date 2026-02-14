@@ -120,6 +120,23 @@ const breadcrumbs = [
   .quote-cart__empty {
     text-align: center;
     padding: var(--space-4xl) 0;
+    animation: cartFadeIn 0.4s ease-out;
+  }
+
+  @keyframes cartFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes cartEmptyPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.06); opacity: 0.75; }
   }
 
   .quote-cart__empty-icon {
@@ -133,6 +150,7 @@ const breadcrumbs = [
     border: 2px solid var(--border);
     border-radius: var(--radius-full);
     color: var(--text-muted);
+    animation: cartEmptyPulse 2.5s ease-in-out infinite;
   }
 
   .quote-cart__empty-title {
@@ -140,6 +158,7 @@ const breadcrumbs = [
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-md);
+    letter-spacing: -0.02em;
   }
 
   .quote-cart__empty-desc {
@@ -173,6 +192,7 @@ const breadcrumbs = [
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
+    animation: cartFadeIn 0.4s ease-out;
   }
 
   /* Header */
@@ -189,6 +209,7 @@ const breadcrumbs = [
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    letter-spacing: -0.02em;
   }
 
   .quote-cart__count-badge {
@@ -220,21 +241,28 @@ const breadcrumbs = [
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    transition: border-color var(--transition-base);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
   }
 
   :global(.quote-cart-item:hover) {
     border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
   }
 
   /* Thumbnail */
   :global(.quote-cart-item__thumb) {
     flex-shrink: 0;
-    width: 80px;
-    height: 80px;
+    width: 88px;
+    height: 88px;
     border-radius: var(--radius-md);
     overflow: hidden;
     background: var(--surface-light);
+    transition: transform var(--transition-base);
+  }
+
+  :global(.quote-cart-item:hover .quote-cart-item__thumb) {
+    transform: scale(1.03);
   }
 
   :global(.quote-cart-item__thumb img) {
@@ -318,13 +346,18 @@ const breadcrumbs = [
   :global(.quote-cart-item__option) {
     display: inline-flex;
     align-items: center;
-    padding: 2px var(--space-sm);
+    padding: 3px var(--space-sm);
     background: rgba(26, 77, 46, 0.1);
     color: var(--text-secondary);
     font-size: var(--font-size-xs);
     font-weight: 500;
     border-radius: var(--radius-sm);
     border: 1px solid rgba(26, 77, 46, 0.15);
+    transition: background var(--transition-base);
+  }
+
+  :global(.quote-cart-item:hover .quote-cart-item__option) {
+    background: rgba(26, 77, 46, 0.15);
   }
 
   :global(.quote-cart-item__option-label) {
@@ -431,6 +464,11 @@ const breadcrumbs = [
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     flex-wrap: wrap;
+    position: sticky;
+    bottom: var(--space-lg);
+    z-index: 10;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(8px);
   }
 
   .quote-cart__summary-info {
@@ -474,6 +512,7 @@ const breadcrumbs = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: var(--space-sm);
     padding: var(--space-md) var(--space-2xl);
     background: var(--primary);
     color: var(--text-primary);
@@ -482,12 +521,13 @@ const breadcrumbs = [
     border-radius: var(--radius-md);
     transition: all var(--transition-base);
     white-space: nowrap;
+    letter-spacing: 0.01em;
   }
 
   .quote-cart__checkout-btn:hover {
     background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+    box-shadow: 0 4px 16px rgba(26, 77, 46, 0.35);
   }
 
   /* ---- Responsive ---- */
@@ -507,8 +547,8 @@ const breadcrumbs = [
     }
 
     :global(.quote-cart-item__thumb) {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
     }
 
     :global(.quote-cart-item__top) {

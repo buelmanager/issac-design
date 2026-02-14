@@ -8,6 +8,7 @@ import ShopHeroBackground from './ShopHeroBackground.astro';
 import HeroSimulatorPreview from './HeroSimulatorPreview.tsx';
 import { Image } from 'astro:assets';
 import { getProducts } from '../../lib/data-fetchers';
+import { supabase } from '../../lib/supabase';
 
 const { products } = await getProducts();
 const categoryOrder = ['led-channel', 'neon', 'acrylic', 'banner', 'protruding', 'rooftop'];
@@ -15,8 +16,8 @@ const featuredProducts = categoryOrder
   .map((catId) => products.find((p) => p.category === catId && p.isFeatured))
   .filter((p): p is NonNullable<typeof p> => !!p && !!p.thumbnail);
 
-// 4개 슬라이드 문구
-const heroSlides = [
+// 4개 슬라이드 문구 (폴백)
+const FALLBACK_HERO_SLIDES = [
   {
     eyebrow: '감각적인 사인 디자인 · issac.design',
     line1: '내 가게에 딱 맞는',
@@ -42,6 +43,23 @@ const heroSlides = [
     desc: '전문 디자이너의 1:1 맞춤 상담으로<br class="hide-mobile" />최적의 간판을 제안받으세요',
   },
 ];
+
+let heroSlides = FALLBACK_HERO_SLIDES;
+try {
+  const { data: dbSlides, error } = await supabase
+    .from('hero_slides')
+    .select('*')
+    .eq('page', 'shop')
+    .order('slide_index');
+  if (!error && dbSlides && dbSlides.length > 0) {
+    heroSlides = dbSlides.map((s: any) => ({
+      eyebrow: s.eyebrow ?? '',
+      line1: s.title_line1 ?? '',
+      line2: s.title_line2 ?? '',
+      desc: s.subtitle ?? '',
+    }));
+  }
+} catch {}
 ---
 
 <section class="shop-hero" data-shop-hero>

@@ -6,8 +6,27 @@
  * - Parallax dark background
  */
 import { Image } from 'astro:assets';
+import { supabase } from '../../lib/supabase';
 
-const portfolioItems = [
+// Category → SVG icon path mapping
+const CATEGORY_ICON_PATHS: Record<string, string> = {
+  led: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z',
+  neon: 'M13 10V3L4 14h7v7l9-11h-7z',
+  banner: 'M3 3h18v18H3V3zm0 6h18M3 15h18M9 3v18',
+  building: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+  total: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z',
+};
+
+function getCategoryIconPath(category: string): string {
+  const lower = (category || '').toLowerCase();
+  if (lower.includes('led') || lower.includes('channel')) return CATEGORY_ICON_PATHS.led;
+  if (lower.includes('neon')) return CATEGORY_ICON_PATHS.neon;
+  if (lower.includes('banner') || lower.includes('현수막')) return CATEGORY_ICON_PATHS.banner;
+  if (lower.includes('building') || lower.includes('outdoor') || lower.includes('빌딩')) return CATEGORY_ICON_PATHS.building;
+  return CATEGORY_ICON_PATHS.total;
+}
+
+const FALLBACK_PORTFOLIO = [
   {
     id: 'led-storefront',
     title: 'LED Channel Signage',
@@ -54,6 +73,26 @@ const portfolioItems = [
     category: 'Total Solution'
   },
 ];
+
+let portfolioItems = FALLBACK_PORTFOLIO;
+try {
+  const { data: dbItems, error } = await supabase
+    .from('portfolio_items')
+    .select('*')
+    .eq('is_visible', true)
+    .order('order_index');
+  if (!error && dbItems && dbItems.length > 0) {
+    portfolioItems = dbItems.map((item: any) => ({
+      id: item.id,
+      title: item.title ?? '',
+      desc: item.description ?? '',
+      fullDesc: item.testimonial ?? '',
+      specs: item.product_used ? item.product_used.split(',').map((s: string) => s.trim()) : [],
+      image: item.image_before ?? '',
+      category: item.category ?? '',
+    }));
+  }
+} catch {}
 ---
 
 <section id="portfolio" class="it-products">
@@ -105,21 +144,7 @@ const portfolioItems = [
                   />
                   <div class="product-card__image-content">
                     <svg class="product-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                      {product.id === 'led-storefront' && (
-                        <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round"/>
-                      )}
-                      {product.id === 'neon-sign' && (
-                        <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"/>
-                      )}
-                      {product.id === 'banner-printing' && (
-                        <path d="M3 3h18v18H3V3zm0 6h18M3 15h18M9 3v18" stroke-linecap="round" stroke-linejoin="round"/>
-                      )}
-                      {product.id === 'building-sign' && (
-                        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-linecap="round" stroke-linejoin="round"/>
-                      )}
-                      {product.id === 'storefront-total' && (
-                        <path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" stroke-linecap="round" stroke-linejoin="round"/>
-                      )}
+                      <path d={getCategoryIconPath(product.category)} stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <span class="product-card__label">{product.title.split(' ')[0]}</span>
                   </div>
@@ -155,6 +180,16 @@ const portfolioItems = [
     </div>
   </div>
   
+  <!-- Portfolio data for client script -->
+  <div id="portfolio-data" style="display:none" data-items={JSON.stringify(portfolioItems.map(p => ({
+    id: p.id,
+    title: p.title,
+    fullDesc: p.fullDesc,
+    specs: p.specs,
+    image: p.image,
+    iconPath: getCategoryIconPath(p.category),
+  })))}></div>
+
   <!-- Modal -->
   <div class="product-modal" id="productModal" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="product-modal__backdrop"></div>
@@ -751,59 +786,16 @@ const portfolioItems = [
   
   gsap.registerPlugin(ScrollTrigger);
   
-   // Product data for modal
-   const products = [
-     {
-       id: 'led-storefront',
-       title: 'LED Channel Signage',
-       desc: 'Premium LED 채널 간판 - 고급 레스토랑',
-       fullDesc: 'Creative Design과 LED Technology를 결합한 프리미엄 채널 간판으로 야간에도 선명한 브랜드 인지도를 제공합니다. 고휘도 LED 모듈과 정밀 가공된 아크릴로 오래가는 품질을 보장합니다.',
-       specs: ['LED Channel 방식', '150mm 아크릴', '5년 보증', '자동 점등 시스템'],
-       image: 'https://images.unsplash.com/photo-1767488903403-3963f0d370db?w=600&q=80',
-       gradient: 'linear-gradient(135deg, #1a365d 0%, #2d5a8c 50%, #4a7ba7 100%)',
-       iconPath: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'
-     },
-     {
-       id: 'neon-sign',
-       title: 'Neon Sign Design',
-       desc: '감성 네온 사인 - 빈티지 카페',
-       fullDesc: 'Creative Advertising Design으로 따뜻한 감성의 네온 간판을 제작합니다. LED 네온 플렉스로 독특한 브랜드 아이덴티티를 표현하며, 20가지 이상의 컬러 옵션을 제공합니다.',
-       specs: ['맞춤 제작', '20종 컬러', '실내외 설치', 'LED 네온'],
-       image: 'https://images.unsplash.com/photo-1646119843923-7cc001121d5d?w=600&q=80',
-       gradient: 'linear-gradient(135deg, #0f1f3a 0%, #1a365d 50%, #3182ce 100%)',
-       iconPath: 'M13 10V3L4 14h7v7l9-11h-7z'
-     },
-     {
-       id: 'banner-printing',
-       title: 'Hanging Banner',
-       desc: '대형 현수막 - 고해상도 출력',
-       fullDesc: '선명한 컬러와 내구성을 자랑하는 대형 현수막을 제작합니다. 방수 원단, 고해상도 출력으로 실외 환경에서도 오래가는 품질을 보장합니다.',
-       specs: ['방수 원단', '고해상도 출력', '맞춤 사이즈', '당일 제작'],
-       image: 'https://images.unsplash.com/photo-1513757378314-e46255f6ed16?w=600&q=80',
-       gradient: 'linear-gradient(135deg, #2d3748 0%, #4a5568 50%, #718096 100%)',
-       iconPath: 'M3 3h18v18H3V3zm0 6h18M3 15h18M9 3v18'
-     },
-     {
-       id: 'building-sign',
-       title: 'Building Signage',
-       desc: 'Outdoor Advertising - 대형 빌딩 간판',
-       fullDesc: '대형 건물 외벽에 설치하는 프리미엄 간판으로 강한 브랜드 존재감을 표현합니다. 강풍에도 안전한 구조 설계와 LED 조명을 적용합니다.',
-       specs: ['대형 사이즈', '강풍 대비', 'LED 조명', '정기 점검'],
-       image: 'https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=600&q=80',
-       gradient: 'linear-gradient(135deg, #1a365d 0%, #3182ce 50%, #63b3ed 100%)',
-       iconPath: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
-     },
-     {
-       id: 'storefront-total',
-       title: 'Total Signage Design',
-       desc: '매장 통합 사인 시스템',
-       fullDesc: '매장 정면, 실내 안내판, 메뉴판까지 통합 디자인을 제공합니다. 브랜드 컨설팅부터 제작, 설치까지 원스톱 솔루션으로 일관된 브랜드 이미지를 구현합니다.',
-       specs: ['통합 디자인', '실내외 사인', '메뉴판 포함', '브랜드 컨설팅'],
-       image: 'https://images.unsplash.com/photo-1762680850399-c085c8d15afe?w=600&q=80',
-       gradient: 'linear-gradient(135deg, #0f1f3a 0%, #2d5a8c 50%, #4a7ba7 100%)',
-       iconPath: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z'
-     },
-   ];
+   // Product data for modal - read from server-rendered data
+   const portfolioDataEl = document.getElementById('portfolio-data');
+   const products: Array<{
+     id: string;
+     title: string;
+     fullDesc: string;
+     specs: string[];
+     image: string;
+     iconPath: string;
+   }> = portfolioDataEl ? JSON.parse(portfolioDataEl.getAttribute('data-items') || '[]') : [];
   
   // Initialize Swiper
   const swiper = new Swiper('.it-products-swiper', {
@@ -856,7 +848,10 @@ const portfolioItems = [
      modalLabel.textContent = product.title.split(' ')[0];
      modalTitle.textContent = product.title;
      modalDescription.textContent = product.fullDesc;
-     modalSpecs.innerHTML = product.specs.map(spec => `<li>${spec}</li>`).join('');
+     const specsHtml = (product.specs || []).map((spec: string) => `<li>${spec}</li>`).join('');
+     modalSpecs.innerHTML = specsHtml;
+     const specsSection = modalSpecs.closest('.product-modal__specs') as HTMLElement;
+     if (specsSection) specsSection.style.display = specsHtml ? '' : 'none';
     
     // Stop Lenis scroll
     if (window.lenis) {
