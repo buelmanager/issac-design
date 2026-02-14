@@ -136,7 +136,12 @@ export default function SiteSettingsPage() {
 
   return (
     <div className="admin-page">
-      <h1 className="admin-page-title">사이트 설정</h1>
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">사이트 설정</h1>
+          <p className="settings-page-subtitle">회사 정보, 연락처, 운영시간, SNS 설정을 관리합니다</p>
+        </div>
+      </div>
 
       <TabNav tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 

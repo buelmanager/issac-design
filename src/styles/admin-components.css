@@ -3385,3 +3385,32 @@ body.admin-modal-open {
   font-size: 13px;
   color: #6b7280;
 }
+
+/* ============================================
+   Settings Pages Styles
+   ============================================ */
+
+/* Settings Page Subtitle */
+.settings-page-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Settings Video Preview */
+.settings-video-preview {
+  width: 100%;
+  max-height: 200px;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Settings Upload Icon (muted color) */
+.settings-upload-icon {
+  color: #9ca3af;
+}
+
+/* Settings Hidden File Input */
+.settings-file-input-hidden {
+  display: none;
+}

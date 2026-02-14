@@ -1,10 +1,161 @@
 import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { HeroSlide, LandingSection, TrustIndicator, ClientLogo } from '../../../types/admin';
-import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner } from '../ui';
+import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ImageUploader } from '../ui';
 import toast from 'react-hot-toast';
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Plus, Trash2, Save, Upload, Link as LinkIcon, X, Loader2, AlertCircle, Film } from 'lucide-react';
 
+// ─── Video Upload ──────────────────────────────
+const VIDEO_MAX_SIZE = 5 * 1024 * 1024;
+const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+async function uploadVideo(file: File, folder: string): Promise<string> {
+  if (!VIDEO_TYPES.includes(file.type)) {
+    throw new Error('MP4, WebM, MOV 형식의 영상만 업로드할 수 있습니다.');
+  }
+  if (file.size > VIDEO_MAX_SIZE) {
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    throw new Error(`영상 크기(${sizeMB}MB)가 제한(5MB)을 초과합니다.`);
+  }
+  const ext = file.name.split('.').pop() ?? 'mp4';
+  const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from('images').upload(fileName, file, { cacheControl: '3600', upsert: false });
+  if (error) throw new Error('영상 업로드에 실패했습니다.');
+  const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function VideoUploader({ value, onChange, folder = 'shop' }: { value: string; onChange: (url: string) => void; folder?: string }) {
+  const [mode, setMode] = useState<'upload' | 'url'>('upload');
+  const [urlInput, setUrlInput] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = useCallback(async (file: File) => {
+    setUploading(true);
+    setError(null);
+    setDragOver(false);
+    try {
+      const url = await uploadVideo(file, folder);
+      onChange(url);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '업로드에 실패했습니다';
+      setError(msg);
+    } finally {
+      setUploading(false);
+    }
+  }, [folder, onChange]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }, [handleFile]);
+
+  const handleUrlConfirm = useCallback(() => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    if (!isValidUrl(trimmed)) {
+      setError('올바른 URL 형식이 아닙니다.');
+      return;
+    }
+    setError(null);
+    onChange(trimmed);
+    setUrlInput('');
+  }, [urlInput, onChange]);
+
+  return (
+    <div className="video-uploader">
+      {value ? (
+        <div className="video-uploader-preview">
+          <video src={value} controls className="settings-video-preview" />
+          <button type="button" className="video-uploader-remove" onClick={() => onChange('')}>
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="video-uploader-tabs">
+            <button type="button" className={`video-uploader-tab ${mode === 'upload' ? 'video-uploader-tab-active' : ''}`} onClick={() => { setMode('upload'); setError(null); }}>
+              <Upload size={14} /> 파일 업로드
+            </button>
+            <button type="button" className={`video-uploader-tab ${mode === 'url' ? 'video-uploader-tab-active' : ''}`} onClick={() => { setMode('url'); setError(null); }}>
+              <LinkIcon size={14} /> URL 입력
+            </button>
+          </div>
+
+          {mode === 'upload' ? (
+            <div
+              className={`video-uploader-drop ${dragOver ? 'video-uploader-drop-active' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? (
+                <div className="video-uploader-progress">
+                  <Loader2 size={24} className="img-uploader-spinner" />
+                  <span>업로드 중...</span>
+                </div>
+              ) : (
+                <>
+                  <Film size={32} className="settings-upload-icon" />
+                  <p>클릭 또는 드래그하여 영상 업로드</p>
+                  <p className="video-uploader-hint">MP4, WebM (최대 5MB)</p>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                className="settings-file-input-hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file);
+                  e.target.value = '';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="video-uploader-url">
+              <input
+                className="admin-input"
+                value={urlInput}
+                onChange={(e) => { setUrlInput(e.target.value); setError(null); }}
+                placeholder="https://..."
+                onKeyDown={(e) => e.key === 'Enter' && handleUrlConfirm()}
+              />
+              <button type="button" className="admin-btn admin-btn-primary" onClick={handleUrlConfirm} disabled={!urlInput.trim() || !isValidUrl(urlInput.trim())}>
+                확인
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <div className="video-uploader-error">
+              <AlertCircle size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── 탭 설정 ──────────────────────────────────
 const TABS = [
   { key: 'hero', label: 'Shop Hero' },
   { key: 'featured', label: 'Featured Bento' },
@@ -55,6 +206,7 @@ export default function ShopSettingsPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // ─── Hero ───────────────────────────────────
   const updateHeroSlide = (id: string, field: keyof HeroSlide, value: string | null) => {
     setHeroSlides((prev) => prev.map((s) => s.id === id ? { ...s, [field]: value } : s));
   };
@@ -103,6 +255,7 @@ export default function ShopSettingsPage() {
     setSaving(false);
   };
 
+  // ─── Featured ───────────────────────────────
   const handleSaveFeatured = async () => {
     if (!featuredSection) return;
     setSaving(true);
@@ -115,6 +268,7 @@ export default function ShopSettingsPage() {
     setSaving(false);
   };
 
+  // ─── Trust Indicators ───────────────────────
   const handleSaveTrust = async () => {
     setSaving(true);
     let hasError = false;
@@ -134,6 +288,7 @@ export default function ShopSettingsPage() {
     setTrustIndicators((prev) => prev.map((item) => item.id === id ? { ...item, [field]: value } : item));
   };
 
+  // ─── Client Logos ───────────────────────────
   const handleSaveLogos = async () => {
     setSaving(true);
     let hasError = false;
@@ -176,6 +331,7 @@ export default function ShopSettingsPage() {
     }
   };
 
+  // ─── Tabs ───────────────────────────────────
   const renderHeroTab = () => (
     <div>
       <div className="admin-card-header">
@@ -216,14 +372,14 @@ export default function ShopSettingsPage() {
               <FormField label="CTA Secondary Link">
                 <input className="admin-input" value={slide.cta_secondary_link ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_secondary_link', e.target.value)} />
               </FormField>
-              <FormField label="Video URL">
-                <input className="admin-input" value={slide.video_url ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'video_url', e.target.value)} />
+              <FormField label="Video URL (MP4)">
+                <VideoUploader value={slide.video_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'video_url', url || null)} folder="shop" />
               </FormField>
               <FormField label="Video WebM URL">
-                <input className="admin-input" value={slide.video_webm_url ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'video_webm_url', e.target.value)} />
+                <VideoUploader value={slide.video_webm_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'video_webm_url', url || null)} folder="shop" />
               </FormField>
-              <FormField label="Poster URL">
-                <input className="admin-input" value={slide.poster_url ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'poster_url', e.target.value)} />
+              <FormField label="Poster 이미지">
+                <ImageUploader value={slide.poster_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'poster_url', url || null)} folder="shop" />
               </FormField>
               <button className="admin-btn admin-btn-primary" disabled={saving} onClick={() => handleSaveHeroSlide(slide)}>
                 <Save size={16} /> 이 슬라이드 저장
@@ -302,16 +458,20 @@ export default function ShopSettingsPage() {
         keyExtractor={(item) => item.id}
         onReorder={setClientLogos}
         renderItem={(item) => (
-          <div className="admin-drag-item-content">
-            <div className="admin-form-group">
-              <input className="admin-input" value={item.name} placeholder="이름" onChange={(e) => updateClientLogo(item.id, 'name', e.target.value)} />
-              <input className="admin-input" value={item.logo_url} placeholder="로고 URL" onChange={(e) => updateClientLogo(item.id, 'logo_url', e.target.value)} />
-              <input className="admin-input" value={item.website_url ?? ''} placeholder="웹사이트 URL" onChange={(e) => updateClientLogo(item.id, 'website_url', e.target.value)} />
+          <div className="admin-drag-item-content admin-drag-item-column">
+            <div className="admin-drag-item-row">
+              <div className="admin-form-group">
+                <input className="admin-input" value={item.name} placeholder="이름" onChange={(e) => updateClientLogo(item.id, 'name', e.target.value)} />
+                <input className="admin-input" value={item.website_url ?? ''} placeholder="웹사이트 URL" onChange={(e) => updateClientLogo(item.id, 'website_url', e.target.value)} />
+              </div>
+              <Toggle checked={item.is_visible} onChange={(v) => updateClientLogo(item.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => deleteClientLogo(item.id)}>
+                <Trash2 size={14} />
+              </button>
             </div>
-            <Toggle checked={item.is_visible} onChange={(v) => updateClientLogo(item.id, 'is_visible', v)} label="표시" />
-            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => deleteClientLogo(item.id)}>
-              <Trash2 size={14} />
-            </button>
+            <FormField label="로고 이미지">
+              <ImageUploader value={item.logo_url} onChange={(url) => updateClientLogo(item.id, 'logo_url', url)} folder="logos" />
+            </FormField>
           </div>
         )}
       />
@@ -336,7 +496,12 @@ export default function ShopSettingsPage() {
 
   return (
     <div className="admin-page">
-      <h1 className="admin-card-title">쇼핑몰 설정</h1>
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">쇼핑몰 설정</h1>
+          <p className="settings-page-subtitle">Shop Hero, Featured Bento, Trust Indicators, Client Logos 관리</p>
+        </div>
+      </div>
       <TabNav tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
       {renderTabContent()}
     </div>
