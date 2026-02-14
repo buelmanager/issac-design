@@ -396,6 +396,53 @@ export class PaymentService {
     return updated as unknown as Payment;
   }
 
+  // ─── 6.5 결제 실패 처리 (Webhook에서 호출) ───────
+  async failPayment(pgPaymentId: string, reason: string, actor: LogActor = 'webhook'): Promise<Payment> {
+    const supabase = createAdminClient();
+
+    const { data: payment } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('pg_payment_id', pgPaymentId)
+      .single();
+
+    if (!payment) {
+      PaymentLogger.error('FAIL_PAYMENT_NOT_FOUND', new Error(`PG ID: ${pgPaymentId}`));
+      throw new Error(`Payment not found for pg_payment_id: ${pgPaymentId}`);
+    }
+
+    // 이미 최종 상태면 무시 (멱등성)
+    if (['FAILED', 'CANCELED', 'PAID', 'REFUNDED'].includes(payment.status as string)) {
+      PaymentLogger.warn('FAIL_PAYMENT_ALREADY_FINAL', {
+        current_status: payment.status,
+        pg_payment_id: pgPaymentId,
+      }, { payment_id: payment.id });
+      return payment as unknown as Payment;
+    }
+
+    // PENDING → FAILED 전이
+    await this.transitionStatus(payment.id, PAYMENT_STATUS.PENDING, PAYMENT_STATUS.FAILED, actor, reason);
+
+    // 실패 사유 저장
+    await supabase
+      .from('payments')
+      .update({ failed_reason: reason })
+      .eq('id', payment.id);
+
+    const { data: updated } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('id', payment.id)
+      .single();
+
+    PaymentLogger.warn('PAYMENT_FAILED', {
+      reason,
+      pg_payment_id: pgPaymentId,
+    }, { payment_id: payment.id, order_id: payment.order_id });
+
+    return updated as unknown as Payment;
+  }
+
   // ─── 7. 환불 확인 (Webhook) ────────────────────
   async confirmRefund(pgPaymentId: string, actor: LogActor = 'webhook'): Promise<Payment> {
     const supabase = createAdminClient();

@@ -1,19 +1,23 @@
 /**
  * POST /api/payment/refund
  *
- * 환불 요청 API (PAID 상태에서만 가능)
+ * 환불 요청 API (인증 필수, PAID 상태에서만 가능)
  */
 import type { APIRoute } from 'astro';
-import { PaymentService } from '../../../lib/payment/payment-service';
-import { MockPaymentAdapter } from '../../../lib/payment/adapters/mock-adapter';
+import { getPaymentService } from '../../../lib/payment/gateway-factory';
 import { PaymentLogger } from '../../../lib/payment/logger';
-import { validateRefundRequest } from '../../../lib/payment/validators';
+import { validateRefundRequest, isValidUUID } from '../../../lib/payment/validators';
+import { verifyAdminAuth, unauthorizedResponse } from '../../../lib/payment/auth-guard';
 import type { ApiResponse } from '../../../lib/payment/types';
 
-const gateway = new MockPaymentAdapter();
-const paymentService = new PaymentService(gateway);
+const { service: paymentService } = getPaymentService();
 
 export const POST: APIRoute = async ({ request }) => {
+  const auth = await verifyAdminAuth(request);
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error);
+  }
+
   try {
     const body = await request.json();
 
@@ -26,6 +30,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { payment_id, reason, amount } = body;
+
+    if (!isValidUUID(payment_id)) {
+      return jsonResponse<ApiResponse>(400, {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Invalid payment_id format' },
+      });
+    }
+
     const payment = await paymentService.requestRefund(payment_id, reason, amount);
 
     return jsonResponse<ApiResponse>(200, {

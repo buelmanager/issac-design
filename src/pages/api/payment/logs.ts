@@ -1,7 +1,7 @@
 /**
  * GET /api/payment/logs
  *
- * 결제 시스템 로그 조회 API (관리자 전용)
+ * 결제 시스템 로그 조회 API (관리자 전용, 인증 필수)
  *
  * 쿼리 파라미터:
  * - level: 로그 레벨 필터 (INFO, WARN, ERROR, CRITICAL)
@@ -15,9 +15,16 @@
  */
 import type { APIRoute } from 'astro';
 import { PaymentLogger } from '../../../lib/payment/logger';
+import { verifyAdminAuth, unauthorizedResponse } from '../../../lib/payment/auth-guard';
 import type { ApiResponse, LogLevel } from '../../../lib/payment/types';
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, url }) => {
+  // 인증 필수 - 시스템 로그는 관리자만 조회
+  const auth = await verifyAdminAuth(request);
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error);
+  }
+
   try {
     const view = url.searchParams.get('view') ?? 'all';
     const paymentId = url.searchParams.get('payment_id') ?? undefined;
@@ -25,8 +32,8 @@ export const GET: APIRoute = async ({ url }) => {
     const level = url.searchParams.get('level') as LogLevel | null;
     const from = url.searchParams.get('from') ?? undefined;
     const to = url.searchParams.get('to') ?? undefined;
-    const limit = parseInt(url.searchParams.get('limit') ?? '50', 10);
-    const offset = parseInt(url.searchParams.get('offset') ?? '0', 10);
+    const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10), 200);
+    const offset = Math.max(parseInt(url.searchParams.get('offset') ?? '0', 10), 0);
 
     switch (view) {
       case 'timeline': {

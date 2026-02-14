@@ -8,14 +8,13 @@
  * 2. 금액 검증 필수
  * 3. 트랜잭션으로 상태 변경
  * 4. 모든 이벤트 로깅
+ * 5. 내부 에러 메시지 외부 노출 금지
  */
 import type { APIRoute } from 'astro';
-import { PaymentService } from '../../../lib/payment/payment-service';
-import { MockPaymentAdapter } from '../../../lib/payment/adapters/mock-adapter';
+import { getPaymentService } from '../../../lib/payment/gateway-factory';
 import { PaymentLogger } from '../../../lib/payment/logger';
 
-const gateway = new MockPaymentAdapter();
-const paymentService = new PaymentService(gateway);
+const { gateway, service: paymentService } = getPaymentService();
 
 export const POST: APIRoute = async ({ request }) => {
   const rawBody = await request.text();
@@ -51,7 +50,6 @@ export const POST: APIRoute = async ({ request }) => {
     switch (event.type) {
       case 'payment.confirmed':
       case 'payment_intent.succeeded': {
-        // 결제 성공 확인
         await paymentService.confirmPayment(
           event.pg_payment_id,
           event.amount
@@ -65,6 +63,11 @@ export const POST: APIRoute = async ({ request }) => {
 
       case 'payment.failed':
       case 'payment_intent.payment_failed': {
+        // CRITICAL FIX: PENDING → FAILED 상태 전이 실행
+        await paymentService.failPayment(
+          event.pg_payment_id,
+          event.error_message ?? 'Payment failed'
+        );
         PaymentLogger.warn('WEBHOOK_PAYMENT_FAILED', {
           pg_payment_id: event.pg_payment_id,
           error: event.error_message,
@@ -86,7 +89,6 @@ export const POST: APIRoute = async ({ request }) => {
       }
     }
 
-    // Webhook은 항상 200 반환 (재전송 방지)
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -95,9 +97,8 @@ export const POST: APIRoute = async ({ request }) => {
     const error = err instanceof Error ? err : new Error(String(err));
     PaymentLogger.error('WEBHOOK_PROCESSING_ERROR', error, { body_length: rawBody.length });
 
-    // Webhook 처리 실패 시에도 200 반환 (무한 재전송 방지)
-    // PG사가 재전송하면 멱등성으로 처리됨
-    return new Response(JSON.stringify({ received: true, error: error.message }), {
+    // 내부 에러 메시지 절대 외부 노출 금지
+    return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

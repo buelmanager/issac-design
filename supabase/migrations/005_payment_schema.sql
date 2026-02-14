@@ -107,23 +107,26 @@ CREATE POLICY admin_insert ON payment_status_logs FOR INSERT TO authenticated
   WITH CHECK (auth.uid() IN (SELECT id FROM admin_users));
 
 -- ────────────────────────────────────────────────
--- 5. 주문번호 생성 함수
+-- 5. 주문번호 생성 함수 (동시성 안전)
 -- ────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION generate_order_number()
 RETURNS TRIGGER AS $$
 DECLARE
   date_part TEXT;
-  seq_part TEXT;
-  daily_count INT;
+  seq_val INT;
 BEGIN
   date_part := to_char(now(), 'YYYYMMDD');
 
-  SELECT COUNT(*) + 1 INTO daily_count
+  -- advisory lock: 같은 날짜의 주문번호 생성을 직렬화
+  PERFORM pg_advisory_xact_lock(hashtext('order_number_' || date_part));
+
+  SELECT COALESCE(MAX(
+    NULLIF(split_part(order_number, '-', 3), '')::INT
+  ), 0) + 1 INTO seq_val
   FROM orders
   WHERE order_number LIKE 'ORD-' || date_part || '-%';
 
-  seq_part := lpad(daily_count::TEXT, 4, '0');
-  NEW.order_number := 'ORD-' || date_part || '-' || seq_part;
+  NEW.order_number := 'ORD-' || date_part || '-' || lpad(seq_val::TEXT, 4, '0');
 
   RETURN NEW;
 END;

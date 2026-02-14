@@ -1,20 +1,24 @@
 /**
  * GET /api/payment/status?order_id=xxx
  *
- * 결제 상태 조회 API
+ * 결제 상태 조회 API (인증 필수)
  * 주문 정보 + 결제 정보 + 상태 변경 로그 반환
  */
 import type { APIRoute } from 'astro';
-import { PaymentService } from '../../../lib/payment/payment-service';
-import { MockPaymentAdapter } from '../../../lib/payment/adapters/mock-adapter';
+import { getPaymentService } from '../../../lib/payment/gateway-factory';
 import { PaymentLogger } from '../../../lib/payment/logger';
 import { isValidUUID } from '../../../lib/payment/validators';
+import { verifyAdminAuth, unauthorizedResponse } from '../../../lib/payment/auth-guard';
 import type { ApiResponse } from '../../../lib/payment/types';
 
-const gateway = new MockPaymentAdapter();
-const paymentService = new PaymentService(gateway);
+const { service: paymentService } = getPaymentService();
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, url }) => {
+  const auth = await verifyAdminAuth(request);
+  if (!auth.authorized) {
+    return unauthorizedResponse(auth.error);
+  }
+
   try {
     const orderId = url.searchParams.get('order_id');
 
