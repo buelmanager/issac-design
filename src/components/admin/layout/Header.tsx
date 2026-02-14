@@ -39,6 +39,12 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   };
 
   const handleSignOut = async () => {
+    // 서버사이드 로그아웃 (쿠키 삭제 + 감사 로깅)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // 서버 로그아웃 실패해도 클라이언트 세션은 정리
+    }
     await signOut();
     navigate('/login', { replace: true });
   };
