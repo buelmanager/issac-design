@@ -88,11 +88,11 @@ const securityHeaders = defineMiddleware(async (context, next) => {
   resp.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   resp.headers.set('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.tosspayments.com https://accounts.google.com https://apis.google.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.tosspayments.com https://accounts.google.com https://apis.google.com https://dapi.kakao.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https: http:",
-    "connect-src 'self' https://*.supabase.co https://js.tosspayments.com https://accounts.google.com https://raw.githack.com https://raw.githubusercontent.com",
+    "connect-src 'self' https://*.supabase.co https://js.tosspayments.com https://accounts.google.com https://raw.githack.com https://raw.githubusercontent.com https://dapi.kakao.com",
     "frame-src https://js.tosspayments.com https://accounts.google.com",
     "object-src 'none'",
     "base-uri 'self'",

@@ -10,6 +10,8 @@ import Breadcrumb from '../../components/shop/Breadcrumb.astro';
 import ShopFooter from '../../components/shop/ShopFooter.astro';
 import Toast from '../../components/shop/Toast.astro';
 
+const kakaoJsKey = import.meta.env.PUBLIC_KAKAO_JS_KEY;
+
 const breadcrumbs = [
   { label: '쇼핑몰', href: '/shop' },
   { label: '고객센터' },
@@ -218,11 +220,21 @@ const faqs = [
               class="contact-map__link"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                <polyline points="15 3 21 3 21 9"/>
-                <line x1="10" y1="14" x2="21" y2="3"/>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
               </svg>
               카카오맵에서 보기
+            </a>
+            <a
+              href="https://map.kakao.com/link/to/issac.design,37.5012,127.0396"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="contact-map__link contact-map__link--navi"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+              </svg>
+              길찾기
             </a>
           </div>
         </div>
@@ -621,6 +633,8 @@ const faqs = [
     position: absolute;
     bottom: var(--space-lg);
     right: var(--space-lg);
+    display: flex;
+    gap: var(--space-xs);
   }
 
   .contact-map__link {
@@ -642,6 +656,18 @@ const faqs = [
   .contact-map__link:hover {
     color: var(--primary);
     border-color: var(--primary);
+  }
+
+  .contact-map__link--navi {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  .contact-map__link--navi:hover {
+    background: var(--primary-hover);
+    color: #fff;
+    border-color: var(--primary-hover);
   }
 
   /* ===== CTA Section ===== */
@@ -1004,50 +1030,54 @@ const faqs = [
 </style>
 
 <!-- Kakao Map -->
-<script is:inline src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=KAKAO_APP_KEY&autoload=false"></script>
-<script>
-  // Initialize Kakao Map
-  document.addEventListener('DOMContentLoaded', () => {
-    const mapContainer = document.getElementById('kakao-map');
-    if (!mapContainer) return;
+<script is:inline define:vars={{ kakaoJsKey }}>
+  (function() {
+    var script = document.createElement('script');
+    script.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + kakaoJsKey + '&autoload=false';
+    script.onload = function() {
+      if (typeof window.kakao !== 'undefined' && window.kakao.maps) {
+        window.kakao.maps.load(function() {
+          var mapContainer = document.getElementById('kakao-map');
+          if (!mapContainer) return;
 
-    // Check if Kakao Maps SDK is loaded
-    if (typeof window.kakao !== 'undefined' && window.kakao.maps) {
-      window.kakao.maps.load(() => {
-        const coords = new window.kakao.maps.LatLng(37.5012, 127.0396);
-        const map = new window.kakao.maps.Map(mapContainer, {
-          center: coords,
-          level: 3,
-        });
+          var coords = new window.kakao.maps.LatLng(37.5012, 127.0396);
+          var map = new window.kakao.maps.Map(mapContainer, {
+            center: coords,
+            level: 3,
+          });
 
-        const marker = new window.kakao.maps.Marker({
-          map: map,
-          position: coords,
-        });
+          var marker = new window.kakao.maps.Marker({
+            map: map,
+            position: coords,
+          });
 
-        const infowindow = new window.kakao.maps.InfoWindow({
-          content: '<div style="padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;">issac.design</div>',
-        });
-        infowindow.open(map, marker);
+          var infowindow = new window.kakao.maps.InfoWindow({
+            content: '<div style="padding:8px 12px;font-size:13px;font-weight:500;white-space:nowrap;">issac.design</div>',
+          });
+          infowindow.open(map, marker);
 
-        // Responsive resize
-        const resizeObserver = new ResizeObserver(() => {
-          map.relayout();
+          var resizeObserver = new ResizeObserver(function() {
+            map.relayout();
+          });
+          resizeObserver.observe(mapContainer);
         });
-        resizeObserver.observe(mapContainer);
-      });
-    } else {
-      // Fallback if SDK fails to load
-      mapContainer.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--text-muted);">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          <p style="font-size:14px;">서울특별시 강남구 역삼동 123-45</p>
-          <a href="https://map.kakao.com/link/map/issac.design,37.5012,127.0396" target="_blank" rel="noopener noreferrer" style="font-size:13px;color:var(--primary-light);text-decoration:underline;">카카오맵에서 보기</a>
-        </div>
-      `;
-    }
-  });
+      }
+    };
+    script.onerror = function() {
+      var mapContainer = document.getElementById('kakao-map');
+      if (mapContainer) {
+        mapContainer.innerHTML =
+          '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--text-muted);">' +
+            '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>' +
+              '<circle cx="12" cy="10" r="3"/>' +
+            '</svg>' +
+            '<p style="font-size:14px;">서울특별시 강남구 역삼동 123-45</p>' +
+            '<a href="https://map.kakao.com/link/map/issac.design,37.5012,127.0396" target="_blank" rel="noopener noreferrer" style="font-size:13px;color:var(--primary-light);text-decoration:underline;">카카오맵에서 보기</a>' +
+          '</div>';
+      }
+    };
+    document.head.appendChild(script);
+  })();
 </script>
+
