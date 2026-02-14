@@ -35,6 +35,13 @@ const orderCountResult = await supabase
 
 const orderCount = orderCountResult.count;
 
+const quoteCountResult = await supabase
+  .from('quote_requests')
+  .select('*', { count: 'exact', head: true })
+  .or(`user_id.eq.${user.id},email.eq.${userEmail}` as never);
+
+const quoteCount = quoteCountResult.count;
+
 const latestOrderResult = await supabase
   .from('orders')
   .select('created_at')
@@ -96,6 +103,11 @@ const providerLabel: Record<string, string> = {
         </div>
         <div class="mypage__stat-divider"></div>
         <div class="mypage__stat">
+          <span class="mypage__stat-value">{quoteCount ?? 0}<span class="mypage__stat-unit">건</span></span>
+          <span class="mypage__stat-label">견적 요청</span>
+        </div>
+        <div class="mypage__stat-divider"></div>
+        <div class="mypage__stat">
           <span class="mypage__stat-value mypage__stat-value--date">{formatDate(latestOrder?.created_at)}</span>
           <span class="mypage__stat-label">최근 주문일</span>
         </div>
@@ -132,6 +144,23 @@ const providerLabel: Record<string, string> = {
           <div class="mypage__card-body">
             <h3 class="mypage__card-title">주문 내역</h3>
             <p class="mypage__card-desc">주문 상태 확인 및 상세 보기</p>
+          </div>
+          <svg class="mypage__card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </a>
+
+        <a href="/shop/mypage/quotes" class="mypage__card">
+          <div class="mypage__card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+              <path d="M9 14l2 2 4-4"/>
+            </svg>
+          </div>
+          <div class="mypage__card-body">
+            <h3 class="mypage__card-title">견적 내역</h3>
+            <p class="mypage__card-desc">견적 요청 상태 및 견적 금액 확인</p>
           </div>
           <svg class="mypage__card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18l6-6-6-6"/>

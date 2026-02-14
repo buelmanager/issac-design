@@ -4,7 +4,7 @@ import type { QuoteRequest, QuoteStatus } from '../../../types/admin';
 import type { Json } from '../../../types/database';
 import { DataTable, SearchInput, StatusBadge, Pagination, LoadingSpinner, EmptyState } from '../ui';
 import toast from 'react-hot-toast';
-import { FileText, ArrowLeft, Save, Paperclip, Download, Package, MessageSquare, User } from 'lucide-react';
+import { FileText, ArrowLeft, Save, Paperclip, Download, Package, MessageSquare, User, DollarSign } from 'lucide-react';
 
 type ViewMode = 'list' | 'detail';
 
@@ -90,6 +90,18 @@ function getAttachmentUrls(attachments: Json): string[] {
   return arr.filter((item): item is string => typeof item === 'string');
 }
 
+interface QuotedItem {
+  productId: string;
+  unitPrice: number;
+  quantity: number;
+  subtotal: number;
+  note: string;
+}
+
+function formatCurrency(n: number): string {
+  return `₩${new Intl.NumberFormat('ko-KR').format(n)}`;
+}
+
 export default function QuotesPage() {
   const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,13 +113,16 @@ export default function QuotesPage() {
   const [detailStatus, setDetailStatus] = useState<QuoteStatus>('pending');
   const [detailNotes, setDetailNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [savingPricing, setSavingPricing] = useState(false);
   const [view, setView] = useState<ViewMode>('list');
+  const [quotedItems, setQuotedItems] = useState<QuotedItem[]>([]);
+  const [totalQuotedPrice, setTotalQuotedPrice] = useState(0);
 
   const fetchQuotes = useCallback(async () => {
     setLoading(true);
     let query = supabase
       .from('quote_requests')
-      .select('id, customer_name, email, phone, business_name, request_type, products, message, attachments, status, admin_notes, created_at, updated_at', { count: 'exact' });
+      .select('id, customer_name, email, phone, business_name, request_type, products, message, attachments, status, admin_notes, created_at, updated_at, quoted_items, quoted_price, quoted_at, user_id', { count: 'exact' });
 
     if (search) {
       query = query.or(`customer_name.ilike.%${search}%,business_name.ilike.%${search}%`);
@@ -138,12 +153,42 @@ export default function QuotesPage() {
     setPage(1);
   }, [search, statusFilter]);
 
+  const initQuotedItems = useCallback((quote: QuoteRequest): QuotedItem[] => {
+    const existingItems = parseJsonArray(quote.quoted_items as Json);
+    if (existingItems.length > 0) {
+      return existingItems.map((item) => {
+        const obj = (typeof item === 'object' && item !== null ? item : {}) as Record<string, Json | undefined>;
+        return {
+          productId: String(obj.productId ?? ''),
+          unitPrice: Number(obj.unitPrice ?? 0),
+          quantity: Number(obj.quantity ?? 1),
+          subtotal: Number(obj.subtotal ?? 0),
+          note: String(obj.note ?? ''),
+        };
+      });
+    }
+    const products = parseJsonArray(quote.products);
+    return products.map((item) => {
+      const obj = (typeof item === 'object' && item !== null ? item : {}) as Record<string, Json | undefined>;
+      return {
+        productId: String(obj.productId ?? ''),
+        unitPrice: 0,
+        quantity: Number(obj.quantity ?? 1),
+        subtotal: 0,
+        note: '',
+      };
+    });
+  }, []);
+
   const openDetail = useCallback((quote: QuoteRequest) => {
     setSelectedQuote(quote);
     setDetailStatus(quote.status as QuoteStatus);
     setDetailNotes(quote.admin_notes ?? '');
+    const items = initQuotedItems(quote);
+    setQuotedItems(items);
+    setTotalQuotedPrice(items.reduce((sum, i) => sum + i.subtotal, 0));
     setView('detail');
-  }, []);
+  }, [initQuotedItems]);
 
   const closeDetail = useCallback(() => {
     setView('list');
@@ -151,9 +196,14 @@ export default function QuotesPage() {
   }, []);
 
   const handleStatusChange = useCallback(async (id: string, newStatus: QuoteStatus) => {
+    const now = new Date().toISOString();
+    const updateData: Record<string, string> = { status: newStatus, updated_at: now };
+    if (newStatus === 'quoted') {
+      updateData.quoted_at = now;
+    }
     const { error } = await supabase
       .from('quote_requests')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', id);
     if (error) {
       toast.error('상태 변경에 실패했습니다');
@@ -179,6 +229,48 @@ export default function QuotesPage() {
     }
     setSaving(false);
   }, [selectedQuote, detailNotes, fetchQuotes]);
+
+  const handleQuotedItemChange = useCallback((index: number, field: 'unitPrice' | 'quantity' | 'note', value: number | string) => {
+    setQuotedItems((prev) => {
+      const updated = prev.map((item, i) => {
+        if (i !== index) return item;
+        const next = { ...item };
+        if (field === 'unitPrice') {
+          next.unitPrice = Number(value) || 0;
+          next.subtotal = next.unitPrice * next.quantity;
+        } else if (field === 'quantity') {
+          next.quantity = Number(value) || 0;
+          next.subtotal = next.unitPrice * next.quantity;
+        } else {
+          next.note = String(value);
+        }
+        return next;
+      });
+      setTotalQuotedPrice(updated.reduce((sum, item) => sum + item.subtotal, 0));
+      return updated;
+    });
+  }, []);
+
+  const handleSavePricing = useCallback(async () => {
+    if (!selectedQuote) return;
+    setSavingPricing(true);
+    const { error } = await supabase
+      .from('quote_requests')
+      .update({
+        quoted_items: quotedItems as unknown as Json,
+        quoted_price: totalQuotedPrice,
+        quoted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', selectedQuote.id);
+    if (error) {
+      toast.error('견적 금액 저장에 실패했습니다');
+    } else {
+      toast.success('견적 금액이 저장되었습니다');
+      fetchQuotes();
+    }
+    setSavingPricing(false);
+  }, [selectedQuote, quotedItems, totalQuotedPrice, fetchQuotes]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -351,6 +443,78 @@ export default function QuotesPage() {
                     ))}
                   </select>
                 </div>
+              </div>
+            </div>
+
+            <div className="admin-card">
+              <h3 className="admin-card-title"><DollarSign size={18} /> 견적 금액 입력</h3>
+              <div className="admin-card-body">
+                {quotedItems.length === 0 ? (
+                  <p className="quote-empty-text">견적 항목이 없습니다</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {quotedItems.map((qItem, idx) => {
+                      const productName = idx < productsList.length ? getProductName(productsList[idx]) : `항목 ${idx + 1}`;
+                      return (
+                        <div key={idx} style={{ padding: '12px', background: 'var(--admin-bg-subtle, #f9fafb)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--admin-text, #111827)' }}>{productName}</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <div>
+                              <label style={{ fontSize: '11px', color: 'var(--admin-text-muted, #6b7280)', marginBottom: '2px', display: 'block' }}>단가 (₩)</label>
+                              <input
+                                type="number"
+                                className="admin-input"
+                                value={qItem.unitPrice || ''}
+                                onChange={(e) => handleQuotedItemChange(idx, 'unitPrice', e.target.value)}
+                                placeholder="0"
+                                min={0}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: '11px', color: 'var(--admin-text-muted, #6b7280)', marginBottom: '2px', display: 'block' }}>수량</label>
+                              <input
+                                type="number"
+                                className="admin-input"
+                                value={qItem.quantity || ''}
+                                onChange={(e) => handleQuotedItemChange(idx, 'quantity', e.target.value)}
+                                placeholder="1"
+                                min={0}
+                              />
+                            </div>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-detail-label">소계</span>
+                            <span className="admin-detail-value" style={{ fontWeight: 600 }}>{formatCurrency(qItem.subtotal)}</span>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '11px', color: 'var(--admin-text-muted, #6b7280)', marginBottom: '2px', display: 'block' }}>비고</label>
+                            <input
+                              type="text"
+                              className="admin-input"
+                              value={qItem.note}
+                              onChange={(e) => handleQuotedItemChange(idx, 'note', e.target.value)}
+                              placeholder="항목 비고..."
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="admin-detail-row" style={{ marginTop: '16px', padding: '12px', background: 'var(--admin-bg-subtle, #f9fafb)', borderRadius: '8px' }}>
+                  <span className="admin-detail-label" style={{ fontWeight: 700, fontSize: '14px' }}>총 견적 금액</span>
+                  <span className="admin-detail-value" style={{ fontWeight: 700, fontSize: '16px', color: 'var(--admin-primary, #2563eb)' }}>{formatCurrency(totalQuotedPrice)}</span>
+                </div>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-primary"
+                  onClick={handleSavePricing}
+                  disabled={savingPricing}
+                  style={{ marginTop: '12px' }}
+                >
+                  {savingPricing ? <LoadingSpinner size="sm" /> : <Save size={16} />}
+                  견적 저장
+                </button>
               </div>
             </div>
 

@@ -762,6 +762,10 @@ export interface Database {
           attachments: Json;
           status: string;
           admin_notes: string | null;
+          quoted_items: Json;
+          quoted_price: number;
+          quoted_at: string | null;
+          user_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -777,6 +781,10 @@ export interface Database {
           attachments?: Json;
           status?: string;
           admin_notes?: string | null;
+          quoted_items?: Json;
+          quoted_price?: number;
+          quoted_at?: string | null;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -792,6 +800,10 @@ export interface Database {
           attachments?: Json;
           status?: string;
           admin_notes?: string | null;
+          quoted_items?: Json;
+          quoted_price?: number;
+          quoted_at?: string | null;
+          user_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };

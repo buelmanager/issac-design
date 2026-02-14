@@ -1,0 +1,902 @@
+---
+export const prerender = false;
+
+/**
+ * 견적 내역 페이지
+ * List of all quote requests with status badges, product summaries, quoted prices
+ */
+
+import Layout from '../../../layouts/Layout.astro';
+import ShopNavbar from '../../../components/shop/ShopNavbar.astro';
+import ShopFooter from '../../../components/shop/ShopFooter.astro';
+import { createAstroServerClient } from '../../../lib/supabase-server';
+
+const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect('/shop/login?redirect=/shop/mypage/quotes');
+}
+
+const { supabase } = createAstroServerClient(Astro.request);
+
+const quotesResult = await supabase
+  .from('quote_requests')
+  .select('*')
+  .or(`user_id.eq.${user.id},email.eq.${user.email ?? ''}`)
+  .order('created_at' as never, { ascending: false });
+
+const quotes = (quotesResult.data as Array<Record<string, any>> | null) ?? [];
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function formatAmount(amount: number): string {
+  return new Intl.NumberFormat('ko-KR').format(amount);
+}
+
+function getStatusInfo(status: string): { label: string; className: string } {
+  const map: Record<string, { label: string; className: string }> = {
+    pending: { label: '대기', className: 'quotes__status--pending' },
+    reviewing: { label: '검토중', className: 'quotes__status--reviewing' },
+    quoted: { label: '견적완료', className: 'quotes__status--quoted' },
+    completed: { label: '완료', className: 'quotes__status--completed' },
+    cancelled: { label: '취소', className: 'quotes__status--cancelled' },
+  };
+  return map[status] || { label: status, className: 'quotes__status--pending' };
+}
+
+function getProductSummary(products: any): string {
+  if (!products || !Array.isArray(products)) return '제품 정보 없음';
+  if (products.length === 0) return '제품 정보 없음';
+  const firstName = products[0]?.productName || '제품';
+  if (products.length === 1) return firstName;
+  return `${firstName} 외 ${products.length - 1}건`;
+}
+
+function getOptionText(options: any): string {
+  if (!options) return '';
+  const parts: string[] = [];
+  if (options.size) parts.push(options.size);
+  if (options.material) parts.push(options.material);
+  if (options.finish) parts.push(options.finish);
+  if (options.lighting) parts.push(options.lighting);
+  return parts.join(' / ');
+}
+
+const statusSteps = [
+  { key: 'pending', label: '대기' },
+  { key: 'reviewing', label: '검토중' },
+  { key: 'quoted', label: '견적완료' },
+  { key: 'completed', label: '완료' },
+];
+
+function getStepIndex(status: string): number {
+  const idx = statusSteps.findIndex(s => s.key === status);
+  return idx >= 0 ? idx : 0;
+}
+---
+
+<Layout title="견적 내역 | issac.design" description="견적 요청 내역을 확인합니다.">
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+
+  <main class="quotes">
+    <div class="quotes__container">
+      <a href="/shop/mypage" class="quotes__back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        마이페이지
+      </a>
+
+      <h1 class="quotes__heading">견적 내역</h1>
+
+      {quotes.length === 0 ? (
+        <div class="quotes__empty">
+          <div class="quotes__empty-icon">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+              <rect x="9" y="3" width="6" height="4" rx="1"/>
+              <path d="M9 14l2 2 4-4"/>
+            </svg>
+          </div>
+          <h2 class="quotes__empty-title">견적 요청 내역이 없습니다</h2>
+          <p class="quotes__empty-desc">다양한 제품을 둘러보고 견적을 요청해보세요.</p>
+          <a href="/shop" class="quotes__empty-btn">제품 보러가기</a>
+        </div>
+      ) : (
+        <div class="quotes__list">
+          <p class="quotes__count">총 <strong>{quotes.length}</strong>건</p>
+
+          {quotes.map((quote) => {
+            const statusInfo = getStatusInfo(quote.status);
+            const products = Array.isArray(quote.products) ? quote.products : [];
+            const quotedItems = Array.isArray(quote.quoted_items) ? quote.quoted_items : [];
+            const hasQuotedPrice = quote.quoted_price && Number(quote.quoted_price) > 0;
+            const currentStep = getStepIndex(quote.status);
+            const isCancelled = quote.status === 'cancelled';
+            return (
+              <div class="quotes__card" data-quote-card data-quote-id={quote.id} data-quote-status={quote.status}>
+                <button class="quotes__card-toggle" type="button" aria-expanded="false">
+                  <div class="quotes__card-header">
+                    <div class="quotes__card-meta">
+                      <span class="quotes__date">{formatDate(quote.created_at)}</span>
+                      {quote.request_type && (
+                        <span class="quotes__request-type">{quote.request_type}</span>
+                      )}
+                    </div>
+                    <div class="quotes__card-header-right">
+                      <span class={`quotes__status ${statusInfo.className}`}>
+                        {statusInfo.label}
+                      </span>
+                      <svg class="quotes__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 6l4 4 4-4"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="quotes__card-body">
+                    <p class="quotes__item-summary">{getProductSummary(quote.products)}</p>
+                    {hasQuotedPrice ? (
+                      <p class="quotes__amount">₩{formatAmount(Number(quote.quoted_price))}</p>
+                    ) : (
+                      <p class="quotes__amount quotes__amount--pending">견적 대기</p>
+                    )}
+                  </div>
+                </button>
+
+                <div class="quotes__detail" data-quote-detail>
+                  <div class="quotes__detail-inner">
+                    {/* Status Flow */}
+                    {!isCancelled && (
+                      <div class="quotes__detail-section">
+                        <h3 class="quotes__detail-heading">진행 상태</h3>
+                        <div class="quotes__status-flow">
+                          {statusSteps.map((step, i) => (
+                            <div class={`quotes__step ${i <= currentStep ? 'quotes__step--active' : ''} ${i === currentStep ? 'quotes__step--current' : ''}`}>
+                              <div class="quotes__step-dot"></div>
+                              <span class="quotes__step-label">{step.label}</span>
+                              {i < statusSteps.length - 1 && (
+                                <div class={`quotes__step-line ${i < currentStep ? 'quotes__step-line--filled' : ''}`}></div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Requested Products */}
+                    <div class="quotes__detail-section">
+                      <h3 class="quotes__detail-heading">요청 제품</h3>
+                      {products.length > 0 ? (
+                        <ul class="quotes__detail-items">
+                          {products.map((prod: any) => (
+                            <li class="quotes__detail-item">
+                              <div class="quotes__detail-item-main">
+                                <span class="quotes__detail-item-name">{prod.productName || '제품'}</span>
+                                {prod.categoryName && (
+                                  <span class="quotes__detail-item-category">{prod.categoryName}</span>
+                                )}
+                              </div>
+                              {getOptionText(prod.options) && (
+                                <span class="quotes__detail-item-options">{getOptionText(prod.options)}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p class="quotes__detail-empty">제품 정보가 없습니다.</p>
+                      )}
+                    </div>
+
+                    {/* Quoted Items Table */}
+                    {quotedItems.length > 0 && quotedItems.some((qi: any) => qi.unitPrice > 0) && (
+                      <div class="quotes__detail-section">
+                        <h3 class="quotes__detail-heading">견적 금액</h3>
+                        <div class="quotes__price-table">
+                          <div class="quotes__price-header">
+                            <span>제품명</span>
+                            <span>단가</span>
+                            <span>수량</span>
+                            <span>소계</span>
+                          </div>
+                          {quotedItems.map((qi: any) => {
+                            const matchedProduct = products.find((p: any) => p.productId === qi.productId);
+                            return (
+                              <div class="quotes__price-row">
+                                <span class="quotes__price-name">{matchedProduct?.productName || '제품'}</span>
+                                <span class="quotes__price-unit">{qi.unitPrice ? `₩${formatAmount(qi.unitPrice)}` : '-'}</span>
+                                <span class="quotes__price-qty">{qi.quantity || 1}</span>
+                                <span class="quotes__price-subtotal">{qi.subtotal ? `₩${formatAmount(qi.subtotal)}` : '-'}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Total Quoted Price */}
+                    {hasQuotedPrice && (
+                      <div class="quotes__detail-section">
+                        <div class="quotes__detail-total">
+                          <span class="quotes__detail-total-label">총 견적 금액</span>
+                          <span class="quotes__detail-total-value">₩{formatAmount(Number(quote.quoted_price))}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Admin Notes */}
+                    {quote.admin_notes && (
+                      <div class="quotes__detail-section">
+                        <h3 class="quotes__detail-heading">관리자 메모</h3>
+                        <div class="quotes__admin-notes">
+                          <p>{quote.admin_notes}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Request Info */}
+                    <div class="quotes__detail-section">
+                      <h3 class="quotes__detail-heading">요청 정보</h3>
+                      {quote.customer_name && (
+                        <div class="quotes__detail-row">
+                          <span class="quotes__detail-label">요청자</span>
+                          <span class="quotes__detail-value">{quote.customer_name}</span>
+                        </div>
+                      )}
+                      {quote.business_name && (
+                        <div class="quotes__detail-row">
+                          <span class="quotes__detail-label">업체명</span>
+                          <span class="quotes__detail-value">{quote.business_name}</span>
+                        </div>
+                      )}
+                      {quote.phone && (
+                        <div class="quotes__detail-row">
+                          <span class="quotes__detail-label">연락처</span>
+                          <span class="quotes__detail-value">{quote.phone}</span>
+                        </div>
+                      )}
+                      {quote.message && (
+                        <div class="quotes__detail-row quotes__detail-row--message">
+                          <span class="quotes__detail-label">요청 메시지</span>
+                          <span class="quotes__detail-value">{quote.message}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<style>
+  .quotes {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: calc(var(--header-height) + var(--space-2xl)) var(--container-padding) var(--space-3xl);
+  }
+
+  .quotes__container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .quotes__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: var(--space-lg);
+    transition: color var(--transition-base);
+  }
+
+  .quotes__back:hover {
+    color: var(--text-primary);
+  }
+
+  .quotes__heading {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+    letter-spacing: -0.02em;
+  }
+
+  /* Empty State */
+  .quotes__empty {
+    text-align: center;
+    padding: var(--space-4xl) var(--space-xl);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  .quotes__empty-icon {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+  }
+
+  .quotes__empty-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  .quotes__empty-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.5;
+  }
+
+  .quotes__empty-btn {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-xl);
+    background: var(--primary);
+    border-radius: var(--radius-md);
+    color: #fff;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .quotes__empty-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+  }
+
+  /* Quote List */
+  .quotes__count {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+
+  .quotes__count strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .quotes__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .quotes__card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+    overflow: hidden;
+  }
+
+  .quotes__card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .quotes__card--expanded {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .quotes__card-toggle {
+    display: block;
+    width: 100%;
+    padding: var(--space-lg) var(--space-xl);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: inherit;
+    font-family: inherit;
+  }
+
+  .quotes__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .quotes__card-header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+  }
+
+  .quotes__chevron {
+    color: var(--text-muted);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  .quotes__card--expanded .quotes__chevron {
+    transform: rotate(180deg);
+  }
+
+  .quotes__card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    min-width: 0;
+  }
+
+  .quotes__date {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .quotes__request-type {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding: 1px var(--space-xs);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Status Badges */
+  .quotes__status {
+    display: inline-block;
+    padding: 2px var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .quotes__status--pending {
+    background: rgba(234, 179, 8, 0.1);
+    color: #fbbf24;
+    border: 1px solid rgba(234, 179, 8, 0.25);
+  }
+
+  .quotes__status--reviewing {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+
+  .quotes__status--quoted {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .quotes__status--completed {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .quotes__status--cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+  }
+
+  .quotes__card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+  }
+
+  .quotes__item-summary {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .quotes__amount {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .quotes__amount--pending {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  /* ---- Quote Detail (Expandable) ---- */
+  .quotes__detail {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+
+  .quotes__card--expanded .quotes__detail {
+    grid-template-rows: 1fr;
+  }
+
+  .quotes__detail-inner {
+    overflow: hidden;
+  }
+
+  .quotes__detail-section {
+    padding: 0 var(--space-xl);
+    margin-bottom: var(--space-md);
+  }
+
+  .quotes__detail-section:first-child {
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+
+  .quotes__detail-heading {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-sm);
+  }
+
+  /* Status Flow */
+  .quotes__status-flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding: var(--space-sm) 0;
+  }
+
+  .quotes__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+  }
+
+  .quotes__step-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+  }
+
+  .quotes__step--active .quotes__step-dot {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+
+  .quotes__step--current .quotes__step-dot {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  }
+
+  .quotes__step-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: var(--space-xs);
+    white-space: nowrap;
+    transition: color 0.3s ease;
+  }
+
+  .quotes__step--active .quotes__step-label {
+    color: var(--text-secondary);
+  }
+
+  .quotes__step--current .quotes__step-label {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .quotes__step-line {
+    position: absolute;
+    top: 5px;
+    left: calc(50% + 8px);
+    right: calc(-50% + 8px);
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: background 0.3s ease;
+  }
+
+  .quotes__step-line--filled {
+    background: var(--primary);
+  }
+
+  /* Detail Items */
+  .quotes__detail-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .quotes__detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-sm);
+  }
+
+  .quotes__detail-item-main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .quotes__detail-item-name {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .quotes__detail-item-category {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 1px var(--space-xs);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-sm);
+  }
+
+  .quotes__detail-item-options {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    padding-left: var(--space-xs);
+  }
+
+  .quotes__detail-empty {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Price Table */
+  .quotes__price-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .quotes__price-header {
+    display: grid;
+    grid-template-columns: 1fr 100px 60px 100px;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .quotes__price-header span:nth-child(2),
+  .quotes__price-header span:nth-child(3),
+  .quotes__price-header span:nth-child(4) {
+    text-align: right;
+  }
+
+  .quotes__price-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 60px 100px;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: var(--font-size-sm);
+  }
+
+  .quotes__price-name {
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .quotes__price-unit,
+  .quotes__price-qty,
+  .quotes__price-subtotal {
+    color: var(--text-secondary);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .quotes__price-subtotal {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* Total */
+  .quotes__detail-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .quotes__detail-total-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .quotes__detail-total-value {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Admin Notes */
+  .quotes__admin-notes {
+    padding: var(--space-md);
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .quotes__admin-notes p {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Detail Rows */
+  .quotes__detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-xs) 0;
+  }
+
+  .quotes__detail-row + .quotes__detail-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .quotes__detail-row--message {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  .quotes__detail-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .quotes__detail-value {
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+
+  .quotes__detail-row--message .quotes__detail-value {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  @media (max-width: 719px) {
+    .quotes {
+      padding-top: calc(var(--header-height-mobile) + var(--space-xl));
+    }
+
+    .quotes__card-toggle {
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .quotes__card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .quotes__card-header-right {
+      align-self: flex-end;
+    }
+
+    .quotes__card-meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-xs);
+    }
+
+    .quotes__card-body {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+
+    .quotes__amount {
+      font-size: var(--font-size-base);
+    }
+
+    .quotes__detail-section {
+      padding: 0 var(--space-lg);
+    }
+
+    .quotes__price-header,
+    .quotes__price-row {
+      grid-template-columns: 1fr 80px 40px 80px;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-sm);
+    }
+
+    .quotes__price-header {
+      font-size: 10px;
+    }
+
+    .quotes__price-row {
+      font-size: var(--font-size-xs);
+    }
+
+    .quotes__step-label {
+      font-size: 10px;
+    }
+
+    .quotes__detail-item {
+      gap: 2px;
+    }
+  }
+</style>
+
+<script>
+  function initQuotesPage() {
+    document.querySelectorAll<HTMLButtonElement>('.quotes__card-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('[data-quote-card]');
+        if (!card) return;
+        const isExpanded = card.classList.toggle('quotes__card--expanded');
+        btn.setAttribute('aria-expanded', String(isExpanded));
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initQuotesPage);
+  } else {
+    initQuotesPage();
+  }
+</script>

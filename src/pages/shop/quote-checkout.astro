@@ -1182,6 +1182,8 @@ const breadcrumbs = [
             options: item.options,
           }));
 
+          const { data: { user: currentUser } } = await supabaseBrowser.auth.getUser();
+
           const { error: insertError } = await supabaseBrowser
             .from('quote_requests')
             .insert({
@@ -1192,6 +1194,7 @@ const breadcrumbs = [
               message: addressInput?.value.trim()
                 ? `[배송주소] ${addressInput.value.trim()}`
                 : null,
+              user_id: currentUser?.id || null,
             });
 
           if (insertError) {
