@@ -29,7 +29,6 @@ export default defineConfig({
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: '**.supabase.co' },
-      { protocol: 'http', hostname: '127.0.0.1' },
     ],
     layout: 'constrained',
     breakpoints: [320, 640, 768, 1024, 1280, 1536],
