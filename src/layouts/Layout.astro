@@ -442,7 +442,8 @@ const ogImageURL = new URL(image, Astro.site || 'https://issac.design').href;
             // Menu items
             var items = [
               { label: '마이페이지', href: '/shop/mypage', icon: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2' },
-              { label: '주문내역', href: '/shop/orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+              { label: '주문내역', href: '/shop/mypage/orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+              { label: '견적내역', href: '/shop/mypage/quotes', icon: 'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8' },
             ];
 
             items.forEach(function(item) {
