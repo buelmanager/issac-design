@@ -20,23 +20,34 @@ const userId = user.id;
 const userEmail = user.email ?? '';
 const { supabase } = createAstroServerClient(Astro.request);
 
-// user_id로 먼저 조회, 없으면 email fallback
+const debugLog: string[] = [];
+debugLog.push(`userId: ${userId}`);
+debugLog.push(`userEmail: ${userEmail}`);
+
 let ordersResult = await supabase
   .from('orders')
   .select('*')
   .eq('user_id' as never, userId as never)
   .order('created_at' as never, { ascending: false });
 
+debugLog.push(`user_id query error: ${JSON.stringify(ordersResult.error)}`);
+debugLog.push(`user_id query count: ${ordersResult.data?.length ?? 0}`);
+
 let orders = (ordersResult.data as Array<Record<string, any>> | null) ?? [];
 
 if (orders.length === 0 && userEmail) {
+  debugLog.push(`fallback to email: ${userEmail}`);
   ordersResult = await supabase
     .from('orders')
     .select('*')
     .eq('customer_email' as never, userEmail as never)
     .order('created_at' as never, { ascending: false });
+  debugLog.push(`email query error: ${JSON.stringify(ordersResult.error)}`);
+  debugLog.push(`email query count: ${ordersResult.data?.length ?? 0}`);
   orders = (ordersResult.data as Array<Record<string, any>> | null) ?? [];
 }
+
+debugLog.push(`final orders count: ${orders.length}`);
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -81,6 +92,11 @@ function getItemSummary(items: any): string {
       </a>
 
       <h1 class="orders__heading">주문 내역</h1>
+
+      <script is:inline define:vars={{ debugLog }}>
+        console.log('[orders.astro] DEBUG:', debugLog);
+        debugLog.forEach(log => console.log('[orders.astro]', log));
+      </script>
 
       {orders.length === 0 ? (
         <div class="orders__empty">
