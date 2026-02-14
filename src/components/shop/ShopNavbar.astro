@@ -733,5 +733,29 @@ const { categories } = await getProducts();
         link.classList.add('shop-navbar__link--active');
       }
     });
+
+    // --- Auth state: toggle login/mypage ---
+    async function updateAuthUI() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        const data = await res.json();
+        const authBtn = navbar.querySelector('[data-auth-btn]') as HTMLAnchorElement | null;
+        const mobileAuthLink = navbar.querySelector('[data-mobile-auth-link]') as HTMLAnchorElement | null;
+
+        if (data.authenticated) {
+          if (authBtn) {
+            authBtn.href = '/shop/mypage';
+            authBtn.setAttribute('aria-label', '마이페이지');
+          }
+          if (mobileAuthLink) {
+            mobileAuthLink.href = '/shop/mypage';
+            mobileAuthLink.textContent = '마이페이지';
+          }
+        }
+      } catch {
+        // silently fail
+      }
+    }
+    updateAuthUI();
   });
 </script>

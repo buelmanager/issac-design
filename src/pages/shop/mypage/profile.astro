@@ -1,0 +1,539 @@
+---
+export const prerender = false;
+
+/**
+ * 프로필 수정 페이지
+ * Edit name, phone, password (email provider only), delete account
+ */
+
+import Layout from '../../../layouts/Layout.astro';
+import ShopNavbar from '../../../components/shop/ShopNavbar.astro';
+import ShopFooter from '../../../components/shop/ShopFooter.astro';
+import { createAstroServerClient } from '../../../lib/supabase-server';
+
+const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect('/shop/login?redirect=/shop/mypage/profile');
+}
+
+const { supabase } = createAstroServerClient(Astro.request);
+
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', user.id)
+  .single();
+
+const displayName = profile?.display_name || user.user_metadata?.full_name || '';
+const phone = profile?.phone || '';
+const provider = profile?.provider || user.app_metadata?.provider || 'email';
+const isEmailProvider = provider === 'email';
+
+const providerLabel: Record<string, string> = {
+  google: 'Google',
+  kakao: 'Kakao',
+  email: '이메일',
+};
+---
+
+<Layout title="회원정보 수정 | issac.design" description="회원 정보를 수정합니다.">
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+
+  <main class="profile-edit">
+    <div class="profile-edit__container">
+      <a href="/shop/mypage" class="profile-edit__back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        마이페이지
+      </a>
+
+      <h1 class="profile-edit__heading">회원정보 수정</h1>
+
+      <!-- Alert -->
+      <div class="profile-edit__alert" id="profileAlert" role="alert" style="display:none;"></div>
+
+      <!-- Profile Form -->
+      <form class="profile-edit__form" id="profileForm">
+        <div class="profile-edit__section">
+          <h2 class="profile-edit__section-title">기본 정보</h2>
+
+          <div class="profile-edit__field">
+            <label class="profile-edit__label">이메일</label>
+            <div class="profile-edit__readonly">{user.email}</div>
+          </div>
+
+          <div class="profile-edit__field">
+            <label for="profile-name" class="profile-edit__label">이름</label>
+            <input
+              id="profile-name"
+              type="text"
+              class="profile-edit__input"
+              value={displayName}
+              placeholder="이름을 입력하세요"
+              autocomplete="name"
+            />
+          </div>
+
+          <div class="profile-edit__field">
+            <label for="profile-phone" class="profile-edit__label">연락처</label>
+            <input
+              id="profile-phone"
+              type="tel"
+              class="profile-edit__input"
+              value={phone}
+              placeholder="010-0000-0000"
+              autocomplete="tel"
+            />
+          </div>
+
+          <div class="profile-edit__field">
+            <label class="profile-edit__label">로그인 방식</label>
+            <span class={`profile-edit__badge profile-edit__badge--${provider}`}>
+              {providerLabel[provider] || provider}
+            </span>
+          </div>
+        </div>
+
+        {isEmailProvider && (
+          <div class="profile-edit__section">
+            <h2 class="profile-edit__section-title">비밀번호 변경</h2>
+            <p class="profile-edit__section-desc">비밀번호를 변경하려면 아래 필드를 모두 입력하세요.</p>
+
+            <div class="profile-edit__field">
+              <label for="current-password" class="profile-edit__label">현재 비밀번호</label>
+              <input
+                id="current-password"
+                type="password"
+                class="profile-edit__input"
+                placeholder="현재 비밀번호"
+                autocomplete="current-password"
+                minlength="8"
+              />
+            </div>
+
+            <div class="profile-edit__field">
+              <label for="new-password" class="profile-edit__label">새 비밀번호</label>
+              <input
+                id="new-password"
+                type="password"
+                class="profile-edit__input"
+                placeholder="8자 이상"
+                autocomplete="new-password"
+                minlength="8"
+              />
+            </div>
+
+            <div class="profile-edit__field">
+              <label for="confirm-password" class="profile-edit__label">새 비밀번호 확인</label>
+              <input
+                id="confirm-password"
+                type="password"
+                class="profile-edit__input"
+                placeholder="새 비밀번호 확인"
+                autocomplete="new-password"
+                minlength="8"
+              />
+            </div>
+          </div>
+        )}
+
+        <button type="submit" class="profile-edit__submit" id="submitBtn">
+          <span id="submitText">저장</span>
+          <svg class="profile-edit__spinner" id="submitSpinner" viewBox="0 0 24 24" style="display:none;">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </form>
+
+      <!-- Danger Zone -->
+      <div class="profile-edit__danger">
+        <h2 class="profile-edit__danger-title">위험 구역</h2>
+        <p class="profile-edit__danger-desc">
+          회원 탈퇴 시 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+        </p>
+        <button type="button" class="profile-edit__danger-btn" id="deleteAccountBtn">
+          회원 탈퇴
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<style>
+  .profile-edit {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    padding: calc(var(--header-height) + var(--space-2xl)) var(--container-padding) var(--space-3xl);
+  }
+
+  .profile-edit__container {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .profile-edit__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: var(--space-lg);
+    transition: color var(--transition-base);
+  }
+
+  .profile-edit__back:hover {
+    color: var(--text-primary);
+  }
+
+  .profile-edit__heading {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+    letter-spacing: -0.02em;
+  }
+
+  /* Alert */
+  .profile-edit__alert {
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-lg);
+    line-height: 1.4;
+  }
+
+  .profile-edit__alert--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+
+  .profile-edit__alert--success {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #86efac;
+  }
+
+  /* Form */
+  .profile-edit__form {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .profile-edit__section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    margin-bottom: var(--space-lg);
+  }
+
+  .profile-edit__section-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+  }
+
+  .profile-edit__section-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+    line-height: 1.5;
+  }
+
+  .profile-edit__field {
+    margin-bottom: var(--space-md);
+  }
+
+  .profile-edit__field:last-child {
+    margin-bottom: 0;
+  }
+
+  .profile-edit__label {
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .profile-edit__input {
+    width: 100%;
+    padding: var(--space-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-base);
+    outline: none;
+  }
+
+  .profile-edit__input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .profile-edit__input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.15);
+  }
+
+  .profile-edit__readonly {
+    padding: var(--space-md);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .profile-edit__badge {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+  }
+
+  .profile-edit__badge--google {
+    background: rgba(66, 133, 244, 0.12);
+    color: #93bbfc;
+    border: 1px solid rgba(66, 133, 244, 0.25);
+  }
+
+  .profile-edit__badge--kakao {
+    background: rgba(254, 229, 0, 0.1);
+    color: #e5cf00;
+    border: 1px solid rgba(254, 229, 0, 0.25);
+  }
+
+  .profile-edit__badge--email {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .profile-edit__submit {
+    width: 100%;
+    padding: var(--space-md);
+    background: var(--primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: #fff;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+
+  .profile-edit__submit:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+  }
+
+  .profile-edit__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .profile-edit__spinner {
+    width: 20px;
+    height: 20px;
+    animation: profile-spin 1s linear infinite;
+  }
+
+  @keyframes profile-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Danger Zone */
+  .profile-edit__danger {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+  }
+
+  .profile-edit__danger-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: #fca5a5;
+    margin-bottom: var(--space-sm);
+  }
+
+  .profile-edit__danger-desc {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: var(--space-lg);
+  }
+
+  .profile-edit__danger-btn {
+    padding: var(--space-sm) var(--space-lg);
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: var(--radius-md);
+    color: #fca5a5;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-base);
+  }
+
+  .profile-edit__danger-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.6);
+  }
+
+  @media (max-width: 719px) {
+    .profile-edit {
+      padding-top: calc(var(--header-height-mobile) + var(--space-xl));
+    }
+
+    .profile-edit__section {
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+    }
+
+    .profile-edit__danger {
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+    }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('profileForm') as HTMLFormElement;
+  const alertEl = document.getElementById('profileAlert') as HTMLElement;
+  const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+  const submitText = document.getElementById('submitText') as HTMLElement;
+  const submitSpinner = document.getElementById('submitSpinner') as HTMLElement;
+  const deleteBtn = document.getElementById('deleteAccountBtn') as HTMLButtonElement;
+
+  function showAlert(message: string, type: 'error' | 'success') {
+    alertEl.textContent = message;
+    alertEl.className = `profile-edit__alert profile-edit__alert--${type}`;
+    alertEl.style.display = 'block';
+    alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideAlert() {
+    alertEl.style.display = 'none';
+  }
+
+  function setLoading(loading: boolean) {
+    submitBtn.disabled = loading;
+    submitText.style.display = loading ? 'none' : 'inline';
+    submitSpinner.style.display = loading ? 'block' : 'none';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+
+    const nameInput = document.getElementById('profile-name') as HTMLInputElement;
+    const phoneInput = document.getElementById('profile-phone') as HTMLInputElement;
+    const currentPwInput = document.getElementById('current-password') as HTMLInputElement | null;
+    const newPwInput = document.getElementById('new-password') as HTMLInputElement | null;
+    const confirmPwInput = document.getElementById('confirm-password') as HTMLInputElement | null;
+
+    const body: Record<string, string> = {
+      display_name: nameInput.value.trim(),
+      phone: phoneInput.value.trim(),
+    };
+
+    // Password change validation
+    if (currentPwInput && newPwInput && confirmPwInput) {
+      const currentPw = currentPwInput.value;
+      const newPw = newPwInput.value;
+      const confirmPw = confirmPwInput.value;
+
+      if (currentPw || newPw || confirmPw) {
+        if (!currentPw) {
+          showAlert('현재 비밀번호를 입력하세요.', 'error');
+          return;
+        }
+        if (!newPw || newPw.length < 8) {
+          showAlert('새 비밀번호는 8자 이상이어야 합니다.', 'error');
+          return;
+        }
+        if (newPw !== confirmPw) {
+          showAlert('새 비밀번호가 일치하지 않습니다.', 'error');
+          return;
+        }
+
+        body.current_password = currentPw;
+        body.new_password = newPw;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        showAlert(json.error?.message ?? '프로필 업데이트에 실패했습니다.', 'error');
+        return;
+      }
+
+      showAlert('프로필이 성공적으로 업데이트되었습니다.', 'success');
+
+      // Clear password fields
+      if (currentPwInput) currentPwInput.value = '';
+      if (newPwInput) newPwInput.value = '';
+      if (confirmPwInput) confirmPwInput.value = '';
+    } catch {
+      showAlert('서버 연결에 실패했습니다.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  deleteBtn?.addEventListener('click', async () => {
+    const confirmed = confirm(
+      '정말 회원 탈퇴를 진행하시겠습니까?\n\n모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
+    );
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm('마지막 확인입니다. 정말로 탈퇴하시겠습니까?');
+    if (!doubleConfirm) return;
+
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        alert('회원 탈퇴가 완료되었습니다.');
+        window.location.href = '/shop';
+      } else {
+        const json = await res.json();
+        alert(json.error?.message ?? '회원 탈퇴에 실패했습니다.');
+      }
+    } catch {
+      alert('서버 연결에 실패했습니다.');
+    }
+  });
+</script>
