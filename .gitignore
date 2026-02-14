@@ -40,5 +40,5 @@ public/videos/hero[0-9].mp4
 # Development docs
 docs/
 
-# Blog draft folder
-blog/
+# Blog draft folder (root level only, not src/content/blog or src/assets/blog)
+/blog/
