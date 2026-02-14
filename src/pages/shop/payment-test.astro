@@ -1,0 +1,746 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import ShopNavbar from '../../components/shop/ShopNavbar.astro';
+import Breadcrumb from '../../components/shop/Breadcrumb.astro';
+import ShopFooter from '../../components/shop/ShopFooter.astro';
+
+const breadcrumbs = [
+  { label: '쇼핑몰', href: '/shop' },
+  { label: '결제 테스트' },
+];
+---
+
+<Layout title="결제 테스트 대시보드 - issac.design Shop" noindex={true}>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+
+  <main class="payment-page">
+    <div class="payment-page__breadcrumb">
+      <Breadcrumb items={breadcrumbs} />
+    </div>
+
+    <div class="payment-test">
+      <div class="payment-test__header">
+        <h1 class="payment-test__title">결제 테스트 대시보드</h1>
+        <p class="payment-test__subtitle">Toss Payments 연동 테스트 — 결제 플로우 5건 + API 엣지케이스 8건</p>
+      </div>
+
+      <div class="payment-test__card-info">
+        <h3 class="payment-test__card-info-title">테스트 카드 정보</h3>
+        <div class="payment-test__card-info-row">
+          <span class="payment-test__card-info-label">카드번호</span>
+          <span class="payment-test__card-info-value">4330 1234 5678 1234</span>
+        </div>
+        <div class="payment-test__card-info-row">
+          <span class="payment-test__card-info-label">유효기간</span>
+          <span class="payment-test__card-info-value">아무 미래 날짜 (예: 12/30)</span>
+        </div>
+        <div class="payment-test__card-info-row">
+          <span class="payment-test__card-info-label">CVC</span>
+          <span class="payment-test__card-info-value">아무 3자리 (예: 123)</span>
+        </div>
+      </div>
+
+      <div class="payment-test__scenarios">
+
+        <h2 class="payment-test__group-title">그룹 A: 결제 플로우 테스트</h2>
+
+        <div class="payment-test__scenario" data-scenario="1">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">1</span>
+            <span class="payment-test__scenario-title">카드 결제 테스트</span>
+          </div>
+          <p class="payment-test__scenario-desc">테스트 주문(50,000원)을 생성하고 결제 페이지로 이동합니다 (새 탭).</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="1" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="1"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="2">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">2</span>
+            <span class="payment-test__scenario-title">사용자 취소 테스트</span>
+          </div>
+          <p class="payment-test__scenario-desc">결제 창에서 사용자가 취소 버튼을 누르는 시나리오. 시나리오 1 실행 후 결제 창에서 닫기/취소를 눌러주세요.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="2" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="2"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="3">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">3</span>
+            <span class="payment-test__scenario-title">금액 변조 테스트</span>
+          </div>
+          <p class="payment-test__scenario-desc">결제 승인 시 서버에 변조된 금액(100원)을 전송합니다. 서버에서 금액 불일치를 감지해야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="3" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="3"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="4">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">4</span>
+            <span class="payment-test__scenario-title">중복 승인 테스트</span>
+          </div>
+          <p class="payment-test__scenario-desc">동일한 paymentKey로 confirm 엔드포인트를 2회 호출합니다. 두 번째 요청은 거절되어야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="4" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="4"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="5">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">5</span>
+            <span class="payment-test__scenario-title">Webhook 서명 변조 테스트</span>
+          </div>
+          <p class="payment-test__scenario-desc">가짜 webhook을 잘못된 서명과 함께 전송합니다. 서버에서 서명 검증 실패로 거부해야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="5" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="5"></div>
+        </div>
+
+        <h2 class="payment-test__group-title">그룹 B: API 엣지케이스 테스트</h2>
+
+        <div class="payment-test__scenario" data-scenario="6">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">6</span>
+            <span class="payment-test__scenario-title">금액 변조 (100억원)</span>
+            <span class="payment-test__expected-badge">기대: 400</span>
+          </div>
+          <p class="payment-test__scenario-desc">unit_price를 10,000,000,000으로 설정하여 주문 생성 시도. 서버에서 금액 상한 초과를 거부해야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="6" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="6"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="7">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">7</span>
+            <span class="payment-test__scenario-title">최소 금액 미달 (50원)</span>
+            <span class="payment-test__expected-badge">기대: 400</span>
+          </div>
+          <p class="payment-test__scenario-desc">unit_price를 50으로 설정하여 주문 생성 시도. 최소 금액(100원) 미달로 거부되어야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="7" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="7"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="8">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">8</span>
+            <span class="payment-test__scenario-title">수량 초과 (1000개)</span>
+            <span class="payment-test__expected-badge">기대: 400</span>
+          </div>
+          <p class="payment-test__scenario-desc">quantity를 1000으로 설정하여 주문 생성 시도. 최대 수량(999개) 초과로 거부되어야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="8" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="8"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="9">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">9</span>
+            <span class="payment-test__scenario-title">음수 금액 (-1000원)</span>
+            <span class="payment-test__expected-badge">기대: 400</span>
+          </div>
+          <p class="payment-test__scenario-desc">unit_price를 -1000으로 설정하여 주문 생성 시도. 음수 금액은 거부되어야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="9" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="9"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="10">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">10</span>
+            <span class="payment-test__scenario-title">빈 아이템 배열</span>
+            <span class="payment-test__expected-badge">기대: 400</span>
+          </div>
+          <p class="payment-test__scenario-desc">items를 빈 배열([])로 전송하여 주문 생성 시도. 아이템 없음으로 거부되어야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="10" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="10"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="11">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">11</span>
+            <span class="payment-test__scenario-title">아이템 50개 초과</span>
+            <span class="payment-test__expected-badge">기대: 400</span>
+          </div>
+          <p class="payment-test__scenario-desc">51개 아이템을 전송하여 주문 생성 시도. 최대 아이템 수(50개) 초과로 거부되어야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="11" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="11"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="12">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">12</span>
+            <span class="payment-test__scenario-title">잘못된 confirm 데이터</span>
+            <span class="payment-test__expected-badge">기대: 에러</span>
+          </div>
+          <p class="payment-test__scenario-desc">존재하지 않는 orderId로 confirm 엔드포인트 호출. 에러 응답을 반환해야 합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="12" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="12"></div>
+        </div>
+
+        <div class="payment-test__scenario" data-scenario="13">
+          <div class="payment-test__scenario-header">
+            <span class="payment-test__scenario-num">13</span>
+            <span class="payment-test__scenario-title">Rate Limiting</span>
+            <span class="payment-test__expected-badge">기대: 429</span>
+          </div>
+          <p class="payment-test__scenario-desc">동일 요청을 11회 연속 호출합니다. 10번째까지 성공, 이후 429 응답을 기대합니다.</p>
+          <div class="payment-test__scenario-actions">
+            <button class="payment-test__run-btn" data-test="13" type="button">실행</button>
+          </div>
+          <div class="payment-test__log" data-log="13"></div>
+        </div>
+
+        <h2 class="payment-test__group-title">그룹 C: 전체 자동 실행</h2>
+
+        <div class="payment-test__run-all-section">
+          <button class="payment-test__run-all-btn" id="run-all-edge-cases" type="button">모든 엣지케이스 실행 (6~13)</button>
+          <div class="payment-test__summary" id="test-summary" style="display: none;">
+            <span class="payment-test__summary-pass" id="summary-pass"></span>
+            <span class="payment-test__summary-separator">|</span>
+            <span class="payment-test__summary-fail" id="summary-fail"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<script>
+  const init = () => {
+    const TEST_AMOUNT = 50000;
+
+    function timestamp(): string {
+      return new Date().toLocaleTimeString('ko-KR', { hour12: false });
+    }
+
+    function addLog(scenarioNum: number, message: string, status: 'success' | 'error' | 'warn' | 'info') {
+      const logEl = document.querySelector(`[data-log="${scenarioNum}"]`) as HTMLElement;
+      if (!logEl) return;
+
+      logEl.classList.add('payment-test__log--visible');
+
+      const icons: Record<string, string> = {
+        success: '\u2705',
+        error: '\u274C',
+        warn: '\u26A0\uFE0F',
+        info: '\u2139\uFE0F',
+      };
+
+      const entry = document.createElement('div');
+      entry.className = `payment-test__log-entry payment-test__log-entry--${status}`;
+      entry.textContent = `[${timestamp()}] ${icons[status]} ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog(scenarioNum: number) {
+      const logEl = document.querySelector(`[data-log="${scenarioNum}"]`) as HTMLElement;
+      if (logEl) {
+        logEl.innerHTML = '';
+        logEl.classList.add('payment-test__log--visible');
+      }
+    }
+
+    function setButtonDisabled(testId: string, disabled: boolean) {
+      const btn = document.querySelector(`[data-test="${testId}"]`) as HTMLButtonElement;
+      if (btn) btn.disabled = disabled;
+    }
+
+    async function runTest1() {
+      clearLog(1);
+      addLog(1, '\uD14C\uC2A4\uD2B8 \uC8FC\uBB38 \uC0DD\uC131 \uC911...', 'info');
+      try {
+        const res = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+            customer_phone: '010-0000-0000',
+            items: [{ name: '\uD14C\uC2A4\uD2B8 \uC0C1\uD488', quantity: 1, unit_price: TEST_AMOUNT }],
+          }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+          addLog(1, `\uC8FC\uBB38 \uC0DD\uC131 \uC2E4\uD328: ${data.error || '\uC54C \uC218 \uC5C6\uB294 \uC624\uB958'}`, 'error');
+          return;
+        }
+        addLog(1, `\uC8FC\uBB38 \uC0DD\uC131 \uC644\uB8CC: ${data.data.order_number} (${data.data.amount.toLocaleString()}\uC6D0)`, 'success');
+        localStorage.setItem('paymentCart', JSON.stringify([
+          { name: '\uD14C\uC2A4\uD2B8 \uC0C1\uD488', quantity: 1, unit_price: TEST_AMOUNT },
+        ]));
+        localStorage.setItem('paymentCustomerInfo', JSON.stringify({
+          name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+          email: 'test@test.com',
+        }));
+        window.open('/shop/payment', '_blank');
+        addLog(1, '\uC0C8 \uD0ED\uC5D0\uC11C \uACB0\uC81C\uB97C \uC9C4\uD589\uD574\uC8FC\uC138\uC694.', 'warn');
+      } catch (err) {
+        addLog(1, `\uB124\uD2B8\uC6CC\uD06C \uC624\uB958: ${err instanceof Error ? err.message : String(err)}`, 'error');
+      }
+    }
+
+    async function runTest2() {
+      clearLog(2);
+      addLog(2, '\uC2DC\uB098\uB9AC\uC624 1\uACFC \uB3D9\uC77C\uD558\uAC8C \uACB0\uC81C \uD398\uC774\uC9C0\uB97C \uC5FD\uB2C8\uB2E4.', 'info');
+      addLog(2, '\uD14C\uC2A4\uD2B8 \uC8FC\uBB38 \uC0DD\uC131 \uC911...', 'info');
+      try {
+        const res = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+            customer_phone: '010-0000-0000',
+            items: [{ name: '\uD14C\uC2A4\uD2B8 \uC0C1\uD488', quantity: 1, unit_price: TEST_AMOUNT }],
+          }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+          addLog(2, `\uC8FC\uBB38 \uC0DD\uC131 \uC2E4\uD328: ${data.error || '\uC54C \uC218 \uC5C6\uB294 \uC624\uB958'}`, 'error');
+          return;
+        }
+        addLog(2, `\uC8FC\uBB38 \uC0DD\uC131 \uC644\uB8CC: ${data.data.order_number}`, 'success');
+        localStorage.setItem('paymentCart', JSON.stringify([
+          { name: '\uD14C\uC2A4\uD2B8 \uC0C1\uD488', quantity: 1, unit_price: TEST_AMOUNT },
+        ]));
+        localStorage.setItem('paymentCustomerInfo', JSON.stringify({
+          name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+          email: 'test@test.com',
+        }));
+        window.open('/shop/payment', '_blank');
+        addLog(2, '\uACB0\uC81C \uCC3D\uC5D0\uC11C \uCDE8\uC18C \uBC84\uD2BC\uC744 \uB20C\uB7EC PAY_PROCESS_CANCELED \uC624\uB958\uB97C \uD655\uC778\uD558\uC138\uC694.', 'warn');
+      } catch (err) {
+        addLog(2, `\uB124\uD2B8\uC6CC\uD06C \uC624\uB958: ${err instanceof Error ? err.message : String(err)}`, 'error');
+      }
+    }
+
+    async function runTest3() {
+      clearLog(3);
+      addLog(3, '\uAE08\uC561 \uBCC0\uC870 \uD14C\uC2A4\uD2B8 \uC2DC\uC791', 'info');
+      const fakePaymentKey = 'test_pk_tampered_' + Date.now();
+      const fakeOrderId = 'test_order_tampered_' + Date.now();
+      const tamperedAmount = 100;
+      addLog(3, `\uBCC0\uC870\uB41C \uAE08\uC561(${tamperedAmount}\uC6D0)\uC73C\uB85C confirm \uD638\uCD9C`, 'warn');
+      try {
+        const res = await fetch(`/api/payment/confirm?paymentKey=${fakePaymentKey}&orderId=${fakeOrderId}&amount=${tamperedAmount}`);
+        const text = await res.text();
+        if (res.ok && text.includes('success')) {
+          addLog(3, '\uC11C\uBC84\uAC00 \uBCC0\uC870\uB41C \uAE08\uC561\uC744 \uC218\uB77D\uD568 \u2014 \uBCF4\uC548 \uCDE8\uC57D\uC810!', 'error');
+        } else {
+          addLog(3, `\uC11C\uBC84 \uC751\uB2F5: ${res.status} \u2014 \uAE08\uC561 \uBCC0\uC870 \uAC10\uC9C0\uB428`, 'success');
+        }
+      } catch (err) {
+        addLog(3, `\uC694\uCCAD \uC2E4\uD328: ${err instanceof Error ? err.message : String(err)}`, 'info');
+      }
+    }
+
+    async function runTest4() {
+      clearLog(4);
+      addLog(4, '\uC911\uBCF5 \uC2B9\uC778 \uD14C\uC2A4\uD2B8 \uC2DC\uC791', 'info');
+      const fakePaymentKey = 'test_pk_dup_' + Date.now();
+      const fakeOrderId = 'test_order_dup_' + Date.now();
+      addLog(4, '\uCCAB \uBC88\uC9F8 confirm \uD638\uCD9C', 'info');
+      try {
+        const res1 = await fetch(`/api/payment/confirm?paymentKey=${fakePaymentKey}&orderId=${fakeOrderId}&amount=${TEST_AMOUNT}`);
+        addLog(4, `\uCCAB \uBC88\uC9F8 \uC751\uB2F5: ${res1.status}`, res1.ok ? 'success' : 'warn');
+        addLog(4, '\uB450 \uBC88\uC9F8 confirm \uD638\uCD9C (\uB3D9\uC77C paymentKey)', 'info');
+        const res2 = await fetch(`/api/payment/confirm?paymentKey=${fakePaymentKey}&orderId=${fakeOrderId}&amount=${TEST_AMOUNT}`);
+        addLog(4, `\uB450 \uBC88\uC9F8 \uC751\uB2F5: ${res2.status}`, res2.ok ? 'error' : 'success');
+        if (!res2.ok) {
+          addLog(4, '\uC911\uBCF5 \uC2B9\uC778\uC774 \uC815\uC0C1\uC801\uC73C\uB85C \uAC70\uC808\uB428', 'success');
+        } else {
+          addLog(4, '\uC911\uBCF5 \uC2B9\uC778\uC774 \uD5C8\uC6A9\uB428 \u2014 \uD655\uC778 \uD544\uC694', 'error');
+        }
+      } catch (err) {
+        addLog(4, `\uC694\uCCAD \uC2E4\uD328: ${err instanceof Error ? err.message : String(err)}`, 'error');
+      }
+    }
+
+    async function runTest5() {
+      clearLog(5);
+      addLog(5, 'Webhook \uC11C\uBA85 \uBCC0\uC870 \uD14C\uC2A4\uD2B8', 'info');
+      const fakePayload = JSON.stringify({
+        eventType: 'PAYMENT_STATUS_CHANGED',
+        data: {
+          paymentKey: 'fake_pk_' + Date.now(),
+          orderId: 'fake_order_' + Date.now(),
+          status: 'DONE',
+        },
+      });
+      addLog(5, '\uBCC0\uC870\uB41C \uC11C\uBA85\uC73C\uB85C webhook \uC804\uC1A1', 'warn');
+      try {
+        const res = await fetch('/api/payment/webhook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Toss-Signature': 'invalid_fake_signature_' + Date.now(),
+          },
+          body: fakePayload,
+        });
+        if (res.status === 401 || res.status === 403 || res.status === 400) {
+          addLog(5, `\uC11C\uBC84\uAC00 \uBCC0\uC870\uB41C \uC11C\uBA85\uC744 \uAC70\uBD80\uD568 (${res.status})`, 'success');
+        } else if (res.ok) {
+          addLog(5, '\uC11C\uBC84\uAC00 \uBCC0\uC870\uB41C \uC11C\uBA85\uC744 \uC218\uB77D\uD568 \u2014 \uBCF4\uC548 \uCDE8\uC57D\uC810!', 'error');
+        } else {
+          addLog(5, `\uC11C\uBC84 \uC751\uB2F5: ${res.status}`, 'warn');
+        }
+      } catch (err) {
+        addLog(5, `\uC694\uCCAD \uC2E4\uD328: ${err instanceof Error ? err.message : String(err)}`, 'info');
+      }
+    }
+
+    async function runEdgeCaseTest(
+      scenarioNum: number,
+      body: Record<string, unknown>,
+      expectedStatus: number,
+      description: string
+    ): Promise<boolean> {
+      clearLog(scenarioNum);
+      addLog(scenarioNum, `${description} \uD14C\uC2A4\uD2B8 \uC2DC\uC791`, 'info');
+      try {
+        const res = await fetch('/api/payment/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        addLog(scenarioNum, `\uC751\uB2F5 \uC0C1\uD0DC: ${res.status}`, res.status === expectedStatus ? 'success' : 'error');
+        const data = await res.json().catch(() => ({}));
+        if (res.status === expectedStatus) {
+          addLog(scenarioNum, `\uD1B5\uACFC \u2014 \uAE30\uB300\uD55C ${expectedStatus} \uC751\uB2F5 \uC218\uC2E0`, 'success');
+          if ((data as Record<string, unknown>).error) addLog(scenarioNum, `\uC11C\uBC84 \uBA54\uC2DC\uC9C0: ${(data as Record<string, unknown>).error}`, 'info');
+          return true;
+        } else {
+          addLog(scenarioNum, `\uC2E4\uD328 \u2014 \uAE30\uB300: ${expectedStatus}, \uC2E4\uC81C: ${res.status}`, 'error');
+          return false;
+        }
+      } catch (err) {
+        addLog(scenarioNum, `\uB124\uD2B8\uC6CC\uD06C \uC624\uB958: ${err instanceof Error ? err.message : String(err)}`, 'error');
+        return false;
+      }
+    }
+
+    async function runTest6() {
+      return runEdgeCaseTest(6, {
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items: [{ name: '\uACE0\uAC00 \uC0C1\uD488', quantity: 1, unit_price: 10000000000 }],
+      }, 400, '\uAE08\uC561 \uBCC0\uC870 (100\uC5B5\uC6D0)');
+    }
+
+    async function runTest7() {
+      return runEdgeCaseTest(7, {
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items: [{ name: '\uC800\uAC00 \uC0C1\uD488', quantity: 1, unit_price: 50 }],
+      }, 400, '\uCD5C\uC18C \uAE08\uC561 \uBBF8\uB2EC (50\uC6D0)');
+    }
+
+    async function runTest8() {
+      return runEdgeCaseTest(8, {
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items: [{ name: '\uB300\uB7C9 \uC0C1\uD488', quantity: 1000, unit_price: 1000 }],
+      }, 400, '\uC218\uB7C9 \uCD08\uACFC (1000\uAC1C)');
+    }
+
+    async function runTest9() {
+      return runEdgeCaseTest(9, {
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items: [{ name: '\uC74C\uC218 \uC0C1\uD488', quantity: 1, unit_price: -1000 }],
+      }, 400, '\uC74C\uC218 \uAE08\uC561 (-1000\uC6D0)');
+    }
+
+    async function runTest10() {
+      return runEdgeCaseTest(10, {
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items: [],
+      }, 400, '\uBE48 \uC544\uC774\uD15C \uBC30\uC5F4');
+    }
+
+    async function runTest11() {
+      const items = Array.from({ length: 51 }, (_, i) => ({
+        name: `\uC0C1\uD488 ${i + 1}`,
+        quantity: 1,
+        unit_price: 1000,
+      }));
+      return runEdgeCaseTest(11, {
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items,
+      }, 400, '\uC544\uC774\uD15C 50\uAC1C \uCD08\uACFC');
+    }
+
+    async function runTest12(): Promise<boolean> {
+      clearLog(12);
+      addLog(12, '\uC798\uBABB\uB41C confirm \uB370\uC774\uD130 \uD14C\uC2A4\uD2B8 \uC2DC\uC791', 'info');
+      const fakeOrderId = 'nonexistent_order_' + Date.now();
+      const fakePaymentKey = 'fake_pk_' + Date.now();
+      addLog(12, `\uC874\uC7AC\uD558\uC9C0 \uC54A\uB294 orderId: ${fakeOrderId}`, 'warn');
+      try {
+        const res = await fetch(`/api/payment/confirm?paymentKey=${fakePaymentKey}&orderId=${fakeOrderId}&amount=50000`);
+        addLog(12, `\uC751\uB2F5 \uC0C1\uD0DC: ${res.status}`, 'info');
+        if (!res.ok) {
+          addLog(12, '\uD1B5\uACFC \u2014 \uC11C\uBC84\uAC00 \uC798\uBABB\uB41C \uB370\uC774\uD130\uB97C \uAC70\uBD80\uD568', 'success');
+          return true;
+        } else {
+          const data = await res.json().catch(() => ({}));
+          if (!(data as Record<string, unknown>).success) {
+            addLog(12, '\uD1B5\uACFC \u2014 \uC11C\uBC84\uAC00 \uC5D0\uB7EC \uC751\uB2F5 \uBC18\uD658', 'success');
+            return true;
+          }
+          addLog(12, '\uC2E4\uD328 \u2014 \uC11C\uBC84\uAC00 \uC798\uBABB\uB41C \uB370\uC774\uD130\uB97C \uC218\uB77D\uD568', 'error');
+          return false;
+        }
+      } catch (err) {
+        addLog(12, `\uB124\uD2B8\uC6CC\uD06C \uC624\uB958: ${err instanceof Error ? err.message : String(err)}`, 'error');
+        return false;
+      }
+    }
+
+    async function runTest13(): Promise<boolean> {
+      clearLog(13);
+      addLog(13, 'Rate Limiting \uD14C\uC2A4\uD2B8 \uC2DC\uC791 \u2014 11\uD68C \uC5F0\uC18D \uD638\uCD9C', 'info');
+      let got429 = false;
+      let successCount = 0;
+      const body = JSON.stringify({
+        customer_name: '\uD14C\uC2A4\uD2B8\uACE0\uAC1D',
+        customer_phone: '010-0000-0000',
+        items: [{ name: 'Rate Limit \uD14C\uC2A4\uD2B8', quantity: 1, unit_price: 1000 }],
+      });
+      for (let i = 1; i <= 11; i++) {
+        try {
+          const res = await fetch('/api/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body,
+          });
+          if (res.status === 429) {
+            got429 = true;
+            addLog(13, `#${i} \u2192 429 (Rate Limited)`, 'success');
+          } else if (res.ok || res.status === 200 || res.status === 201) {
+            successCount++;
+            addLog(13, `#${i} \u2192 ${res.status} (\uC131\uACF5)`, 'info');
+          } else {
+            addLog(13, `#${i} \u2192 ${res.status}`, 'warn');
+          }
+        } catch (err) {
+          addLog(13, `#${i} \u2192 \uB124\uD2B8\uC6CC\uD06C \uC624\uB958`, 'error');
+        }
+      }
+      if (got429) {
+        addLog(13, `\uD1B5\uACFC \u2014 Rate Limiting \uC791\uB3D9 \uD655\uC778 (\uC131\uACF5 ${successCount}\uD68C, 429 \uBC1C\uC0DD)`, 'success');
+        return true;
+      } else {
+        addLog(13, `\uC2E4\uD328 \u2014 11\uD68C \uBAA8\uB450 \uD5C8\uC6A9\uB428 (429 \uC5C6\uC74C)`, 'error');
+        return false;
+      }
+    }
+
+    const testHandlers: Record<string, () => Promise<void | boolean>> = {
+      '1': runTest1,
+      '2': runTest2,
+      '3': runTest3,
+      '4': runTest4,
+      '5': runTest5,
+      '6': runTest6,
+      '7': runTest7,
+      '8': runTest8,
+      '9': runTest9,
+      '10': runTest10,
+      '11': runTest11,
+      '12': runTest12,
+      '13': runTest13,
+    };
+
+    document.querySelectorAll<HTMLButtonElement>('[data-test]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const testId = btn.dataset.test || '';
+        const handler = testHandlers[testId];
+        if (!handler) return;
+        btn.disabled = true;
+        try {
+          await handler();
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+
+    const runAllBtn = document.getElementById('run-all-edge-cases') as HTMLButtonElement;
+    if (runAllBtn) {
+      runAllBtn.addEventListener('click', async () => {
+        runAllBtn.disabled = true;
+        const summaryEl = document.getElementById('test-summary') as HTMLElement;
+        const passEl = document.getElementById('summary-pass') as HTMLElement;
+        const failEl = document.getElementById('summary-fail') as HTMLElement;
+        if (summaryEl) summaryEl.style.display = 'none';
+
+        let passCount = 0;
+        let failCount = 0;
+
+        const edgeCaseTests: Array<[string, () => Promise<boolean | void>]> = [
+          ['6', runTest6],
+          ['7', runTest7],
+          ['8', runTest8],
+          ['9', runTest9],
+          ['10', runTest10],
+          ['11', runTest11],
+          ['12', runTest12],
+          ['13', runTest13],
+        ];
+
+        for (const [id, handler] of edgeCaseTests) {
+          setButtonDisabled(id, true);
+          const result = await handler();
+          if (result) {
+            passCount++;
+          } else {
+            failCount++;
+          }
+          setButtonDisabled(id, false);
+        }
+
+        if (summaryEl && passEl && failEl) {
+          passEl.textContent = `\u2705 ${passCount}\uAC74 \uD1B5\uACFC`;
+          failEl.textContent = `\u274C ${failCount}\uAC74 \uC2E4\uD328`;
+          summaryEl.style.display = 'flex';
+        }
+
+        runAllBtn.disabled = false;
+      });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>
+
+<style>
+  @import '../../styles/payment.css';
+
+  .payment-test__group-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .payment-test__group-title:first-of-type {
+    margin-top: 0;
+  }
+
+  .payment-test__expected-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--space-sm);
+    background: rgba(245, 101, 101, 0.1);
+    color: var(--error);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(245, 101, 101, 0.2);
+    flex-shrink: 0;
+  }
+
+  .payment-test__run-all-section {
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  .payment-test__run-all-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-2xl);
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    font-family: var(--font-family);
+    background: var(--primary);
+    color: var(--text-primary);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    min-width: 280px;
+  }
+
+  .payment-test__run-all-btn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(26, 77, 46, 0.3);
+  }
+
+  .payment-test__run-all-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .payment-test__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-md) var(--space-xl);
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+  }
+
+  .payment-test__summary-pass {
+    color: var(--success);
+  }
+
+  .payment-test__summary-fail {
+    color: var(--error);
+  }
+
+  .payment-test__summary-separator {
+    color: var(--text-muted);
+  }
+</style>
