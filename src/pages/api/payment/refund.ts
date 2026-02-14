@@ -45,6 +45,12 @@ export const POST: APIRoute = async ({ request }) => {
 
       const payment = await paymentService.requestRefund(payment_id, reason.trim(), amount, 'admin');
 
+      const adminSupa = createAdminClient();
+      const { data: pmt } = await adminSupa.from('payments').select('order_id').eq('id', payment_id).single();
+      if (pmt?.order_id) {
+        await adminSupa.from('orders').update({ status: 'refund_pending' }).eq('id', pmt.order_id);
+      }
+
       PaymentLogger.apiResponse(200, startTime, { payment_id: payment.id });
       cleanup();
       return jsonResponse<ApiResponse>(200, { success: true, data: { payment } });
@@ -138,6 +144,11 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const refunded = await paymentService.requestRefund(paymentRecord.id, reason.trim(), amount, 'user');
+
+    await adminSupabase
+      .from('orders')
+      .update({ status: 'refund_pending' })
+      .eq('id', order_id);
 
     PaymentLogger.info('USER_REFUND_REQUESTED', {
       order_id,

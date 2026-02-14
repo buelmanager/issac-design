@@ -66,6 +66,8 @@ function getStatusInfo(status: string): { label: string; className: string } {
     shipped: { label: '배송 중', className: 'orders__status--shipped' },
     delivered: { label: '배송 완료', className: 'orders__status--delivered' },
     cancelled: { label: '취소됨', className: 'orders__status--cancelled' },
+    refund_pending: { label: '환불 처리 중', className: 'orders__status--refunded' },
+    refunded: { label: '환불 완료', className: 'orders__status--refunded' },
   };
   return map[status] || { label: status, className: 'orders__status--pending' };
 }
