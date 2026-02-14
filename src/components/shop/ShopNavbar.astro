@@ -98,11 +98,10 @@ const { categories } = await getProducts();
             <path d="M3.5 17.5c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </a>
-        <div class="shop-navbar__auth-dropdown" data-auth-dropdown style="display:none;">
+        <div class="shop-navbar__auth-dropdown" data-auth-dropdown>
           <a href="/shop/mypage" class="shop-navbar__auth-dropdown-item">마이페이지</a>
-          <a href="/shop/mypage/orders" class="shop-navbar__auth-dropdown-item">주문내역</a>
           <a href="/shop/mypage/quotes" class="shop-navbar__auth-dropdown-item">견적 내역</a>
-          <a href="/shop/quote-cart" class="shop-navbar__auth-dropdown-item">견적함</a>
+          <a href="/shop/mypage/orders" class="shop-navbar__auth-dropdown-item">주문 내역</a>
           <div class="shop-navbar__auth-dropdown-divider"></div>
           <button type="button" class="shop-navbar__auth-dropdown-item shop-navbar__auth-dropdown-item--logout" data-logout-btn>로그아웃</button>
         </div>

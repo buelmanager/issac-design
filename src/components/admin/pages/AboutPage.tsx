@@ -1,7 +1,7 @@
 import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { AboutSection } from '../../../types/admin';
 import type { Json } from '../../../types/database';
-import { FormField, TabNav, LoadingSpinner } from '../ui';
+import { FormField, TabNav, LoadingSpinner, LinkSelect } from '../ui';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Save } from 'lucide-react';
@@ -298,7 +298,7 @@ export default function AboutPage() {
               <input className="admin-input" value={button1.text ?? ''} onChange={(e) => updateButton('button1', 'text', e.target.value)} />
             </FormField>
             <FormField label="링크">
-              <input className="admin-input" value={button1.href ?? ''} onChange={(e) => updateButton('button1', 'href', e.target.value)} />
+              <LinkSelect value={button1.href ?? ''} onChange={(v) => updateButton('button1', 'href', v)} />
             </FormField>
           </div>
         </div>
@@ -311,7 +311,7 @@ export default function AboutPage() {
               <input className="admin-input" value={button2.text ?? ''} onChange={(e) => updateButton('button2', 'text', e.target.value)} />
             </FormField>
             <FormField label="링크">
-              <input className="admin-input" value={button2.href ?? ''} onChange={(e) => updateButton('button2', 'href', e.target.value)} />
+              <LinkSelect value={button2.href ?? ''} onChange={(v) => updateButton('button2', 'href', v)} />
             </FormField>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { LandingSection, HeroSlide, ServiceItem, SignageType, ClientProject, ProjectFilterTab, PortfolioItem, ClientLogo } from '../../../types/admin';
 import type { LandingFaq, InquiryType, NavigationItem, SiteConfig } from '../../../types/admin';
-import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';
+import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ConfirmModal, ImageUploader, LinkSelect } from '../ui';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Trash2, Save, Upload, Link as LinkIcon, X, Loader2, AlertCircle, Film } from 'lucide-react';
@@ -732,13 +732,13 @@ export default function LandingPage() {
                 <input className="admin-input" value={slide.cta_primary_text ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_primary_text', e.target.value)} />
               </FormField>
               <FormField label="CTA Primary Link">
-                <input className="admin-input" value={slide.cta_primary_link ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_primary_link', e.target.value)} />
+                <LinkSelect value={slide.cta_primary_link ?? ''} onChange={(v) => updateHeroSlide(slide.id, 'cta_primary_link', v)} />
               </FormField>
               <FormField label="CTA Secondary Text">
                 <input className="admin-input" value={slide.cta_secondary_text ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_secondary_text', e.target.value)} />
               </FormField>
               <FormField label="CTA Secondary Link">
-                <input className="admin-input" value={slide.cta_secondary_link ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_secondary_link', e.target.value)} />
+                <LinkSelect value={slide.cta_secondary_link ?? ''} onChange={(v) => updateHeroSlide(slide.id, 'cta_secondary_link', v)} />
               </FormField>
               <FormField label="영상 (MP4)">
                 <VideoUploader value={slide.video_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'video_url', url)} />
@@ -835,7 +835,7 @@ export default function LandingPage() {
                 <input className="admin-input" value={item.number_label} placeholder="번호" onChange={(e) => updateSignageType(item.id, 'number_label', e.target.value)} />
                 <input className="admin-input" value={item.title} placeholder="제목" onChange={(e) => updateSignageType(item.id, 'title', e.target.value)} />
                 <input className="admin-input" value={item.description} placeholder="설명" onChange={(e) => updateSignageType(item.id, 'description', e.target.value)} />
-                <input className="admin-input" value={item.link} placeholder="링크" onChange={(e) => updateSignageType(item.id, 'link', e.target.value)} />
+                <LinkSelect value={item.link} onChange={(v) => updateSignageType(item.id, 'link', v)} />
               </div>
               <Toggle checked={item.is_visible} onChange={(v) => updateSignageType(item.id, 'is_visible', v)} label="표시" />
               <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'signage_types', id: item.id })}>
@@ -1108,7 +1108,7 @@ export default function LandingPage() {
           renderItem={(n) => (
             <div className="admin-drag-item-content">
               <input className="admin-input" value={n.label} placeholder="라벨" onChange={(e) => updateNavItem('quick', n.id, 'label', e.target.value)} />
-              <input className="admin-input" value={n.href} placeholder="링크" onChange={(e) => updateNavItem('quick', n.id, 'href', e.target.value)} />
+              <LinkSelect value={n.href} onChange={(v) => updateNavItem('quick', n.id, 'href', v)} />
               <Toggle checked={n.is_visible} onChange={(v) => updateNavItem('quick', n.id, 'is_visible', v)} label="표시" />
               <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'navigation_items', id: n.id })}>
                 <Trash2 size={14} />
@@ -1131,7 +1131,7 @@ export default function LandingPage() {
           renderItem={(n) => (
             <div className="admin-drag-item-content">
               <input className="admin-input" value={n.label} placeholder="라벨" onChange={(e) => updateNavItem('service', n.id, 'label', e.target.value)} />
-              <input className="admin-input" value={n.href} placeholder="링크" onChange={(e) => updateNavItem('service', n.id, 'href', e.target.value)} />
+              <LinkSelect value={n.href} onChange={(v) => updateNavItem('service', n.id, 'href', v)} />
               <Toggle checked={n.is_visible} onChange={(v) => updateNavItem('service', n.id, 'is_visible', v)} label="표시" />
               <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'navigation_items', id: n.id })}>
                 <Trash2 size={14} />

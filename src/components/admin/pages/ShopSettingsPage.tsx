@@ -1,6 +1,6 @@
 import { supabaseBrowser as supabase } from '../../../lib/supabase-browser';
 import type { HeroSlide, LandingSection, TrustIndicator, ClientLogo } from '../../../types/admin';
-import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ImageUploader } from '../ui';
+import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ImageUploader, LinkSelect } from '../ui';
 import toast from 'react-hot-toast';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Trash2, Save, Upload, Link as LinkIcon, X, Loader2, AlertCircle, Film } from 'lucide-react';
@@ -482,13 +482,13 @@ export default function ShopSettingsPage() {
                 <input className="admin-input" value={slide.cta_primary_text ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_primary_text', e.target.value)} />
               </FormField>
               <FormField label="CTA Primary Link">
-                <input className="admin-input" value={slide.cta_primary_link ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_primary_link', e.target.value)} />
+                <LinkSelect value={slide.cta_primary_link ?? ''} onChange={(v) => updateHeroSlide(slide.id, 'cta_primary_link', v)} />
               </FormField>
               <FormField label="CTA Secondary Text">
                 <input className="admin-input" value={slide.cta_secondary_text ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_secondary_text', e.target.value)} />
               </FormField>
               <FormField label="CTA Secondary Link">
-                <input className="admin-input" value={slide.cta_secondary_link ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_secondary_link', e.target.value)} />
+                <LinkSelect value={slide.cta_secondary_link ?? ''} onChange={(v) => updateHeroSlide(slide.id, 'cta_secondary_link', v)} />
               </FormField>
               <FormField label="Video URL (MP4)">
                 <VideoUploader value={slide.video_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'video_url', url || null)} folder="shop" />

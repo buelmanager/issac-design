@@ -20,3 +20,4 @@ export { InstallationGalleryEditor } from './InstallationGalleryEditor';
 export type { GalleryItem } from './InstallationGalleryEditor';
 export { ProductionStepsEditor } from './ProductionStepsEditor';
 export type { StepItem } from './ProductionStepsEditor';
+export { LinkSelect } from './LinkSelect';
