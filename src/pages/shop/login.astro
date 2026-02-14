@@ -358,6 +358,8 @@ if (user) {
 </style>
 
 <script>
+  import { supabaseBrowser } from '../../lib/supabase-browser';
+
   const ALLOWED_PREFIXES = ['/admin', '/shop', '/simulator'];
   function validateRedirect(input: string | null): string {
     if (!input || !input.startsWith('/') || input.startsWith('//') || input.includes('..')) return '/shop';
@@ -457,35 +459,50 @@ if (user) {
     setLoading(true);
     hideAlert();
 
-    console.log(`[AUTH] ${label} OAuth 시작`, { provider, timestamp: new Date().toISOString() });
+    console.log(`[AUTH] ${label} OAuth 시작 (클라이언트 SDK)`, { provider, timestamp: new Date().toISOString() });
 
     try {
       const params = new URLSearchParams(window.location.search);
       const redirectTo = validateRedirect(params.get('redirect'));
 
-      console.log(`[AUTH] API 호출: /api/auth/${provider}`, { redirectTo });
+      const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
+      console.log(`[AUTH] callbackUrl:`, callbackUrl);
 
-      const res = await fetch(`/api/auth/${provider}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ redirectTo }),
+      const oauthOptions: Record<string, unknown> = {
+        redirectTo: callbackUrl,
+      };
+
+      // 카카오는 scope 제한
+      if (provider === 'kakao') {
+        oauthOptions.scopes = 'profile_nickname profile_image';
+      }
+
+      // Google은 access_type, prompt 설정
+      if (provider === 'google') {
+        oauthOptions.queryParams = {
+          access_type: 'offline',
+          prompt: 'consent',
+        };
+      }
+
+      const { data, error } = await supabaseBrowser.auth.signInWithOAuth({
+        provider,
+        options: oauthOptions as any,
       });
 
-      const json = await res.json();
-      console.log(`[AUTH] API 응답:`, { status: res.status, ok: res.ok, json });
-
-      if (!res.ok || !json.success) {
-        const errMsg = json.error?.message ?? `${label} 로그인에 실패했습니다.`;
-        console.error(`[AUTH] OAuth API 에러:`, { status: res.status, error: json.error });
-        showAlert(`${errMsg} (HTTP ${res.status})`, 'error');
+      if (error) {
+        console.error(`[AUTH] OAuth 에러:`, { message: error.message, status: error.status });
+        showAlert(`${label} 로그인 실패: ${error.message}`, 'error');
         setLoading(false);
         return;
       }
 
-      console.log(`[AUTH] OAuth 리다이렉트:`, json.data.url);
-      window.location.href = json.data.url;
+      if (data.url) {
+        console.log(`[AUTH] OAuth 리다이렉트:`, data.url);
+        window.location.href = data.url;
+      }
     } catch (err) {
-      console.error(`[AUTH] OAuth 네트워크 에러:`, err);
+      console.error(`[AUTH] OAuth 예외:`, err);
       showAlert('서버 연결에 실패했습니다.', 'error');
       setLoading(false);
     }
