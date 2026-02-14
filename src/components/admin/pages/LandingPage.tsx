@@ -1,10 +1,167 @@
 import { supabase } from '../../../lib/supabase';
 import type { LandingSection, HeroSlide, ServiceItem, SignageType, ClientProject, ProjectFilterTab } from '../../../types/admin';
 import type { LandingFaq, InquiryType, NavigationItem, SiteConfig } from '../../../types/admin';
-import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ConfirmModal } from '../ui';
+import { FormField, Toggle, TabNav, DragSortList, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';
 import toast from 'react-hot-toast';
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Plus, Trash2, Save, Upload, Link as LinkIcon, X, Loader2, AlertCircle, Film } from 'lucide-react';
+
+const VIDEO_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+async function uploadVideo(file: File, folder: string): Promise<string> {
+  if (!VIDEO_TYPES.includes(file.type)) {
+    throw new Error('MP4, WebM, MOV 형식의 영상만 업로드할 수 있습니다.');
+  }
+  if (file.size > VIDEO_MAX_SIZE) {
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+    throw new Error(`영상 크기(${sizeMB}MB)가 제한(5MB)을 초과합니다.`);
+  }
+  const ext = file.name.split('.').pop() ?? 'mp4';
+  const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from('images').upload(fileName, file, { cacheControl: '3600', upsert: false });
+  if (error) throw new Error('영상 업로드에 실패했습니다.');
+  const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function VideoUploader({ value, onChange, folder = 'landing' }: { value: string; onChange: (url: string) => void; folder?: string }) {
+  const [mode, setMode] = useState<'upload' | 'url'>('upload');
+  const [urlInput, setUrlInput] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = useCallback(async (file: File) => {
+    setUploading(true);
+    setError(null);
+    setDragOver(false);
+    try {
+      const url = await uploadVideo(file, folder);
+      onChange(url);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '업로드에 실패했습니다';
+      setError(msg);
+    } finally {
+      setUploading(false);
+    }
+  }, [folder, onChange]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }, [handleFile]);
+
+  const handleUrlConfirm = useCallback(() => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    if (!isValidUrl(trimmed)) {
+      setError('올바른 URL 형식이 아닙니다.');
+      return;
+    }
+    setError(null);
+    onChange(trimmed);
+    setUrlInput('');
+  }, [urlInput, onChange]);
+
+  return (
+    <div className="video-uploader">
+      {value ? (
+        <div className="video-uploader-preview">
+          <video src={value} controls style={{ width: '100%', maxHeight: 200, display: 'block' }} />
+          <button type="button" className="video-uploader-remove" onClick={() => onChange('')}>
+            <X size={14} />
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="video-uploader-tabs">
+            <button
+              type="button"
+              className={`video-uploader-tab ${mode === 'upload' ? 'video-uploader-tab-active' : ''}`}
+              onClick={() => { setMode('upload'); setError(null); }}
+            >
+              <Upload size={14} /> 파일 업로드
+            </button>
+            <button
+              type="button"
+              className={`video-uploader-tab ${mode === 'url' ? 'video-uploader-tab-active' : ''}`}
+              onClick={() => { setMode('url'); setError(null); }}
+            >
+              <LinkIcon size={14} /> URL 입력
+            </button>
+          </div>
+
+          {mode === 'upload' ? (
+            <div
+              className={`video-uploader-drop ${dragOver ? 'video-uploader-drop-active' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? (
+                <div className="video-uploader-progress">
+                  <Loader2 size={24} className="img-uploader-spinner" />
+                  <span>업로드 중...</span>
+                </div>
+              ) : (
+                <>
+                  <Film size={32} style={{ color: '#9ca3af' }} />
+                  <p>클릭 또는 드래그하여 영상 업로드</p>
+                  <p className="video-uploader-hint">MP4, WebM (최대 5MB)</p>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file);
+                  e.target.value = '';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="video-uploader-url">
+              <input
+                className="admin-input"
+                value={urlInput}
+                onChange={(e) => { setUrlInput(e.target.value); setError(null); }}
+                placeholder="https://..."
+                onKeyDown={(e) => e.key === 'Enter' && handleUrlConfirm()}
+              />
+              <button type="button" className="admin-btn admin-btn-primary" onClick={handleUrlConfirm} disabled={!urlInput.trim() || !isValidUrl(urlInput.trim())}>
+                확인
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <div className="video-uploader-error">
+              <AlertCircle size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 const TABS = [
   { key: 'hero', label: 'Hero' },
@@ -101,7 +258,11 @@ export default function LandingPage() {
 
   const handleSaveHeroSlide = async (slide: HeroSlide) => {
     setSaving(true);
-    const { error } = await supabase.from('hero_slides').update({
+    const { error } = await supabase.from('hero_slides').upsert({
+      id: slide.id,
+      page: slide.page,
+      slide_index: slide.slide_index,
+      order_index: slide.order_index,
       eyebrow: slide.eyebrow,
       title_line1: slide.title_line1,
       title_line2: slide.title_line2,
@@ -113,7 +274,7 @@ export default function LandingPage() {
       video_url: slide.video_url,
       video_webm_url: slide.video_webm_url,
       poster_url: slide.poster_url,
-    }).eq('id', slide.id);
+    });
     if (error) toast.error('저장 실패');
     else toast.success('슬라이드 저장 완료');
     setSaving(false);
@@ -122,7 +283,11 @@ export default function LandingPage() {
   const handleSaveAllHero = async () => {
     setSaving(true);
     const updates = heroSlides.map((s) =>
-      supabase.from('hero_slides').update({
+      supabase.from('hero_slides').upsert({
+        id: s.id,
+        page: s.page,
+        slide_index: s.slide_index,
+        order_index: s.order_index,
         eyebrow: s.eyebrow,
         title_line1: s.title_line1,
         title_line2: s.title_line2,
@@ -134,7 +299,7 @@ export default function LandingPage() {
         video_url: s.video_url,
         video_webm_url: s.video_webm_url,
         poster_url: s.poster_url,
-      }).eq('id', s.id)
+      })
     );
     const results = await Promise.all(updates);
     if (results.some((r) => r.error)) toast.error('일부 슬라이드 저장 실패');
@@ -144,6 +309,31 @@ export default function LandingPage() {
 
   const updateHeroSlide = (id: string, field: keyof HeroSlide, value: string | null) => {
     setHeroSlides((prev) => prev.map((s) => s.id === id ? { ...s, [field]: value } : s));
+  };
+
+  const addHeroSlide = () => {
+    const newSlide: HeroSlide = {
+      id: crypto.randomUUID(),
+      page: 'landing',
+      slide_index: heroSlides.length,
+      eyebrow: '',
+      title_line1: '새 슬라이드',
+      title_line2: '',
+      subtitle: '',
+      description: '',
+      cta_primary_text: '',
+      cta_primary_link: '',
+      cta_secondary_text: '',
+      cta_secondary_link: '',
+      video_url: '',
+      video_webm_url: '',
+      poster_url: '',
+      is_visible: true,
+      order_index: heroSlides.length,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setHeroSlides(prev => [...prev, newSlide]);
   };
 
   const handleSaveServices = async () => {
@@ -201,6 +391,23 @@ export default function LandingPage() {
 
   const updateSignageType = (id: string, field: keyof SignageType, value: string | boolean) => {
     setSignageTypes((prev) => prev.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const addSignageType = () => {
+    const newItem: SignageType = {
+      id: crypto.randomUUID(),
+      number_label: String(signageTypes.length + 1).padStart(2, '0'),
+      title: '새 간판',
+      description: '설명을 입력하세요',
+      link: '',
+      image_url: '',
+      icon_key: null,
+      is_visible: true,
+      order_index: signageTypes.length,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setSignageTypes(prev => [...prev, newItem]);
   };
 
   const handleSaveClients = async () => {
@@ -291,6 +498,18 @@ export default function LandingPage() {
     setInquiryTypes((prev) => prev.map((t) => t.id === id ? { ...t, [field]: value } : t));
   };
 
+  const addInquiryType = () => {
+    const newItem: InquiryType = {
+      id: crypto.randomUUID(),
+      label: '새 문의 유형',
+      value: `type_${Date.now()}`,
+      is_visible: true,
+      order_index: inquiryTypes.length,
+      is_seed: false,
+    };
+    setInquiryTypes(prev => [...prev, newItem]);
+  };
+
   const handleSaveFooter = async () => {
     setSaving(true);
     const configUpdates = footerConfigs.map((c) =>
@@ -317,6 +536,36 @@ export default function LandingPage() {
     setter((prev) => prev.map((n) => n.id === id ? { ...n, [field]: value } : n));
   };
 
+  const addFooterQuickNav = () => {
+    const newItem: NavigationItem = {
+      id: crypto.randomUUID(),
+      nav_type: 'footer_quick',
+      label: '새 링크',
+      href: '/',
+      icon_key: null,
+      is_visible: true,
+      order_index: footerQuickNav.length,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setFooterQuickNav(prev => [...prev, newItem]);
+  };
+
+  const addFooterServiceNav = () => {
+    const newItem: NavigationItem = {
+      id: crypto.randomUUID(),
+      nav_type: 'footer_service',
+      label: '새 서비스 링크',
+      href: '/',
+      icon_key: null,
+      is_visible: true,
+      order_index: footerServiceNav.length,
+      is_seed: false,
+      updated_at: new Date().toISOString(),
+    };
+    setFooterServiceNav(prev => [...prev, newItem]);
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     const { table, id } = deleteTarget;
@@ -329,6 +578,18 @@ export default function LandingPage() {
       error = res.error;
     } else if (table === 'landing_faqs') {
       const res = await supabase.from('landing_faqs').delete().eq('id', id);
+      error = res.error;
+    } else if (table === 'signage_types') {
+      const res = await supabase.from('signage_types').delete().eq('id', id);
+      error = res.error;
+    } else if (table === 'inquiry_types') {
+      const res = await supabase.from('inquiry_types').delete().eq('id', id);
+      error = res.error;
+    } else if (table === 'navigation_items') {
+      const res = await supabase.from('navigation_items').delete().eq('id', id);
+      error = res.error;
+    } else if (table === 'hero_slides') {
+      const res = await supabase.from('hero_slides').delete().eq('id', id);
       error = res.error;
     }
     if (error) toast.error('삭제 실패');
@@ -343,9 +604,14 @@ export default function LandingPage() {
     <div>
       <div className="admin-card-header">
         <h2 className="admin-card-title">Hero 슬라이드</h2>
-        <button className="admin-btn admin-btn-primary" disabled={saving} onClick={handleSaveAllHero}>
-          <Save size={16} /> 전체 저장
-        </button>
+        <div className="admin-page-actions">
+          <button className="admin-btn admin-btn-secondary" onClick={addHeroSlide}>
+            <Plus size={16} /> 추가
+          </button>
+          <button className="admin-btn admin-btn-primary" disabled={saving} onClick={handleSaveAllHero}>
+            <Save size={16} /> 전체 저장
+          </button>
+        </div>
       </div>
       {heroSlides.map((slide) => (
         <div key={slide.id} className="admin-card">
@@ -382,18 +648,23 @@ export default function LandingPage() {
               <FormField label="CTA Secondary Link">
                 <input className="admin-input" value={slide.cta_secondary_link ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'cta_secondary_link', e.target.value)} />
               </FormField>
-              <FormField label="Video URL">
-                <input className="admin-input" value={slide.video_url ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'video_url', e.target.value)} />
+              <FormField label="영상 (MP4)">
+                <VideoUploader value={slide.video_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'video_url', url)} />
               </FormField>
-              <FormField label="Video WebM URL">
-                <input className="admin-input" value={slide.video_webm_url ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'video_webm_url', e.target.value)} />
+              <FormField label="영상 (WebM)">
+                <VideoUploader value={slide.video_webm_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'video_webm_url', url)} />
               </FormField>
-              <FormField label="Poster URL">
-                <input className="admin-input" value={slide.poster_url ?? ''} onChange={(e) => updateHeroSlide(slide.id, 'poster_url', e.target.value)} />
+              <FormField label="포스터 이미지">
+                <ImageUploader value={slide.poster_url ?? ''} onChange={(url) => updateHeroSlide(slide.id, 'poster_url', url)} folder="landing" />
               </FormField>
-              <button className="admin-btn admin-btn-primary" disabled={saving} onClick={() => handleSaveHeroSlide(slide)}>
-                <Save size={16} /> 이 슬라이드 저장
-              </button>
+              <div className="admin-page-actions" style={{ marginTop: '16px', justifyContent: 'space-between' }}>
+                <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'hero_slides', id: slide.id })}>
+                  <Trash2 size={14} /> 삭제
+                </button>
+                <button className="admin-btn admin-btn-primary" disabled={saving} onClick={() => handleSaveHeroSlide(slide)}>
+                  <Save size={16} /> 이 슬라이드 저장
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -457,21 +728,31 @@ export default function LandingPage() {
     <div>
       <div className="admin-card-header">
         <h2 className="admin-card-title">간판 종류</h2>
+        <button className="admin-btn admin-btn-secondary" onClick={addSignageType}>
+          <Plus size={16} /> 추가
+        </button>
       </div>
       <DragSortList
         items={signageTypes}
         keyExtractor={(item) => item.id}
         onReorder={setSignageTypes}
         renderItem={(item) => (
-          <div className="admin-drag-item-content">
-            <div className="admin-form-group">
-              <input className="admin-input" value={item.number_label} placeholder="번호" onChange={(e) => updateSignageType(item.id, 'number_label', e.target.value)} />
-              <input className="admin-input" value={item.title} placeholder="제목" onChange={(e) => updateSignageType(item.id, 'title', e.target.value)} />
-              <input className="admin-input" value={item.description} placeholder="설명" onChange={(e) => updateSignageType(item.id, 'description', e.target.value)} />
-              <input className="admin-input" value={item.link} placeholder="링크" onChange={(e) => updateSignageType(item.id, 'link', e.target.value)} />
-              <input className="admin-input" value={item.image_url} placeholder="이미지 URL" onChange={(e) => updateSignageType(item.id, 'image_url', e.target.value)} />
+          <div className="admin-drag-item-content admin-drag-item-column">
+            <div className="admin-drag-item-row">
+              <div className="admin-form-group">
+                <input className="admin-input" value={item.number_label} placeholder="번호" onChange={(e) => updateSignageType(item.id, 'number_label', e.target.value)} />
+                <input className="admin-input" value={item.title} placeholder="제목" onChange={(e) => updateSignageType(item.id, 'title', e.target.value)} />
+                <input className="admin-input" value={item.description} placeholder="설명" onChange={(e) => updateSignageType(item.id, 'description', e.target.value)} />
+                <input className="admin-input" value={item.link} placeholder="링크" onChange={(e) => updateSignageType(item.id, 'link', e.target.value)} />
+              </div>
+              <Toggle checked={item.is_visible} onChange={(v) => updateSignageType(item.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'signage_types', id: item.id })}>
+                <Trash2 size={14} />
+              </button>
             </div>
-            <Toggle checked={item.is_visible} onChange={(v) => updateSignageType(item.id, 'is_visible', v)} label="표시" />
+            <FormField label="이미지">
+              <ImageUploader value={item.image_url} onChange={(url) => updateSignageType(item.id, 'image_url', url)} folder="landing" />
+            </FormField>
           </div>
         )}
       />
@@ -511,19 +792,23 @@ export default function LandingPage() {
         keyExtractor={(item) => item.id}
         onReorder={setClientProjects}
         renderItem={(item) => (
-          <div className="admin-drag-item-content">
-            <div className="admin-form-group">
-              <select className="admin-select" value={item.category} onChange={(e) => updateClientProject(item.id, 'category', e.target.value)}>
-                {CLIENT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <input className="admin-input" value={item.name} placeholder="이름" onChange={(e) => updateClientProject(item.id, 'name', e.target.value)} />
-              <input className="admin-input" value={item.project_type} placeholder="프로젝트 유형" onChange={(e) => updateClientProject(item.id, 'project_type', e.target.value)} />
-              <input className="admin-input" value={item.image_url} placeholder="이미지 URL" onChange={(e) => updateClientProject(item.id, 'image_url', e.target.value)} />
+          <div className="admin-drag-item-content admin-drag-item-column">
+            <div className="admin-drag-item-row">
+              <div className="admin-form-group">
+                <select className="admin-select" value={item.category} onChange={(e) => updateClientProject(item.id, 'category', e.target.value)}>
+                  {CLIENT_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <input className="admin-input" value={item.name} placeholder="이름" onChange={(e) => updateClientProject(item.id, 'name', e.target.value)} />
+                <input className="admin-input" value={item.project_type} placeholder="프로젝트 유형" onChange={(e) => updateClientProject(item.id, 'project_type', e.target.value)} />
+              </div>
+              <Toggle checked={item.is_visible} onChange={(v) => updateClientProject(item.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'client_projects', id: item.id })}>
+                <Trash2 size={14} />
+              </button>
             </div>
-            <Toggle checked={item.is_visible} onChange={(v) => updateClientProject(item.id, 'is_visible', v)} label="표시" />
-            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'client_projects', id: item.id })}>
-              <Trash2 size={14} />
-            </button>
+            <FormField label="이미지">
+              <ImageUploader value={item.image_url} onChange={(url) => updateClientProject(item.id, 'image_url', url)} folder="landing" />
+            </FormField>
           </div>
         )}
       />
@@ -590,6 +875,9 @@ export default function LandingPage() {
       )}
       <div className="admin-card-header">
         <h2 className="admin-card-title">문의 유형</h2>
+        <button className="admin-btn admin-btn-secondary" onClick={addInquiryType}>
+          <Plus size={16} /> 추가
+        </button>
       </div>
       <DragSortList
         items={inquiryTypes}
@@ -600,6 +888,9 @@ export default function LandingPage() {
             <input className="admin-input" value={t.label} placeholder="라벨" onChange={(e) => updateInquiryType(t.id, 'label', e.target.value)} />
             <input className="admin-input" value={t.value} placeholder="값" onChange={(e) => updateInquiryType(t.id, 'value', e.target.value)} />
             <Toggle checked={t.is_visible} onChange={(v) => updateInquiryType(t.id, 'is_visible', v)} label="표시" />
+            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'inquiry_types', id: t.id })}>
+              <Trash2 size={14} />
+            </button>
           </div>
         )}
       />
@@ -628,6 +919,9 @@ export default function LandingPage() {
       <div className="admin-card">
         <div className="admin-card-header">
           <h2 className="admin-card-title">빠른 링크</h2>
+          <button className="admin-btn admin-btn-secondary" onClick={addFooterQuickNav}>
+            <Plus size={16} /> 추가
+          </button>
         </div>
         <DragSortList
           items={footerQuickNav}
@@ -638,6 +932,9 @@ export default function LandingPage() {
               <input className="admin-input" value={n.label} placeholder="라벨" onChange={(e) => updateNavItem('quick', n.id, 'label', e.target.value)} />
               <input className="admin-input" value={n.href} placeholder="링크" onChange={(e) => updateNavItem('quick', n.id, 'href', e.target.value)} />
               <Toggle checked={n.is_visible} onChange={(v) => updateNavItem('quick', n.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'navigation_items', id: n.id })}>
+                <Trash2 size={14} />
+              </button>
             </div>
           )}
         />
@@ -645,6 +942,9 @@ export default function LandingPage() {
       <div className="admin-card">
         <div className="admin-card-header">
           <h2 className="admin-card-title">서비스 링크</h2>
+          <button className="admin-btn admin-btn-secondary" onClick={addFooterServiceNav}>
+            <Plus size={16} /> 추가
+          </button>
         </div>
         <DragSortList
           items={footerServiceNav}
@@ -655,6 +955,9 @@ export default function LandingPage() {
               <input className="admin-input" value={n.label} placeholder="라벨" onChange={(e) => updateNavItem('service', n.id, 'label', e.target.value)} />
               <input className="admin-input" value={n.href} placeholder="링크" onChange={(e) => updateNavItem('service', n.id, 'href', e.target.value)} />
               <Toggle checked={n.is_visible} onChange={(v) => updateNavItem('service', n.id, 'is_visible', v)} label="표시" />
+              <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => setDeleteTarget({ table: 'navigation_items', id: n.id })}>
+                <Trash2 size={14} />
+              </button>
             </div>
           )}
         />

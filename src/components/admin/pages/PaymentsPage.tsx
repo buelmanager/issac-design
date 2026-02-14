@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import {
   CreditCard, RefreshCw, Eye, ArrowLeft,
   CheckCircle, Clock, XCircle, RotateCcw,
-  Activity, FileText, Search, ChevronDown, ChevronRight, Timer,
+  Activity, FileText, Search, ChevronDown, ChevronRight, Timer, Download,
 } from 'lucide-react';
 
 // ─── 타입 ────────────────────────────────────────
@@ -182,6 +182,25 @@ function PaymentStatusBadge({ status }: { status: string }) {
   );
 }
 
+// ─── 로그 내보내기 헬퍼 ──────────────────────────
+function getLogValue(log: SystemLogEntry, key: string): string {
+  switch(key) {
+    case 'timestamp': return log.timestamp ?? '';
+    case 'level': return log.level ?? '';
+    case 'action': return log.action ?? '';
+    case 'duration_ms': return log.duration_ms != null ? String(log.duration_ms) : '';
+    case 'request_id': return log.request_id ?? '';
+    case 'payment_id': return log.payment_id ?? '';
+    case 'order_id': return log.order_id ?? '';
+    case 'error': return log.error ?? '';
+    case 'http_method': return log.http_method ?? '';
+    case 'http_path': return log.http_path ?? '';
+    case 'http_status': return log.http_status != null ? String(log.http_status) : '';
+    case 'actor_ip': return log.actor_ip ?? '';
+    default: return '';
+  }
+}
+
 // ─── 컴포넌트 ────────────────────────────────────
 export default function PaymentsPage() {
   const { accessToken } = useAuth();
@@ -335,6 +354,46 @@ export default function PaymentsPage() {
       // ignore
     }
   };
+
+  const exportLogs = useCallback((format: 'json' | 'csv') => {
+    if (systemLogs.length === 0) {
+      toast.error('내보낼 로그가 없습니다');
+      return;
+    }
+
+    const now = new Date();
+    const dateStr = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    let content: string;
+    let mimeType: string;
+
+    if (format === 'json') {
+      content = JSON.stringify(systemLogs, null, 2);
+      mimeType = 'application/json';
+    } else {
+      const headers = ['timestamp', 'level', 'action', 'duration_ms', 'request_id', 'payment_id', 'order_id', 'error', 'http_method', 'http_path', 'http_status', 'actor_ip'];
+      const rows = systemLogs.map(log => 
+        headers.map(h => {
+          const val = getLogValue(log, h);
+          return val.includes(',') || val.includes('"') || val.includes('\n') 
+            ? `"${val.replace(/"/g, '""')}"` 
+            : val;
+        }).join(',')
+      );
+      content = [headers.join(','), ...rows].join('\n');
+      mimeType = 'text/csv';
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `system-logs-${dateStr}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`로그를 ${format.toUpperCase()} 파일로 저장했습니다`);
+  }, [systemLogs]);
 
   useEffect(() => {
     if (view === 'logs') fetchSystemLogs();
@@ -888,6 +947,37 @@ export default function PaymentsPage() {
           >
             <RefreshCw size={12} aria-hidden="true" /> 새로고침
           </button>
+
+          {/* 구분선 */}
+          <div style={{ width: '1px', height: '24px', backgroundColor: '#E5E7EB' }} />
+
+          {/* 내보내기 */}
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <button
+              onClick={() => exportLogs('json')}
+              aria-label="로그를 JSON 파일로 내보내기"
+              style={{
+                padding: '6px 12px', borderRadius: '8px',
+                border: '1px solid #E5E7EB', backgroundColor: '#fff',
+                fontSize: '12px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '4px',
+              }}
+            >
+              <Download size={12} aria-hidden="true" /> JSON
+            </button>
+            <button
+              onClick={() => exportLogs('csv')}
+              aria-label="로그를 CSV 파일로 내보내기"
+              style={{
+                padding: '6px 12px', borderRadius: '8px',
+                border: '1px solid #E5E7EB', backgroundColor: '#fff',
+                fontSize: '12px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '4px',
+              }}
+            >
+              <Download size={12} aria-hidden="true" /> CSV
+            </button>
+          </div>
         </div>
 
         {/* 검색 바 */}

@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import type { LandingFaq, FaqCategory, FaqItem } from '../../../types/admin';
 import type { Database } from '../../../types/database';
 import { TabNav, DragSortList, Toggle, ConfirmModal, LoadingSpinner, EmptyState } from '../ui';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const FAQ_TABS = [
@@ -16,6 +16,7 @@ function LandingFaqTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<LandingFaq | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -147,38 +148,55 @@ function LandingFaqTab() {
           keyExtractor={(faq) => faq.id}
           onReorder={handleReorder}
           renderItem={(faq) => (
-            <div className="admin-faq-edit-item">
-              <div className="admin-form-field">
-                <label className="admin-form-label">질문</label>
-                <textarea
-                  className="admin-textarea"
-                  value={faq.question}
-                  onChange={(e) => handleFieldChange(faq.id, 'question', e.target.value)}
-                  rows={2}
-                />
-              </div>
-              <div className="admin-form-field">
-                <label className="admin-form-label">답변</label>
-                <textarea
-                  className="admin-textarea"
-                  value={faq.answer}
-                  onChange={(e) => handleFieldChange(faq.id, 'answer', e.target.value)}
-                  rows={3}
-                />
-              </div>
-              <div className="admin-faq-item-actions">
-                <Toggle
-                  checked={faq.is_visible}
-                  onChange={() => handleToggleVisibility(faq)}
-                  label="표시"
-                />
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-icon admin-btn-danger"
-                  onClick={() => setDeleteTarget(faq)}
-                >
-                  <Trash2 size={14} />
-                </button>
+            <div className={`admin-faq-accordion-item${expandedId === faq.id ? ' expanded' : ''}`}>
+              <button
+                type="button"
+                className="admin-faq-accordion-header"
+                onClick={() => setExpandedId(expandedId === faq.id ? null : faq.id)}
+              >
+                <span className="admin-faq-accordion-question">
+                  {faq.question || '질문 없음'}
+                </span>
+                <span className="admin-faq-accordion-indicators">
+                  {!faq.is_visible && <span className="admin-faq-hidden-badge">숨김</span>}
+                  {expandedId === faq.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </span>
+              </button>
+              <div className={`admin-faq-accordion-body${expandedId === faq.id ? ' open' : ''}`}>
+                <div className="admin-faq-accordion-content">
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">질문</label>
+                    <textarea
+                      className="admin-textarea"
+                      value={faq.question}
+                      onChange={(e) => handleFieldChange(faq.id, 'question', e.target.value)}
+                      rows={2}
+                    />
+                  </div>
+                  <div className="admin-form-field">
+                    <label className="admin-form-label">답변</label>
+                    <textarea
+                      className="admin-textarea"
+                      value={faq.answer}
+                      onChange={(e) => handleFieldChange(faq.id, 'answer', e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="admin-faq-item-actions">
+                    <Toggle
+                      checked={faq.is_visible}
+                      onChange={() => handleToggleVisibility(faq)}
+                      label="표시"
+                    />
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-icon admin-btn-danger"
+                      onClick={() => setDeleteTarget(faq)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -210,6 +228,7 @@ function ShopFaqTab() {
   const [showAddCat, setShowAddCat] = useState(false);
   const [deleteCatTarget, setDeleteCatTarget] = useState<FaqCategory | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<FaqItem | null>(null);
+  const [expandedFaqId, setExpandedFaqId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -479,6 +498,9 @@ function ShopFaqTab() {
                       onDoubleClick={() => handleCatStartEdit(cat)}
                     >
                       {cat.name}
+                      <span className="admin-faq-cat-count">
+                        {faqItems.filter((item) => item.category_id === cat.id).length}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -522,37 +544,54 @@ function ShopFaqTab() {
           ) : (
             <div className="admin-faq-list">
               {filteredFaqs.map((faq) => (
-                <div key={faq.id} className="admin-faq-edit-item">
-                  <div className="admin-form-field">
-                    <label className="admin-form-label">질문</label>
-                    <input
-                      className="admin-input"
-                      value={faq.question}
-                      onChange={(e) => handleFaqFieldChange(faq.id, 'question', e.target.value)}
-                    />
-                  </div>
-                  <div className="admin-form-field">
-                    <label className="admin-form-label">답변</label>
-                    <textarea
-                      className="admin-textarea"
-                      value={faq.answer}
-                      onChange={(e) => handleFaqFieldChange(faq.id, 'answer', e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="admin-faq-item-actions">
-                    <Toggle
-                      checked={faq.is_visible}
-                      onChange={() => handleToggleFaqVisibility(faq)}
-                      label="표시"
-                    />
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn-icon admin-btn-danger"
-                      onClick={() => setDeleteTarget(faq)}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                <div key={faq.id} className={`admin-faq-accordion-item${expandedFaqId === faq.id ? ' expanded' : ''}`}>
+                  <button
+                    type="button"
+                    className="admin-faq-accordion-header"
+                    onClick={() => setExpandedFaqId(expandedFaqId === faq.id ? null : faq.id)}
+                  >
+                    <span className="admin-faq-accordion-question">
+                      {faq.question || '질문 없음'}
+                    </span>
+                    <span className="admin-faq-accordion-indicators">
+                      {!faq.is_visible && <span className="admin-faq-hidden-badge">숨김</span>}
+                      {expandedFaqId === faq.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </span>
+                  </button>
+                  <div className={`admin-faq-accordion-body${expandedFaqId === faq.id ? ' open' : ''}`}>
+                    <div className="admin-faq-accordion-content">
+                      <div className="admin-form-field">
+                        <label className="admin-form-label">질문</label>
+                        <input
+                          className="admin-input"
+                          value={faq.question}
+                          onChange={(e) => handleFaqFieldChange(faq.id, 'question', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-form-field">
+                        <label className="admin-form-label">답변</label>
+                        <textarea
+                          className="admin-textarea"
+                          value={faq.answer}
+                          onChange={(e) => handleFaqFieldChange(faq.id, 'answer', e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                      <div className="admin-faq-item-actions">
+                        <Toggle
+                          checked={faq.is_visible}
+                          onChange={() => handleToggleFaqVisibility(faq)}
+                          label="표시"
+                        />
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-icon admin-btn-danger"
+                          onClick={() => setDeleteTarget(faq)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
