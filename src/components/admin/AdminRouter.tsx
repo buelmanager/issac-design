@@ -21,6 +21,7 @@ const InquiriesPage = lazy(() => import('./pages/InquiriesPage'));
 const SimulatorSettingsPage = lazy(() => import('./pages/SimulatorSettingsPage'));
 const SiteSettingsPage = lazy(() => import('./pages/SiteSettingsPage'));
 const NavigationPage = lazy(() => import('./pages/NavigationPage'));
+const PaymentsPage = lazy(() => import('./pages/PaymentsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function SuspenseFallback() {
@@ -51,6 +52,7 @@ export default function AdminRouter() {
             <Route path="/simulator" element={<SimulatorSettingsPage />} />
             <Route path="/settings" element={<SiteSettingsPage />} />
             <Route path="/navigation" element={<NavigationPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Route>

@@ -15,6 +15,7 @@ import {
   Settings,
   Menu,
   X,
+  CreditCard,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
   { path: '/blog', label: 'Blog', icon: FileText },
   { path: '/quotes', label: 'Quotes', icon: MessageSquare },
   { path: '/inquiries', label: 'Inquiries', icon: Mail },
+  { path: '/payments', label: 'Payments', icon: CreditCard },
   { path: '/simulator', label: 'Simulator', icon: Palette },
   { path: '/settings', label: 'Settings', icon: Settings },
   { path: '/navigation', label: 'Navigation', icon: Menu },
