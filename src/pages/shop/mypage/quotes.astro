@@ -223,6 +223,18 @@ function getStepIndex(status: string): number {
                           <span class="quotes__detail-total-label">총 견적 금액</span>
                           <span class="quotes__detail-total-value">₩{formatAmount(Number(quote.quoted_price))}</span>
                         </div>
+                        {(quote.status === 'quoted') && (
+                          <a
+                            href={`/shop/payment?quote_id=${quote.id}`}
+                            class="quotes__pay-btn"
+                            data-quote-pay
+                            data-quote-pay-id={quote.id}
+                            data-quote-pay-price={quote.quoted_price}
+                            data-quote-pay-products={JSON.stringify(products)}
+                          >
+                            결제하기
+                          </a>
+                        )}
                       </div>
                     )}
 
@@ -765,6 +777,35 @@ function getStepIndex(status: string): number {
     font-variant-numeric: tabular-nums;
   }
 
+  /* Pay Button */
+  .quotes__pay-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    background: var(--primary);
+    color: #fff;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-base);
+  }
+
+  .quotes__pay-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(26, 77, 46, 0.35);
+  }
+
+  .quotes__pay-btn:active {
+    transform: translateY(0);
+  }
+
   /* Admin Notes */
   .quotes__admin-notes {
     padding: var(--space-md);
@@ -890,6 +931,35 @@ function getStepIndex(status: string): number {
         if (!card) return;
         const isExpanded = card.classList.toggle('quotes__card--expanded');
         btn.setAttribute('aria-expanded', String(isExpanded));
+      });
+    });
+
+    // 결제하기 버튼: 견적 정보를 localStorage에 저장 후 결제 페이지로 이동
+    document.querySelectorAll<HTMLAnchorElement>('[data-quote-pay]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const quoteId = btn.dataset.quotePayId;
+        const price = btn.dataset.quotePayPrice;
+        let products: any[] = [];
+        try {
+          products = JSON.parse(btn.dataset.quotePayProducts || '[]');
+        } catch {}
+
+        // 견적 기반 결제 정보를 localStorage에 저장
+        const paymentData = {
+          type: 'quote',
+          quoteId,
+          totalAmount: Number(price),
+          products: products.map((p: any) => ({
+            productId: p.productId,
+            productName: p.productName || '제품',
+            categoryName: p.categoryName || '',
+            quantity: p.quantity || 1,
+            options: p.options || {},
+          })),
+        };
+        localStorage.setItem('pendingPayment', JSON.stringify(paymentData));
+        window.location.href = `/shop/payment?quote_id=${quoteId}`;
       });
     });
   }
