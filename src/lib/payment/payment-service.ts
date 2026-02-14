@@ -229,7 +229,6 @@ export class PaymentService {
 
     PaymentLogger.info('PAYMENT_CONFIRM_START', { pg_payment_id: pgPaymentId, pg_amount: pgAmount });
 
-    // 결제 조회
     const { data: payment } = await supabase
       .from('payments')
       .select('*')
@@ -241,7 +240,19 @@ export class PaymentService {
       throw new Error(`Payment not found for pg_payment_id: ${pgPaymentId}`);
     }
 
-    // 금액 검증 (핵심!)
+    if (payment.status === PAYMENT_STATUS.PAID) {
+      PaymentLogger.info('PAYMENT_ALREADY_CONFIRMED', {
+        pg_payment_id: pgPaymentId,
+        payment_id: payment.id,
+      });
+      return payment as unknown as Payment;
+    }
+
+    const FINAL_STATUSES: string[] = [PAYMENT_STATUS.FAILED, PAYMENT_STATUS.CANCELED, PAYMENT_STATUS.REFUNDED];
+    if (FINAL_STATUSES.includes(payment.status as string)) {
+      throw new Error(`Payment is in final status: ${payment.status}, cannot confirm`);
+    }
+
     if (!validateAmount(payment.amount as number, pgAmount, { payment_id: payment.id })) {
       throw new Error(`Amount mismatch: expected ${payment.amount}, received ${pgAmount}`);
     }
@@ -321,6 +332,18 @@ export class PaymentService {
     if (!payment) {
       PaymentLogger.error('PAYMENT_NOT_FOUND_BY_PG_ID', new Error(`PG ID: ${pgPaymentId}`));
       throw new Error(`Payment not found for pg_payment_id: ${pgPaymentId}`);
+    }
+
+    if (payment.status === PAYMENT_STATUS.PAID) {
+      PaymentLogger.info('PAYMENT_ALREADY_CONFIRMED', {
+        pg_payment_id: pgPaymentId,
+        payment_id: payment.id,
+      });
+      return payment as unknown as Payment;
+    }
+
+    if (payment.status !== PAYMENT_STATUS.PENDING) {
+      throw new Error(`Payment status is ${payment.status}, expected PENDING for confirmation`);
     }
 
     if (!validateAmount(payment.amount as number, pgAmount, { payment_id: payment.id })) {

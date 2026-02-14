@@ -108,7 +108,7 @@ export class TossPaymentAdapter implements PaymentGateway {
       amount: params.amount,
     });
 
-    const pgPaymentId = `toss_${params.order_id}_${Date.now()}`;
+    const pgPaymentId = `toss_${params.order_id}_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
 
     return {
       success: true,

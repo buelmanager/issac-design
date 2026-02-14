@@ -58,11 +58,6 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       return redirect(`/shop/payment-fail?code=AMOUNT_MISMATCH&message=${encodeURIComponent('결제 금액이 일치하지 않습니다')}&orderId=${orderId}`);
     }
 
-    await supabase
-      .from('payments')
-      .update({ pg_payment_id: paymentKey })
-      .eq('id', payment.id);
-
     let confirmResult;
     if (gateway instanceof TossPaymentAdapter) {
       confirmResult = await PaymentLogger.measurePgCall(
@@ -79,6 +74,31 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     }
 
     if (!confirmResult.success) {
+      if (confirmResult.error_code === 'ALREADY_PROCESSED_PAYMENT') {
+        PaymentLogger.info('CONFIRM_ALREADY_PROCESSED', {
+          payment_id: payment.id,
+          orderId,
+        });
+
+        await supabase
+          .from('payments')
+          .update({ pg_payment_id: paymentKey })
+          .eq('id', payment.id);
+
+        try {
+          await paymentService.completeConfirmation(paymentKey, requestedAmount, {
+            method: confirmResult.method,
+            raw_response: confirmResult.raw_response,
+          }, 'system');
+        } catch {
+          // completeConfirmation의 멱등 처리에 의존
+        }
+
+        PaymentLogger.apiResponse(302, startTime);
+        cleanup();
+        return redirect(`/shop/payment-success?orderId=${orderId}`);
+      }
+
       PaymentLogger.error('CONFIRM_PG_FAILED', new Error(confirmResult.error_message ?? 'PG confirm failed'), {
         error_code: confirmResult.error_code,
       });
@@ -88,6 +108,11 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       cleanup();
       return redirect(`/shop/payment-fail?code=${confirmResult.error_code ?? 'PG_ERROR'}&message=${encodeURIComponent(confirmResult.error_message ?? '결제 승인에 실패했습니다')}&orderId=${orderId}`);
     }
+
+    await supabase
+      .from('payments')
+      .update({ pg_payment_id: paymentKey })
+      .eq('id', payment.id);
 
     await paymentService.completeConfirmation(paymentKey, requestedAmount, {
       method: confirmResult.method,

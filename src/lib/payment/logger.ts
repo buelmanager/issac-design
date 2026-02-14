@@ -16,14 +16,28 @@ import { LOG_LEVEL, type LogLevel, type SystemLog } from './types';
 
 // ─── 민감 정보 마스킹 ────────────────────────────
 const SENSITIVE_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
+  // 카드번호 (16자리)
   { pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, replacement: '****-****-****-****' },
   { pattern: /\b\d{3,4}\b(?=.*cvv)/gi, replacement: '***' },
+  // JSON 키 기반 마스킹
   { pattern: /"card_number"\s*:\s*"[^"]+"/g, replacement: '"card_number":"[MASKED]"' },
+  { pattern: /"cardNumber"\s*:\s*"[^"]+"/g, replacement: '"cardNumber":"[MASKED]"' },
   { pattern: /"cvv"\s*:\s*"[^"]+"/g, replacement: '"cvv":"[MASKED]"' },
+  { pattern: /"cvc"\s*:\s*"[^"]+"/g, replacement: '"cvc":"[MASKED]"' },
   { pattern: /"password"\s*:\s*"[^"]+"/g, replacement: '"password":"[MASKED]"' },
   { pattern: /"secret"\s*:\s*"[^"]+"/g, replacement: '"secret":"[MASKED]"' },
+  { pattern: /"secretKey"\s*:\s*"[^"]+"/g, replacement: '"secretKey":"[MASKED]"' },
   { pattern: /"token"\s*:\s*"[^"]+"/g, replacement: '"token":"[MASKED]"' },
   { pattern: /"authorization"\s*:\s*"[^"]+"/gi, replacement: '"authorization":"[MASKED]"' },
+  // 계좌번호 (10~14자리 숫자)
+  { pattern: /"accountNumber"\s*:\s*"[^"]+"/g, replacement: '"accountNumber":"[MASKED]"' },
+  { pattern: /"account_number"\s*:\s*"[^"]+"/g, replacement: '"account_number":"[MASKED]"' },
+  // 전화번호
+  { pattern: /"customer_phone"\s*:\s*"[^"]+"/g, replacement: '"customer_phone":"[MASKED]"' },
+  // 토스 Secret Key 패턴 (test_sk_ 또는 live_sk_)
+  { pattern: /\b(test_sk_|live_sk_)[A-Za-z0-9]+\b/g, replacement: '[MASKED_SECRET_KEY]' },
+  // Basic Auth 헤더
+  { pattern: /Basic\s+[A-Za-z0-9+/=]+/g, replacement: 'Basic [MASKED]' },
 ];
 
 function maskSensitiveData(data: string): string {

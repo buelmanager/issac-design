@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { createAdminClient } from '../../../lib/supabase';
 import { PaymentLogger } from '../../../lib/payment/logger';
 import { getPaymentService } from '../../../lib/payment/gateway-factory';
 
@@ -17,8 +18,24 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
   if (orderId) {
     try {
-      const pgPaymentId = `toss_${orderId}_fail`;
-      await paymentService.failPayment(pgPaymentId, `${code}: ${message}`, 'system');
+      const supabase = createAdminClient();
+      const { data: payment } = await supabase
+        .from('payments')
+        .select('id, pg_payment_id, status')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (payment?.pg_payment_id) {
+        await paymentService.failPayment(
+          payment.pg_payment_id as string,
+          `${code}: ${message}`,
+          'system'
+        );
+      } else if (payment) {
+        PaymentLogger.warn('PAYMENT_FAIL_NO_PG_ID', { orderId, payment_id: payment.id });
+      }
     } catch {
       PaymentLogger.warn('PAYMENT_FAIL_STATUS_UPDATE_SKIPPED', { orderId, reason: 'payment_not_found_or_already_final' });
     }

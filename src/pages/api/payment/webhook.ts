@@ -14,6 +14,7 @@
 import type { APIRoute } from 'astro';
 import { getPaymentService } from '../../../lib/payment/gateway-factory';
 import { PaymentLogger } from '../../../lib/payment/logger';
+import { isValidAmount } from '../../../lib/payment/validators';
 
 const { gateway, service: paymentService } = getPaymentService();
 
@@ -107,7 +108,14 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         if (status === 'DONE') {
-          await paymentService.confirmPayment(paymentKey, tossData.totalAmount ?? 0);
+          if (!isValidAmount(tossData.totalAmount)) {
+            PaymentLogger.critical('WEBHOOK_TOSS_INVALID_AMOUNT', new Error('Invalid totalAmount in PAYMENT_STATUS_CHANGED'), {
+              paymentKey,
+              totalAmount: tossData.totalAmount,
+            });
+            break;
+          }
+          await paymentService.confirmPayment(paymentKey, tossData.totalAmount);
           PaymentLogger.info('WEBHOOK_TOSS_CONFIRMED', { paymentKey, amount: tossData.totalAmount });
         } else if (status === 'CANCELED' || status === 'PARTIAL_CANCELED') {
           await paymentService.confirmRefund(paymentKey);
@@ -127,7 +135,14 @@ export const POST: APIRoute = async ({ request }) => {
         const depositStatus = depositData?.status;
 
         if (depositPaymentKey && depositStatus === 'DONE') {
-          await paymentService.confirmPayment(depositPaymentKey, depositData.totalAmount ?? 0);
+          if (!isValidAmount(depositData.totalAmount)) {
+            PaymentLogger.critical('WEBHOOK_DEPOSIT_INVALID_AMOUNT', new Error('Invalid totalAmount in DEPOSIT_CALLBACK'), {
+              paymentKey: depositPaymentKey,
+              totalAmount: depositData.totalAmount,
+            });
+            break;
+          }
+          await paymentService.confirmPayment(depositPaymentKey, depositData.totalAmount);
           PaymentLogger.info('WEBHOOK_TOSS_DEPOSIT_CONFIRMED', { paymentKey: depositPaymentKey });
         }
         break;
@@ -161,12 +176,11 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     PaymentLogger.error('WEBHOOK_PROCESSING_ERROR', error, { body_length: rawBody.length });
-    PaymentLogger.apiResponse(200, startTime, { error: 'processing_failed' });
+    PaymentLogger.apiResponse(500, startTime, { error: 'processing_failed' });
     cleanup();
 
-    // 내부 에러 메시지 절대 외부 노출 금지
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
+    return new Response(JSON.stringify({ error: 'Internal processing error' }), {
+      status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }

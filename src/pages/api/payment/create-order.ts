@@ -6,9 +6,43 @@ import type { ApiResponse, OrderItem } from '../../../lib/payment/types';
 
 const { service: paymentService } = getPaymentService();
 
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 10;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+
+  entry.count++;
+  return true;
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const startTime = performance.now();
   const cleanup = PaymentLogger.apiRequest(request, '/api/payment/create-order');
+
+  const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? request.headers.get('x-real-ip')
+    ?? 'unknown';
+
+  if (!checkRateLimit(clientIp)) {
+    PaymentLogger.warn('ORDER_RATE_LIMITED', { ip: clientIp });
+    cleanup();
+    return jsonResponse<ApiResponse>(429, {
+      success: false,
+      error: { code: 'RATE_LIMITED', message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
+    });
+  }
 
   try {
     const body = await request.json();
@@ -46,6 +80,22 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    // 아이템 개수 제한 (최대 50개)
+    const MAX_ITEMS = 50;
+    if (items.length > MAX_ITEMS) {
+      PaymentLogger.warn('ORDER_ITEMS_LIMIT_EXCEEDED', { item_count: items.length, max: MAX_ITEMS });
+      cleanup();
+      return jsonResponse<ApiResponse>(400, {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: `아이템은 최대 ${MAX_ITEMS}개까지 가능합니다` },
+      });
+    }
+
+    const MAX_UNIT_PRICE = 100_000_000; // 개당 최대 1억원
+    const MAX_QUANTITY = 999;
+    const MIN_ORDER_AMOUNT = 100; // 토스 카드결제 최소금액
+    const MAX_ORDER_AMOUNT = 500_000_000; // 총 주문 최대 5억원
+
     const orderItems: OrderItem[] = items.map((item: Record<string, unknown>, index: number) => {
       const unitPrice = Number(item.unit_price);
       const quantity = Number(item.quantity);
@@ -57,6 +107,16 @@ export const POST: APIRoute = async ({ request }) => {
         throw new Error(`Item ${index}: invalid quantity`);
       }
 
+      if (unitPrice > MAX_UNIT_PRICE) {
+        PaymentLogger.warn('ORDER_UNIT_PRICE_EXCEEDED', { index, unit_price: unitPrice, max: MAX_UNIT_PRICE });
+        throw new Error(`Item ${index}: unit_price exceeds maximum (${MAX_UNIT_PRICE})`);
+      }
+
+      if (quantity > MAX_QUANTITY) {
+        PaymentLogger.warn('ORDER_QUANTITY_EXCEEDED', { index, quantity, max: MAX_QUANTITY });
+        throw new Error(`Item ${index}: quantity exceeds maximum (${MAX_QUANTITY})`);
+      }
+
       return {
         product_id: String(item.product_id ?? `item_${index}`),
         name: String(item.name ?? 'Unknown'),
@@ -66,6 +126,27 @@ export const POST: APIRoute = async ({ request }) => {
         thumbnail: item.thumbnail ? String(item.thumbnail) : undefined,
       };
     });
+
+    // 총 주문 금액 검증
+    const calculatedTotal = orderItems.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+
+    if (calculatedTotal < MIN_ORDER_AMOUNT) {
+      PaymentLogger.warn('ORDER_AMOUNT_TOO_LOW', { total: calculatedTotal, min: MIN_ORDER_AMOUNT });
+      cleanup();
+      return jsonResponse<ApiResponse>(400, {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: `최소 결제금액은 ${MIN_ORDER_AMOUNT}원입니다` },
+      });
+    }
+
+    if (calculatedTotal > MAX_ORDER_AMOUNT) {
+      PaymentLogger.warn('ORDER_AMOUNT_EXCEEDED', { total: calculatedTotal, max: MAX_ORDER_AMOUNT });
+      cleanup();
+      return jsonResponse<ApiResponse>(400, {
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: `최대 결제금액은 ${MAX_ORDER_AMOUNT.toLocaleString()}원입니다` },
+      });
+    }
 
     const order = await paymentService.createOrder({
       customer_name: customer_name.trim(),
