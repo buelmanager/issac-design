@@ -4,7 +4,9 @@ import type { QuoteRequest, QuoteStatus } from '../../../types/admin';
 import type { Json } from '../../../types/database';
 import { DataTable, SearchInput, StatusBadge, Pagination, LoadingSpinner, EmptyState } from '../ui';
 import toast from 'react-hot-toast';
-import { FileText, X, Save, Paperclip, Download } from 'lucide-react';
+import { FileText, ArrowLeft, Save, Paperclip, Download, Package, MessageSquare, User } from 'lucide-react';
+
+type ViewMode = 'list' | 'detail';
 
 const PAGE_SIZE = 20;
 
@@ -23,6 +25,14 @@ const STATUS_LABELS: Record<QuoteStatus, string> = {
   quoted: '견적완료',
   completed: '완료',
   cancelled: '취소',
+};
+
+const STATUS_VARIANTS: Record<string, 'success' | 'danger' | 'warning' | 'info' | 'default'> = {
+  pending: 'warning',
+  reviewing: 'info',
+  quoted: 'default',
+  completed: 'success',
+  cancelled: 'danger',
 };
 
 const QUOTE_STATUS_LIST: QuoteStatus[] = ['pending', 'reviewing', 'quoted', 'completed', 'cancelled'];
@@ -88,6 +98,7 @@ export default function QuotesPage() {
   const [detailStatus, setDetailStatus] = useState<QuoteStatus>('pending');
   const [detailNotes, setDetailNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [view, setView] = useState<ViewMode>('list');
 
   const fetchQuotes = useCallback(async () => {
     setLoading(true);
@@ -128,9 +139,11 @@ export default function QuotesPage() {
     setSelectedQuote(quote);
     setDetailStatus(quote.status as QuoteStatus);
     setDetailNotes(quote.admin_notes ?? '');
+    setView('detail');
   }, []);
 
   const closeDetail = useCallback(() => {
+    setView('list');
     setSelectedQuote(null);
   }, []);
 
@@ -191,7 +204,12 @@ export default function QuotesPage() {
     {
       key: 'status',
       label: '상태',
-      render: (row: QuoteRequest) => <StatusBadge status={row.status} />,
+      render: (row: QuoteRequest) => (
+        <StatusBadge
+          status={STATUS_LABELS[row.status as QuoteStatus] ?? row.status}
+          variant={STATUS_VARIANTS[row.status] ?? 'default'}
+        />
+      ),
     },
     {
       key: 'created_at',
@@ -200,13 +218,161 @@ export default function QuotesPage() {
     },
   ];
 
-  const productsList = selectedQuote ? parseJsonArray(selectedQuote.products) : [];
-  const attachmentUrls = selectedQuote ? getAttachmentUrls(selectedQuote.attachments) : [];
+  if (view === 'detail' && selectedQuote) {
+    const productsList = parseJsonArray(selectedQuote.products);
+    const attachmentUrls = getAttachmentUrls(selectedQuote.attachments);
+
+    return (
+      <div className="admin-page">
+        <button className="admin-btn admin-btn-ghost" onClick={closeDetail}>
+          <ArrowLeft size={16} /> 목록으로
+        </button>
+
+        <div className="admin-page-header">
+          <div>
+            <h1 className="admin-page-title">견적 요청 상세 - {selectedQuote.customer_name}</h1>
+            <p className="quote-page-subtitle">요청일: {formatDateTime(selectedQuote.created_at)}</p>
+          </div>
+          <div className="admin-page-header-actions">
+            <StatusBadge
+              status={STATUS_LABELS[detailStatus] ?? detailStatus}
+              variant={STATUS_VARIANTS[detailStatus] ?? 'default'}
+            />
+          </div>
+        </div>
+
+        <div className="quote-info-grid">
+          <div className="quote-detail-col">
+            <div className="admin-card">
+              <h3 className="admin-card-title"><User size={18} /> 고객 정보</h3>
+              <div className="admin-card-body">
+                <div className="admin-detail-row"><span className="admin-detail-label">고객명</span><span className="admin-detail-value">{selectedQuote.customer_name}</span></div>
+                <div className="admin-detail-row"><span className="admin-detail-label">업체명</span><span className="admin-detail-value">{selectedQuote.business_name ?? '-'}</span></div>
+                <div className="admin-detail-row"><span className="admin-detail-label">전화번호</span><span className="admin-detail-value">{selectedQuote.phone ?? '-'}</span></div>
+                <div className="admin-detail-row"><span className="admin-detail-label">이메일</span><span className="admin-detail-value">{selectedQuote.email ?? '-'}</span></div>
+                <div className="admin-detail-row"><span className="admin-detail-label">요청 유형</span><span className="admin-detail-value">{selectedQuote.request_type ?? '-'}</span></div>
+                <div className="admin-detail-row"><span className="admin-detail-label">요청일시</span><span className="admin-detail-value">{formatDateTime(selectedQuote.created_at)}</span></div>
+              </div>
+            </div>
+
+            <div className="admin-card">
+              <h3 className="admin-card-title"><Package size={18} /> 요청 제품</h3>
+              <div className="admin-card-body">
+                {productsList.length === 0 ? (
+                  <p className="quote-empty-text">요청된 제품이 없습니다</p>
+                ) : (
+                  <ul className="quote-product-list">
+                    {productsList.map((item, idx) => {
+                      const name = getProductName(item);
+                      const qty = typeof item === 'object' && item !== null && 'quantity' in item
+                        ? String((item as Record<string, Json | undefined>).quantity ?? '')
+                        : '';
+                      return (
+                        <li key={idx} className="quote-product-item">
+                          <Package size={16} className="quote-product-item-icon" />
+                          <span className="quote-product-item-name">{name}</span>
+                          {qty && <span className="quote-product-item-qty">{qty}개</span>}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {selectedQuote.message && (
+              <div className="admin-card">
+                <h3 className="admin-card-title"><MessageSquare size={18} /> 요청 메시지</h3>
+                <div className="admin-card-body">
+                  <div className="quote-message-box">{selectedQuote.message}</div>
+                </div>
+              </div>
+            )}
+
+            {attachmentUrls.length > 0 && (
+              <div className="admin-card">
+                <h3 className="admin-card-title"><Paperclip size={18} /> 첨부파일 ({attachmentUrls.length})</h3>
+                <div className="admin-card-body">
+                  <ul className="quote-attachment-list">
+                    {attachmentUrls.map((url, idx) => {
+                      const filename = url.split('/').pop() ?? `파일 ${idx + 1}`;
+                      return (
+                        <li key={idx} className="quote-attachment-item">
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="quote-attachment-link">
+                            <Download size={14} /> {filename}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="quote-detail-col">
+            <div className="admin-card">
+              <h3 className="admin-card-title">상태 관리</h3>
+              <div className="admin-card-body">
+                <div className="quote-status-section">
+                  <span className="quote-status-label">현재 상태:</span>
+                  <StatusBadge
+                    status={STATUS_LABELS[detailStatus] ?? detailStatus}
+                    variant={STATUS_VARIANTS[detailStatus] ?? 'default'}
+                  />
+                </div>
+                <div className="quote-status-actions">
+                  <select
+                    className="admin-select"
+                    value={detailStatus}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as QuoteStatus;
+                      setDetailStatus(newStatus);
+                      handleStatusChange(selectedQuote.id, newStatus);
+                    }}
+                  >
+                    {QUOTE_STATUS_LIST.map((s) => (
+                      <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-card">
+              <h3 className="admin-card-title"><FileText size={18} /> 관리자 메모</h3>
+              <div className="admin-card-body">
+                <textarea
+                  className="admin-textarea quote-notes-textarea"
+                  rows={6}
+                  value={detailNotes}
+                  onChange={(e) => setDetailNotes(e.target.value)}
+                  placeholder="관리자 메모를 입력하세요..."
+                />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-primary"
+                  onClick={handleSaveNotes}
+                  disabled={saving}
+                >
+                  {saving ? <LoadingSpinner size="sm" /> : <Save size={16} />}
+                  메모 저장
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-page">
       <div className="admin-page-header">
-        <h1 className="admin-page-title">견적 요청 관리</h1>
+        <div>
+          <h1 className="admin-page-title">견적 요청 관리</h1>
+          <p className="quote-page-subtitle">총 {total}건의 견적 요청</p>
+        </div>
       </div>
 
       <div className="admin-toolbar">
@@ -244,142 +410,6 @@ export default function QuotesPage() {
         pageSize={PAGE_SIZE}
         totalItems={total}
       />
-
-      {selectedQuote && (
-        <div className="admin-modal-overlay" onClick={closeDetail}>
-          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="admin-modal-header">
-              <h2 className="admin-modal-title">견적 요청 상세</h2>
-              <button type="button" className="admin-btn-icon" onClick={closeDetail}>
-                <X size={20} />
-              </button>
-            </div>
-            <div className="admin-modal-body">
-              <div className="admin-card">
-                <h3 className="admin-card-title">고객 정보</h3>
-                <div className="admin-form">
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">고객명</span>
-                    <span className="admin-detail-value">{selectedQuote.customer_name}</span>
-                  </div>
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">업체명</span>
-                    <span className="admin-detail-value">{selectedQuote.business_name ?? '-'}</span>
-                  </div>
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">전화번호</span>
-                    <span className="admin-detail-value">{selectedQuote.phone ?? '-'}</span>
-                  </div>
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">이메일</span>
-                    <span className="admin-detail-value">{selectedQuote.email ?? '-'}</span>
-                  </div>
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">요청 유형</span>
-                    <span className="admin-detail-value">{selectedQuote.request_type ?? '-'}</span>
-                  </div>
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">요청일시</span>
-                    <span className="admin-detail-value">{formatDateTime(selectedQuote.created_at)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="admin-card">
-                <h3 className="admin-card-title">요청 제품</h3>
-                {productsList.length === 0 ? (
-                  <p className="admin-text-muted">요청된 제품이 없습니다</p>
-                ) : (
-                  <ul className="admin-detail-list">
-                    {productsList.map((item, idx) => {
-                      const name = getProductName(item);
-                      const qty = typeof item === 'object' && item !== null && 'quantity' in item
-                        ? String((item as Record<string, Json | undefined>).quantity ?? '')
-                        : '';
-                      return (
-                        <li key={idx} className="admin-detail-list-item">
-                          {name}{qty ? ` (${qty}개)` : ''}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-
-              {selectedQuote.message && (
-                <div className="admin-card">
-                  <h3 className="admin-card-title">요청 메시지</h3>
-                  <p className="admin-detail-message">{selectedQuote.message}</p>
-                </div>
-              )}
-
-              {attachmentUrls.length > 0 && (
-                <div className="admin-card">
-                  <h3 className="admin-card-title">
-                    <Paperclip size={16} /> 첨부파일 ({attachmentUrls.length})
-                  </h3>
-                  <ul className="admin-detail-list">
-                    {attachmentUrls.map((url, idx) => {
-                      const filename = url.split('/').pop() ?? `파일 ${idx + 1}`;
-                      return (
-                        <li key={idx} className="admin-detail-list-item">
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="admin-link">
-                            <Download size={14} /> {filename}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-
-              <div className="admin-card">
-                <h3 className="admin-card-title">상태 관리</h3>
-                <div className="admin-form">
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">상태</span>
-                    <select
-                      className="admin-select"
-                      value={detailStatus}
-                      onChange={(e) => {
-                        const newStatus = e.target.value as QuoteStatus;
-                        setDetailStatus(newStatus);
-                        handleStatusChange(selectedQuote.id, newStatus);
-                      }}
-                    >
-                      {QUOTE_STATUS_LIST.map((s) => (
-                        <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="admin-card">
-                <h3 className="admin-card-title">관리자 메모</h3>
-                <div className="admin-form">
-                  <textarea
-                    className="admin-textarea"
-                    rows={4}
-                    value={detailNotes}
-                    onChange={(e) => setDetailNotes(e.target.value)}
-                    placeholder="관리자 메모를 입력하세요..."
-                  />
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-primary"
-                    onClick={handleSaveNotes}
-                    disabled={saving}
-                  >
-                    {saving ? <LoadingSpinner size="sm" /> : <Save size={16} />}
-                    메모 저장
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
