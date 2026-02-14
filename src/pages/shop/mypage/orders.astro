@@ -836,7 +836,7 @@ function getItemSummary(items: any): string {
           }
           alert('환불 요청이 완료되었습니다.');
         } else {
-          const errorMsg = data?.error || data?.message || '환불 처리 중 오류가 발생했습니다.';
+          const errorMsg = data?.error?.message || (typeof data?.error === 'string' ? data.error : null) || data?.message || '환불 처리 중 오류가 발생했습니다.';
           alert(`환불 실패: ${errorMsg}`);
           btn.disabled = false;
           btn.innerHTML = originalText;
