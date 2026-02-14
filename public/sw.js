@@ -17,7 +17,16 @@ const CACHES = {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHES.precache).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHES.precache).then((cache) =>
+      // addAll은 하나라도 실패하면 전체 reject → 개별 캐싱으로 안정화
+      Promise.allSettled(
+        PRECACHE_URLS.map((url) =>
+          fetch(url).then((response) => {
+            if (response.ok) return cache.put(url, response);
+          })
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
