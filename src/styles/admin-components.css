@@ -2,33 +2,8 @@
    Admin UI Components Styles
    ======================================== */
 
-/* --- LoadingSpinner --- */
-@keyframes admin-spin {
-  to { transform: rotate(360deg); }
-}
-
-.admin-spinner {
-  border: 2px solid #e5e7eb;
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  animation: admin-spin 0.6s linear infinite;
-}
-
-.admin-spinner-sm {
-  width: 16px;
-  height: 16px;
-}
-
-.admin-spinner-md {
-  width: 24px;
-  height: 24px;
-}
-
-.admin-spinner-lg {
-  width: 40px;
-  height: 40px;
-  border-width: 3px;
-}
+/* --- LoadingSpinner --- 
+   Styles defined in admin.css to avoid duplication */
 
 /* --- FormField --- */
 .admin-form-field {

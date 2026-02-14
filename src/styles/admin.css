@@ -655,10 +655,34 @@
   animation: admin-spin 0.6s linear infinite;
 }
 
+.admin-spinner-sm {
+  min-height: auto;
+  display: inline-flex;
+}
+
 .admin-spinner-sm::after {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-width: 2px;
+}
+
+.admin-spinner-md {
+  min-height: 120px;
+}
+
+.admin-spinner-md::after {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-spinner-lg {
+  min-height: 300px;
+}
+
+.admin-spinner-lg::after {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
 }
 
 .admin-spinner-fullpage {

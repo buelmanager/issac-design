@@ -25,7 +25,9 @@ const PaymentsPage = lazy(() => import('./pages/PaymentsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function SuspenseFallback() {
-  return null;
+  return (
+    <div className="admin-spinner admin-spinner-fullpage" />
+  );
 }
 
 export default function AdminRouter() {
