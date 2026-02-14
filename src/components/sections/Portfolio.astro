@@ -22,7 +22,8 @@ function getCategoryIconPath(category: string): string {
   if (lower.includes('led') || lower.includes('channel')) return CATEGORY_ICON_PATHS.led;
   if (lower.includes('neon')) return CATEGORY_ICON_PATHS.neon;
   if (lower.includes('banner') || lower.includes('현수막')) return CATEGORY_ICON_PATHS.banner;
-  if (lower.includes('building') || lower.includes('outdoor') || lower.includes('빌딩')) return CATEGORY_ICON_PATHS.building;
+  if (lower.includes('building') || lower.includes('outdoor') || lower.includes('빌딩') || lower.includes('rooftop') || lower.includes('protruding')) return CATEGORY_ICON_PATHS.building;
+  if (lower.includes('acrylic') || lower.includes('아크릴')) return CATEGORY_ICON_PATHS.led;
   return CATEGORY_ICON_PATHS.total;
 }
 
@@ -88,7 +89,7 @@ try {
       desc: item.description ?? '',
       fullDesc: item.testimonial ?? '',
       specs: item.product_used ? item.product_used.split(',').map((s: string) => s.trim()) : [],
-      image: item.image_before ?? '',
+      image: item.image_after ?? item.image_before ?? '',
       category: item.category ?? '',
     }));
   }

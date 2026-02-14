@@ -943,7 +943,10 @@ export default function LandingPage() {
             <FormField label="주요 사양 (쉼표로 구분)">
               <input className="admin-input" value={item.product_used ?? ''} placeholder="예: LED Channel 방식, 150mm 아크릴, 5년 보증" onChange={(e) => updatePortfolioItem(item.id, 'product_used', e.target.value)} />
             </FormField>
-            <FormField label="이미지">
+            <FormField label="대표 이미지 (시공 완료)">
+              <ImageUploader value={item.image_after ?? ''} onChange={(url) => updatePortfolioItem(item.id, 'image_after', url)} folder="portfolio" />
+            </FormField>
+            <FormField label="시공 전 이미지 (선택)">
               <ImageUploader value={item.image_before ?? ''} onChange={(url) => updatePortfolioItem(item.id, 'image_before', url)} folder="portfolio" />
             </FormField>
           </div>

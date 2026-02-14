@@ -6,8 +6,11 @@
 
 interface Props {
   product: {
+    id?: string;
     name: string;
     slug: string;
+    thumbnail?: string;
+    categoryName?: string;
     priceRange: string;
     options: {
       sizes: Array<{label: string; priceModifier: string}>;
@@ -25,8 +28,12 @@ const hasLighting = product.options.lightingTypes && product.options.lightingTyp
 <div
   class="configurator"
   data-configurator
+  data-product-id={product.id || product.slug}
   data-product-name={product.name}
   data-product-slug={product.slug}
+  data-product-thumbnail={product.thumbnail || ''}
+  data-product-category={product.categoryName || ''}
+  data-product-price={product.priceRange || ''}
 >
   <!-- Header -->
   <div class="configurator__header">
@@ -628,8 +635,12 @@ const hasLighting = product.options.lightingTypes && product.options.lightingTyp
       if (configurator.dataset.configuratorBound === 'true') return;
       configurator.dataset.configuratorBound = 'true';
 
+      const productId = configurator.dataset.productId || '';
       const productName = configurator.dataset.productName || '';
       const productSlug = configurator.dataset.productSlug || '';
+      const productThumbnail = configurator.dataset.productThumbnail || '';
+      const productCategory = configurator.dataset.productCategory || '';
+      const productPrice = configurator.dataset.productPrice || '';
 
       // Track current selections
       const selections: Record<string, string> = {};
@@ -696,12 +707,12 @@ const hasLighting = product.options.lightingTypes && product.options.lightingTyp
           const cart = _getCart();
           cart.push({
             id: _generateCartId(),
-            productId: productSlug,  // use slug as ID (products.json uses slug as primary key)
+            productId: productId || productSlug,
             productSlug,
             productName,
-            thumbnail: '',
-            categoryName: '',
-            priceRange: '',
+            thumbnail: productThumbnail,
+            categoryName: productCategory,
+            priceRange: productPrice,
             options: {
               size: selections.size || '',
               material: selections.material || '',

@@ -68,8 +68,11 @@ function parseJsonArray(val: Json): Json[] {
 
 function getProductName(item: Json): string {
   if (typeof item === 'string') return item;
-  if (typeof item === 'object' && item !== null && 'name' in item) {
-    return String((item as Record<string, Json | undefined>).name ?? '');
+  if (typeof item === 'object' && item !== null) {
+    const obj = item as Record<string, Json | undefined>;
+    // cart items use 'productName', manual entries may use 'name'
+    const name = obj.productName ?? obj.name ?? '';
+    return String(name);
   }
   return String(item ?? '');
 }
@@ -264,14 +267,26 @@ export default function QuotesPage() {
                   <ul className="quote-product-list">
                     {productsList.map((item, idx) => {
                       const name = getProductName(item);
-                      const qty = typeof item === 'object' && item !== null && 'quantity' in item
-                        ? String((item as Record<string, Json | undefined>).quantity ?? '')
-                        : '';
+                      const obj = (typeof item === 'object' && item !== null ? item : {}) as Record<string, Json | undefined>;
+                      const qty = obj.quantity ? String(obj.quantity) : '';
+                      const opts = (typeof obj.options === 'object' && obj.options !== null ? obj.options : {}) as Record<string, string | undefined>;
+                      const optionParts = [opts.size, opts.material, opts.finish, opts.lighting].filter(Boolean);
+                      const category = obj.categoryName ? String(obj.categoryName) : '';
+                      const price = obj.priceRange ? String(obj.priceRange) : '';
                       return (
-                        <li key={idx} className="quote-product-item">
-                          <Package size={16} className="quote-product-item-icon" />
-                          <span className="quote-product-item-name">{name}</span>
-                          {qty && <span className="quote-product-item-qty">{qty}개</span>}
+                        <li key={idx} className="quote-product-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                            <Package size={16} className="quote-product-item-icon" />
+                            <span className="quote-product-item-name" style={{ flex: 1 }}>{name}</span>
+                            {qty && <span className="quote-product-item-qty">{qty}개</span>}
+                          </div>
+                          {(optionParts.length > 0 || category || price) && (
+                            <div style={{ paddingLeft: '24px', fontSize: '12px', color: 'var(--admin-text-muted, #6b7280)' }}>
+                              {category && <span style={{ marginRight: '8px' }}>{category}</span>}
+                              {optionParts.length > 0 && <span style={{ marginRight: '8px' }}>{optionParts.join(' / ')}</span>}
+                              {price && <span style={{ fontWeight: 500 }}>{price}</span>}
+                            </div>
+                          )}
                         </li>
                       );
                     })}

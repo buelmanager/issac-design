@@ -90,13 +90,22 @@ const { categories } = await getProducts();
         </svg>
       </button>
 
-      <!-- Login / Profile Button -->
-      <a href="/shop/login" class="shop-navbar__action-btn" aria-label="로그인" data-auth-btn>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M3.5 17.5c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </a>
+      <!-- Login / Profile Button with Dropdown -->
+      <div class="shop-navbar__auth-wrapper" data-auth-wrapper>
+        <a href="/shop/login" class="shop-navbar__action-btn" aria-label="로그인" data-auth-btn>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3.5 17.5c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <div class="shop-navbar__auth-dropdown" data-auth-dropdown style="display:none;">
+          <a href="/shop/mypage" class="shop-navbar__auth-dropdown-item">마이페이지</a>
+          <a href="/shop/mypage/orders" class="shop-navbar__auth-dropdown-item">주문내역</a>
+          <a href="/shop/quote-cart" class="shop-navbar__auth-dropdown-item">견적함</a>
+          <div class="shop-navbar__auth-dropdown-divider"></div>
+          <button type="button" class="shop-navbar__auth-dropdown-item shop-navbar__auth-dropdown-item--logout" data-logout-btn>로그아웃</button>
+        </div>
+      </div>
 
       <!-- Quote Cart Button -->
       <a href="/shop/quote-cart" class="shop-navbar__action-btn shop-navbar__cart-btn" aria-label="견적함" data-quote-cart-btn>
@@ -598,6 +607,71 @@ const { categories } = await getProducts();
     }
   }
 
+  /* Auth dropdown */
+  .shop-navbar__auth-wrapper {
+    position: relative;
+  }
+
+  .shop-navbar__auth-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 160px;
+    background: rgba(17, 17, 17, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xs);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all 0.2s ease;
+  }
+
+  .shop-navbar__auth-dropdown.is-open {
+    display: block !important;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .shop-navbar__auth-dropdown-item {
+    display: block;
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    transition: background 0.15s ease;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .shop-navbar__auth-dropdown-item:hover {
+    background: rgba(26, 77, 46, 0.15);
+  }
+
+  .shop-navbar__auth-dropdown-item--logout {
+    color: #ef4444;
+  }
+
+  .shop-navbar__auth-dropdown-item--logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  .shop-navbar__auth-dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: var(--space-xs) 0;
+  }
+
   @media (max-width: 719px) {
     .shop-navbar__container {
       height: var(--header-height-inner-mobile);
@@ -623,6 +697,11 @@ const { categories } = await getProducts();
       display: block;
       top: var(--header-height-mobile);
       height: calc(100vh - var(--header-height-mobile));
+    }
+
+    .shop-navbar__auth-dropdown {
+      right: -8px;
+      min-width: 140px;
     }
   }
 </style>
@@ -734,26 +813,51 @@ const { categories } = await getProducts();
       }
     });
 
-    // --- Auth state: toggle login/mypage ---
+    // --- Auth state: toggle login/dropdown ---
     async function updateAuthUI() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
         const data = await res.json();
         const authBtn = navbar.querySelector('[data-auth-btn]') as HTMLAnchorElement | null;
+        const authDropdown = navbar.querySelector('[data-auth-dropdown]') as HTMLElement | null;
+        const authWrapper = navbar.querySelector('[data-auth-wrapper]') as HTMLElement | null;
+        const logoutBtn = navbar.querySelector('[data-logout-btn]') as HTMLButtonElement | null;
         const mobileAuthLink = navbar.querySelector('[data-mobile-auth-link]') as HTMLAnchorElement | null;
 
-        if (data.authenticated) {
-          if (authBtn) {
-            authBtn.href = '/shop/mypage';
-            authBtn.setAttribute('aria-label', '마이페이지');
+        if (data.authenticated && authBtn && authDropdown && authWrapper) {
+          authBtn.removeAttribute('href');
+          authBtn.setAttribute('aria-label', '내 계정');
+          authBtn.style.cursor = 'pointer';
+
+          authBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const isOpen = authDropdown.classList.contains('is-open');
+            authDropdown.classList.toggle('is-open', !isOpen);
+          });
+
+          document.addEventListener('click', (e) => {
+            if (!authWrapper.contains(e.target as Node)) {
+              authDropdown.classList.remove('is-open');
+            }
+          });
+
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+              try {
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+              } catch {}
+              window.location.href = '/shop';
+            });
           }
+
           if (mobileAuthLink) {
             mobileAuthLink.href = '/shop/mypage';
             mobileAuthLink.textContent = '마이페이지';
           }
         }
       } catch {
-        // silently fail
+        // silently fail — user stays as guest
       }
     }
     updateAuthUI();
