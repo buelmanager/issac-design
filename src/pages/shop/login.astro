@@ -355,6 +355,13 @@ if (user) {
 </style>
 
 <script>
+  const ALLOWED_PREFIXES = ['/admin', '/shop', '/simulator'];
+  function validateRedirect(input: string | null): string {
+    if (!input || !input.startsWith('/') || input.startsWith('//') || input.includes('..')) return '/shop';
+    if (input === '/') return input;
+    return ALLOWED_PREFIXES.some(p => input === p || input.startsWith(p + '/')) ? input : '/shop';
+  }
+
   type AuthMode = 'login' | 'signup';
   let mode: AuthMode = 'login';
 
@@ -434,7 +441,7 @@ if (user) {
       }
 
       const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get('redirect') || '/shop';
+      const redirectTo = validateRedirect(params.get('redirect'));
       window.location.href = redirectTo;
     } catch {
       showAlert('서버 연결에 실패했습니다.', 'error');
@@ -449,7 +456,7 @@ if (user) {
 
     try {
       const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get('redirect') || '/shop';
+      const redirectTo = validateRedirect(params.get('redirect'));
 
       const res = await fetch(`/api/auth/${provider}`, {
         method: 'POST',

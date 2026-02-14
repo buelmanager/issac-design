@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ request }) => {
 
   const profileResult = await supabase
     .from('profiles')
-    .select('*')
+    .select('display_name, avatar_url, provider')
     .eq('id' as never, user.id)
     .limit(1);
 

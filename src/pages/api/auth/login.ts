@@ -10,10 +10,9 @@ import type { APIRoute } from 'astro';
 import { createAstroServerClient } from '../../../lib/supabase-server';
 import { PaymentLogger } from '../../../lib/payment/logger';
 
-// ─── Rate Limiting (메모리 기반) ──────────────────────
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 60_000; // 1분
+const WINDOW_MS = 60_000;
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -32,19 +31,14 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-// 오래된 엔트리 정리 (5분마다)
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of loginAttempts) {
-    if (now > entry.resetAt) loginAttempts.delete(ip);
-  }
-}, 300_000);
-
-// ─── API Handler ──────────────────────────────────────
-export const POST: APIRoute = async ({ request }) => {
-  const ip = request.headers.get('x-forwarded-for')
-    ?? request.headers.get('x-real-ip')
+function getClientIp(request: Request): string {
+  return request.headers.get('x-real-ip')
+    ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? 'unknown';
+}
+
+export const POST: APIRoute = async ({ request }) => {
+  const ip = getClientIp(request);
   const userAgent = request.headers.get('user-agent') ?? 'unknown';
 
   // Rate Limit 체크
@@ -85,7 +79,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (error || !data.user) {
       PaymentLogger.warn('AUTH_LOGIN_FAILED', {
-        email,
         ip,
         user_agent: userAgent,
         reason: error?.message ?? 'unknown',
@@ -109,7 +102,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const profileResult = await supabase
       .from('profiles')
-      .select('*')
+      .select('display_name, avatar_url, provider')
       .eq('id' as never, data.user.id)
       .limit(1);
 

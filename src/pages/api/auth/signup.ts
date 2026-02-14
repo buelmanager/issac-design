@@ -4,7 +4,7 @@ import { PaymentLogger } from '../../../lib/payment/logger';
 
 const signupAttempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 3;
-const WINDOW_MS = 300_000; // 5분
+const WINDOW_MS = 300_000;
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -23,20 +23,17 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of signupAttempts) {
-    if (now > entry.resetAt) signupAttempts.delete(ip);
-  }
-}, 300_000);
+function getClientIp(request: Request): string {
+  return request.headers.get('x-real-ip')
+    ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? 'unknown';
+}
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
 
 export const POST: APIRoute = async ({ request }) => {
-  const ip = request.headers.get('x-forwarded-for')
-    ?? request.headers.get('x-real-ip')
-    ?? 'unknown';
+  const ip = getClientIp(request);
 
   if (!checkRateLimit(ip)) {
     PaymentLogger.warn('SIGNUP_RATE_LIMITED', { ip });
@@ -87,21 +84,16 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     if (error) {
-      PaymentLogger.warn('SIGNUP_FAILED', { email, ip, reason: error.message });
-
-      const message = error.message.includes('already registered')
-        ? '이미 가입된 이메일입니다.'
-        : '회원가입에 실패했습니다. 다시 시도하세요.';
+      PaymentLogger.warn('SIGNUP_FAILED', { ip, reason: error.message });
 
       return new Response(JSON.stringify({
         success: false,
-        error: { code: 'SIGNUP_FAILED', message },
+        error: { code: 'SIGNUP_FAILED', message: '회원가입에 실패했습니다. 다시 시도하세요.' },
       }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
     PaymentLogger.info('SIGNUP_SUCCESS', {
       user_id: data.user?.id,
-      email,
       ip,
     });
 

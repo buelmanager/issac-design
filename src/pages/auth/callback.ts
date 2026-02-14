@@ -11,16 +11,12 @@
  */
 import type { APIRoute } from 'astro';
 import { createAstroServerClient } from '../../lib/supabase-server';
+import { validateRedirect } from '../../lib/auth/validate-redirect';
 
 export const GET: APIRoute = async ({ request, redirect, url }) => {
   const code = url.searchParams.get('code');
-  const next = url.searchParams.get('next') ?? '/shop';
-
-  const ALLOWED_PATHS = ['/admin', '/shop', '/', '/shop/login'];
-  const isAllowedRedirect = ALLOWED_PATHS.some(p => next.startsWith(p));
-  const safeDest = isAllowedRedirect ? next : '/shop';
-
-  const errorRedirect = next.startsWith('/admin') ? '/admin/login' : '/shop/login';
+  const safeDest = validateRedirect(url.searchParams.get('next'));
+  const errorRedirect = safeDest.startsWith('/admin') ? '/admin/login' : '/shop/login';
 
   if (!code) {
     return redirect(`${errorRedirect}?error=missing_code`);

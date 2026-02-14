@@ -1,16 +1,24 @@
 import type { APIRoute } from 'astro';
 import { createAstroServerClient } from '../../../lib/supabase-server';
+import { validateRedirect } from '../../../lib/auth/validate-redirect';
+import { PaymentLogger } from '../../../lib/payment/logger';
 
 export const POST: APIRoute = async ({ request, url }) => {
   const { supabase } = createAstroServerClient(request);
+  const ip = request.headers.get('x-real-ip')
+    ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? 'unknown';
 
-  let redirectTo: string;
+  let rawRedirect: string | undefined;
   try {
     const body = await request.json();
-    redirectTo = body.redirectTo ?? '/shop';
+    rawRedirect = body.redirectTo;
   } catch {
-    redirectTo = '/shop';
+    // invalid JSON — use default
   }
+  const redirectTo = validateRedirect(rawRedirect);
+
+  PaymentLogger.info('OAUTH_KAKAO_INITIATED', { ip, redirect: redirectTo });
 
   const callbackUrl = new URL('/auth/callback', url.origin);
   callbackUrl.searchParams.set('next', redirectTo);

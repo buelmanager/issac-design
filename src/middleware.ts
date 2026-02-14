@@ -3,8 +3,8 @@
  *
  * 3단계 보안 체인:
  * 1. authMiddleware — 모든 요청에서 쿠키 기반 세션 파싱 → locals.user 설정
- * 2. adminGuard — /admin/* 경로 보호 (로그인 페이지 제외)
- * 3. securityHeaders — 보안 HTTP 헤더 추가
+ * 2. adminGuard — /admin/* 경로 보호 (admin_users 테이블 역할 검증)
+ * 3. securityHeaders — 보안 HTTP 헤더 추가 (CSP, HSTS 포함)
  */
 import { defineMiddleware, sequence } from 'astro:middleware';
 import { createAstroServerClient } from './lib/supabase-server';
@@ -59,6 +59,18 @@ const adminGuard = defineMiddleware(async (context, next) => {
     return context.redirect('/admin/login');
   }
 
+  // admin_users 테이블에서 관리자 역할 검증 (일반 유저 차단)
+  const { supabase } = createAstroServerClient(context.request);
+  const { data: adminUser } = await supabase
+    .from('admin_users')
+    .select('id')
+    .eq('id' as never, context.locals.user.id)
+    .single();
+
+  if (!adminUser) {
+    return context.redirect('/shop');
+  }
+
   return next();
 });
 
@@ -69,13 +81,23 @@ const securityHeaders = defineMiddleware(async (context, next) => {
   const resp = await next();
   const { pathname } = context.url;
 
-  // 공통 보안 헤더
   resp.headers.set('X-Content-Type-Options', 'nosniff');
   resp.headers.set('X-Frame-Options', 'DENY');
   resp.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   resp.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  resp.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  resp.headers.set('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.tosspayments.com https://accounts.google.com https://apis.google.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https: http:",
+    "connect-src 'self' https://*.supabase.co https://js.tosspayments.com https://accounts.google.com",
+    "frame-src https://js.tosspayments.com https://accounts.google.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+  ].join('; '));
 
-  // /admin/* 경로는 캐시 금지
   if (pathname.startsWith('/admin')) {
     resp.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   }
