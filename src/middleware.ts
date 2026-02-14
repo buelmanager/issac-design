@@ -93,7 +93,7 @@ const securityHeaders = defineMiddleware(async (context, next) => {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https: http:",
     "connect-src 'self' https://*.supabase.co https://*.tosspayments.com https://accounts.google.com https://raw.githack.com https://raw.githubusercontent.com https://dapi.kakao.com https://*.daumcdn.net",
-    "frame-src https://*.tosspayments.com https://accounts.google.com",
+    "frame-src https://*.tosspayments.com https://accounts.google.com https://ui.teledit.com",
     "object-src 'none'",
     "base-uri 'self'",
   ].join('; '));

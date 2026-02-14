@@ -220,17 +220,17 @@
   justify-content: center;
   gap: var(--space-sm);
   width: 100%;
-  padding: var(--space-md) var(--space-2xl);
-  margin-top: var(--space-lg);
-  font-size: var(--font-size-base);
-  font-weight: 600;
+  padding: 16px 32px;
+  margin-top: 24px;
+  font-size: 16px;
+  font-weight: 700;
   font-family: var(--font-family);
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all var(--transition-base);
-  background: var(--primary);
-  color: var(--text-primary);
-  border: 1px solid var(--primary);
+  transition: all 0.2s ease;
+  background: #1a4d2e;
+  color: #ffffff;
+  border: none;
 }
 
 .payment-widget__submit-btn:hover:not(:disabled) {
