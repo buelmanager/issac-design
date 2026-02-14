@@ -5,9 +5,11 @@
  */
 
 import { getProducts } from '../../lib/data-fetchers';
+import { APP_VERSION } from '../../version';
 
 const { categories } = await getProducts();
 const currentYear = new Date().getFullYear();
+const version = APP_VERSION;
 ---
 
 <footer class="shop-footer">
@@ -96,6 +98,7 @@ const currentYear = new Date().getFullYear();
       <p class="shop-footer__copyright">
         &copy; {currentYear} issac.design. All rights reserved.
       </p>
+      <p class="shop-footer__version">v{version}</p>
     </div>
   </div>
 </footer>
@@ -254,6 +257,13 @@ const currentYear = new Date().getFullYear();
   .shop-footer__copyright {
     font-size: var(--font-size-xs);
     color: var(--text-muted);
+  }
+
+  .shop-footer__version {
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    margin-top: var(--space-xs);
   }
 
   /* Responsive */

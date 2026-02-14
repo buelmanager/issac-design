@@ -5,8 +5,10 @@
  */
 
 import { supabase } from '../../lib/supabase';
+import { APP_VERSION } from '../../version';
 
 const currentYear = new Date().getFullYear();
+const version = APP_VERSION;
 
 // Fallback data
 const FALLBACK_QUICK_LINKS = [
@@ -213,6 +215,7 @@ try {
       <p class="footer__copyright">
         &copy; {currentYear} issac.design. All rights reserved.
       </p>
+      <p class="footer__version">v{version}</p>
     </div>
   </div>
 </footer>
@@ -482,6 +485,13 @@ try {
     font-size: var(--font-size-xs);
     color: var(--text-muted);
     opacity: 0.6;
+  }
+
+  .footer__version {
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    margin-top: var(--space-xs);
   }
 
   /* Responsive: Tablet */
