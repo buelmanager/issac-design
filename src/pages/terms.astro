@@ -1,0 +1,399 @@
+---
+/**
+ * Terms of Service Page
+ * 이용약관 - issac.design
+ */
+
+import Layout from '../layouts/Layout.astro';
+import ShopNavbar from '../components/shop/ShopNavbar.astro';
+import ShopFooter from '../components/shop/ShopFooter.astro';
+---
+
+<Layout
+  title="이용약관 | issac.design"
+  description="issac.design의 이용약관을 확인하세요. 서비스 이용에 관한 기본적인 사항을 규정합니다."
+>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+
+  <main class="policy-page">
+    <div class="policy-page__container">
+      <!-- Header -->
+      <header class="policy-page__header">
+        <h1 class="policy-page__title">이용약관</h1>
+        <p class="policy-page__effective">시행일: 2026년 2월 14일</p>
+      </header>
+
+      <!-- Content -->
+      <div class="policy-page__content">
+        <section class="policy-section">
+          <h2 class="policy-section__title">제1조 (목적)</h2>
+          <p class="policy-section__text">
+            이 약관은 issac.design(이하 "회사")이 운영하는 온라인 쇼핑몰 및 관련 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제2조 (정의)</h2>
+          <ul class="policy-section__list">
+            <li><strong>"서비스"</strong>란 회사가 제공하는 인테리어 가구 및 디자인 상품의 온라인 판매 서비스를 말합니다.</li>
+            <li><strong>"이용자"</strong>란 이 약관에 따라 회사가 제공하는 서비스를 이용하는 회원 및 비회원을 말합니다.</li>
+            <li><strong>"회원"</strong>이란 회사에 개인정보를 제공하고 회원으로 등록한 자로서 서비스를 계속적으로 이용할 수 있는 자를 말합니다.</li>
+            <li><strong>"비회원"</strong>이란 회원에 가입하지 않고 서비스를 이용하는 자를 말합니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제3조 (약관의 효력 및 변경)</h2>
+          <ul class="policy-section__list">
+            <li>이 약관은 서비스 화면에 게시하거나 기타의 방법으로 이용자에게 공지함으로써 효력이 발생합니다.</li>
+            <li>회사는 관련 법령을 위배하지 않는 범위에서 이 약관을 개정할 수 있습니다.</li>
+            <li>회사가 약관을 개정할 경우에는 적용일자 및 개정사유를 명시하여 현행 약관과 함께 서비스 초기화면에 그 적용일자 7일 이전부터 적용일자 전일까지 공지합니다. 다만, 이용자에게 불리하게 약관내용을 변경하는 경우에는 최소한 30일 이상의 사전 유예기간을 두고 공지합니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제4조 (회원가입)</h2>
+          <ul class="policy-section__list">
+            <li>이용자는 회사가 정한 양식에 따라 회원정보를 기입한 후 이 약관에 동의한다는 의사표시를 함으로써 회원가입을 신청합니다.</li>
+            <li>회사는 소셜 로그인(Google, 카카오) 및 이메일을 통한 회원가입을 지원합니다.</li>
+            <li>회사는 다음 각 호에 해당하지 않는 한 회원으로 등록합니다:
+              <ul class="policy-section__list policy-section__list--nested">
+                <li>가입신청자가 이 약관에 의하여 이전에 회원자격을 상실한 적이 있는 경우</li>
+                <li>등록 내용에 허위, 기재누락, 오기가 있는 경우</li>
+                <li>기타 회원으로 등록하는 것이 기술상 현저히 지장이 있다고 판단되는 경우</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제5조 (회원 탈퇴 및 자격 상실)</h2>
+          <ul class="policy-section__list">
+            <li>회원은 회사에 언제든지 탈퇴를 요청할 수 있으며, 회사는 즉시 회원탈퇴를 처리합니다.</li>
+            <li>회원이 다음 각 호의 사유에 해당하는 경우, 회사는 회원자격을 제한 및 정지시킬 수 있습니다:
+              <ul class="policy-section__list policy-section__list--nested">
+                <li>가입 신청 시 허위 내용을 등록한 경우</li>
+                <li>다른 사람의 서비스 이용을 방해하거나 그 정보를 도용하는 등 전자상거래 질서를 위협하는 경우</li>
+                <li>서비스를 이용하여 법령 또는 이 약관이 금지하거나 공서양속에 반하는 행위를 하는 경우</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제6조 (서비스의 제공 및 변경)</h2>
+          <ul class="policy-section__list">
+            <li>회사는 다음과 같은 서비스를 제공합니다:
+              <ul class="policy-section__list policy-section__list--nested">
+                <li>인테리어 가구 및 디자인 상품에 대한 정보 제공</li>
+                <li>상품 주문 및 결제 서비스</li>
+                <li>상품 배송 및 설치 서비스</li>
+                <li>회원 맞춤형 서비스</li>
+              </ul>
+            </li>
+            <li>회사는 서비스의 내용을 변경할 수 있으며, 이 경우 변경된 서비스의 내용 및 제공일자를 명시하여 현재 서비스의 내용을 게시한 곳에 즉시 공지합니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제7조 (서비스의 중단)</h2>
+          <p class="policy-section__text">
+            회사는 컴퓨터 등 정보통신설비의 보수점검, 교체 및 고장, 통신의 두절 등의 사유가 발생한 경우에는 서비스의 제공을 일시적으로 중단할 수 있습니다. 이 경우 회사는 사전에 공지합니다. 다만, 부득이한 사유로 사전 공지가 불가능한 경우 사후에 통지할 수 있습니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제8조 (구매신청 및 결제)</h2>
+          <ul class="policy-section__list">
+            <li>이용자는 서비스상에서 다음 방법에 의하여 구매를 신청합니다:
+              <ul class="policy-section__list policy-section__list--nested">
+                <li>상품 검색 및 선택</li>
+                <li>성명, 연락처, 배송지 주소 등 입력</li>
+                <li>약관 동의 확인</li>
+                <li>결제방법 선택 및 결제 (토스페이먼츠를 통한 카드, 계좌이체 등)</li>
+              </ul>
+            </li>
+            <li>회사는 이용자의 구매신청에 대하여 다음 각 호에 해당하는 경우 승낙하지 않을 수 있습니다:
+              <ul class="policy-section__list policy-section__list--nested">
+                <li>신청 내용에 허위, 기재누락, 오기가 있는 경우</li>
+                <li>기타 구매신청에 승낙하는 것이 기술상 현저히 지장이 있다고 판단되는 경우</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제9조 (배송 및 설치)</h2>
+          <ul class="policy-section__list">
+            <li>회사는 이용자가 구매한 상품에 대해 배송수단, 배송비용 부담자, 수단별 배송기간 등을 명시합니다.</li>
+            <li>가구 및 대형 상품의 경우 전문 배송 및 설치 서비스가 제공될 수 있으며, 설치 일정은 이용자와 협의하여 결정합니다.</li>
+            <li>배송 지역, 상품 특성에 따라 배송 기간이 달라질 수 있습니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제10조 (청약철회 및 반품·교환)</h2>
+          <ul class="policy-section__list">
+            <li>회사와 상품 구매에 관한 계약을 체결한 이용자는 전자상거래 등에서의 소비자보호에 관한 법률 제13조 제2항에 따른 계약내용에 관한 서면을 받은 날부터 7일 이내에 청약의 철회를 할 수 있습니다.</li>
+            <li>다만, 다음 각 호의 어느 하나에 해당하는 경우에는 반품 및 교환이 제한됩니다:
+              <ul class="policy-section__list policy-section__list--nested">
+                <li>이용자의 귀책사유로 상품이 멸실 또는 훼손된 경우</li>
+                <li>이용자의 사용 또는 일부 소비에 의하여 상품의 가치가 현저히 감소한 경우</li>
+                <li>주문 제작 상품 등 이용자의 주문에 의하여 개별적으로 생산되는 상품인 경우</li>
+                <li>설치 완료 후 상품의 가치가 현저히 감소한 경우</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제11조 (환불)</h2>
+          <ul class="policy-section__list">
+            <li>회사는 이용자가 청약철회를 한 경우 3영업일 이내에 이미 결제한 대금을 환불합니다.</li>
+            <li>환불은 원래 결제 수단을 통해 진행되며, 토스페이먼츠의 결제 취소 시스템을 통해 처리됩니다.</li>
+            <li>회사가 환불을 지연한 때에는 그 지연기간에 대하여 전자상거래법이 정하는 지연이자율을 곱하여 산정한 지연이자를 지급합니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제12조 (개인정보보호)</h2>
+          <p class="policy-section__text">
+            회사는 이용자의 개인정보를 수집하는 때에는 서비스 제공을 위하여 필요한 범위에서 최소한의 개인정보를 수집합니다. 개인정보의 수집 및 이용에 관한 자세한 사항은 <a href="/privacy" class="policy-link">개인정보처리방침</a>을 참고하시기 바랍니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제13조 (회사의 의무)</h2>
+          <ul class="policy-section__list">
+            <li>회사는 법령과 이 약관이 금지하거나 공서양속에 반하는 행위를 하지 않으며, 이 약관이 정하는 바에 따라 지속적이고 안정적으로 서비스를 제공하는 데 최선을 다합니다.</li>
+            <li>회사는 이용자가 안전하게 인터넷 서비스를 이용할 수 있도록 이용자의 개인정보(신용정보 포함) 보호를 위한 보안 시스템을 갖추어야 합니다.</li>
+            <li>회사는 이용자가 원하지 않는 영리목적의 광고성 전자우편을 발송하지 않습니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제14조 (이용자의 의무)</h2>
+          <p class="policy-section__text">이용자는 다음 행위를 하여서는 안 됩니다.</p>
+          <ul class="policy-section__list">
+            <li>신청 또는 변경 시 허위 내용의 등록</li>
+            <li>타인의 정보 도용</li>
+            <li>회사에 게시된 정보의 변경</li>
+            <li>회사가 정한 정보 이외의 정보(컴퓨터 프로그램 등)의 송신 또는 게시</li>
+            <li>회사 기타 제3자의 저작권 등 지적재산권에 대한 침해</li>
+            <li>회사 기타 제3자의 명예를 손상시키거나 업무를 방해하는 행위</li>
+            <li>외설 또는 폭력적인 메시지, 화상, 음성, 기타 공서양속에 반하는 정보를 서비스에 공개 또는 게시하는 행위</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제15조 (면책조항)</h2>
+          <ul class="policy-section__list">
+            <li>회사는 천재지변 또는 이에 준하는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.</li>
+            <li>회사는 이용자의 귀책사유로 인한 서비스 이용의 장애에 대하여는 책임을 지지 않습니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제16조 (분쟁해결)</h2>
+          <ul class="policy-section__list">
+            <li>회사는 이용자가 제기하는 정당한 의견이나 불만을 반영하고 그 피해를 보상처리하기 위하여 고객센터를 운영합니다.</li>
+            <li>회사와 이용자 간에 발생한 전자상거래 분쟁과 관련하여 이용자의 피해구제신청이 있는 경우에는 공정거래위원회 또는 시·도지사가 의뢰하는 분쟁조정기관의 조정에 따를 수 있습니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">제17조 (재판권 및 준거법)</h2>
+          <ul class="policy-section__list">
+            <li>이 약관에 명시되지 않은 사항은 전자상거래 등에서의 소비자보호에 관한 법률, 약관의 규제에 관한 법률 등 관계 법령에 따릅니다.</li>
+            <li>회사와 이용자 간에 발생한 분쟁에 관한 소송은 민사소송법에 의한 관할법원에 제기합니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">부칙</h2>
+          <p class="policy-section__text">이 약관은 2026년 2월 14일부터 시행합니다.</p>
+        </section>
+      </div>
+
+      <!-- Footer Navigation -->
+      <div class="policy-page__footer">
+        <a href="/privacy" class="policy-page__footer-link">개인정보처리방침 보기</a>
+        <a href="/shop" class="policy-page__footer-link">쇼핑몰 홈으로</a>
+      </div>
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<style>
+  .policy-page {
+    min-height: 100vh;
+    padding: calc(var(--header-height) + var(--space-3xl)) var(--container-padding) var(--space-4xl);
+    background: var(--bg-primary);
+  }
+
+  .policy-page__container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .policy-page__header {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .policy-page__title {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  .policy-page__effective {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* Content */
+  .policy-page__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xl);
+  }
+
+  /* Section */
+  .policy-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .policy-section__title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--primary);
+  }
+
+  .policy-section__text {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .policy-section__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding-left: var(--space-lg);
+  }
+
+  .policy-section__list li {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    position: relative;
+    padding-left: var(--space-md);
+  }
+
+  .policy-section__list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .policy-section__list--nested {
+    margin-top: var(--space-sm);
+  }
+
+  .policy-section__list--nested li::before {
+    content: '-';
+  }
+
+  .policy-link {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: opacity var(--transition-base);
+  }
+
+  .policy-link:hover {
+    opacity: 0.8;
+  }
+
+  /* Footer */
+  .policy-page__footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xl);
+    margin-top: var(--space-4xl);
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--border);
+  }
+
+  .policy-page__footer-link {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.2);
+    transition: color var(--transition-base);
+  }
+
+  .policy-page__footer-link:hover {
+    color: var(--primary);
+  }
+
+  /* Responsive */
+  @media (max-width: 719px) {
+    .policy-page {
+      padding-top: calc(var(--header-height-mobile) + var(--space-2xl));
+      padding-bottom: var(--space-3xl);
+    }
+
+    .policy-page__header {
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-xl);
+    }
+
+    .policy-page__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .policy-page__content {
+      gap: var(--space-2xl);
+    }
+
+    .policy-section {
+      gap: var(--space-md);
+    }
+
+    .policy-section__title {
+      font-size: var(--font-size-lg);
+    }
+
+    .policy-section__text,
+    .policy-section__list li {
+      font-size: var(--font-size-sm);
+    }
+
+    .policy-page__footer {
+      flex-direction: column;
+      gap: var(--space-md);
+      margin-top: var(--space-3xl);
+      padding-top: var(--space-xl);
+    }
+  }
+</style>

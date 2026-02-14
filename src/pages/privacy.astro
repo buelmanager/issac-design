@@ -1,0 +1,401 @@
+---
+/**
+ * Privacy Policy Page
+ * 개인정보처리방침 - issac.design
+ */
+
+import Layout from '../layouts/Layout.astro';
+import ShopNavbar from '../components/shop/ShopNavbar.astro';
+import ShopFooter from '../components/shop/ShopFooter.astro';
+---
+
+<Layout
+  title="개인정보처리방침 | issac.design"
+  description="issac.design의 개인정보처리방침을 확인하세요. 고객님의 개인정보를 안전하게 보호합니다."
+>
+  <script is:inline>document.body.classList.add('preloader-ready');</script>
+  <ShopNavbar />
+
+  <main class="policy-page">
+    <div class="policy-page__container">
+      <!-- Header -->
+      <header class="policy-page__header">
+        <h1 class="policy-page__title">개인정보처리방침</h1>
+        <p class="policy-page__effective">시행일: 2026년 2월 14일</p>
+      </header>
+
+      <!-- Content -->
+      <div class="policy-page__content">
+        <section class="policy-section">
+          <h2 class="policy-section__title">1. 개인정보의 수집 및 이용 목적</h2>
+          <p class="policy-section__text">
+            issac.design(이하 "회사")는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 개인정보 보호법 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.
+          </p>
+          <ul class="policy-section__list">
+            <li>회원 가입 및 관리: 회원 식별, 본인 확인, 부정 이용 방지</li>
+            <li>서비스 제공: 맞춤형 서비스 제공, 주문 및 결제 처리, 배송 및 설치</li>
+            <li>고객 지원: 문의 응대, 불만 처리, 공지사항 전달</li>
+            <li>마케팅 및 광고: 신규 서비스 안내, 이벤트 정보 제공 (선택적 동의)</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">2. 수집하는 개인정보 항목</h2>
+          <p class="policy-section__text">
+            회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다.
+          </p>
+          <div class="policy-section__subsection">
+            <h3 class="policy-section__subtitle">필수 수집 항목</h3>
+            <ul class="policy-section__list">
+              <li>이메일 주소 (회원 식별 및 로그인)</li>
+              <li>이름 (서비스 제공 및 본인 확인)</li>
+              <li>프로필 사진 (Google/카카오 OAuth 로그인 시 자동 수집)</li>
+              <li>연락처 (주문 및 배송 관련 연락)</li>
+              <li>배송지 주소 (상품 배송 및 설치)</li>
+            </ul>
+          </div>
+          <div class="policy-section__subsection">
+            <h3 class="policy-section__subtitle">자동 수집 항목</h3>
+            <ul class="policy-section__list">
+              <li>IP 주소, 쿠키, 접속 로그, 서비스 이용 기록</li>
+              <li>기기 정보 (브라우저 종류, OS, 화면 크기)</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">3. 개인정보의 보유 및 이용 기간</h2>
+          <p class="policy-section__text">
+            회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 개인정보를 수집 시에 동의받은 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.
+          </p>
+          <ul class="policy-section__list">
+            <li>회원 정보: 회원 탈퇴 시까지 (단, 관계 법령 위반에 따른 수사·조사 등이 진행 중인 경우에는 해당 수사·조사 종료 시까지)</li>
+            <li>주문 및 결제 정보: 전자상거래법에 따라 5년간 보관</li>
+            <li>소비자 불만 또는 분쟁 처리 기록: 전자상거래법에 따라 3년간 보관</li>
+            <li>접속 로그 기록: 통신비밀보호법에 따라 3개월간 보관</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">4. 개인정보의 제3자 제공</h2>
+          <p class="policy-section__text">
+            회사는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 다만, 다음의 경우에는 예외로 합니다.
+          </p>
+          <ul class="policy-section__list">
+            <li>이용자가 사전에 동의한 경우</li>
+            <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
+          </ul>
+          <div class="policy-section__subsection">
+            <h3 class="policy-section__subtitle">서비스 제공을 위한 제3자 제공</h3>
+            <ul class="policy-section__list">
+              <li><strong>Supabase (데이터베이스 호스팅)</strong>: 이메일, 이름, 프로필 사진, 주문 정보 - 서비스 제공 및 데이터 저장</li>
+              <li><strong>Toss Payments (결제 대행)</strong>: 이름, 연락처, 결제 정보 - 결제 처리 및 환불</li>
+              <li><strong>배송 업체</strong>: 이름, 연락처, 배송지 주소 - 상품 배송 및 설치</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">5. 개인정보 처리의 위탁</h2>
+          <p class="policy-section__text">
+            회사는 원활한 서비스 제공을 위해 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다.
+          </p>
+          <ul class="policy-section__list">
+            <li><strong>Supabase</strong>: 데이터베이스 호스팅 및 관리</li>
+            <li><strong>Toss Payments</strong>: 결제 처리 및 정산</li>
+            <li><strong>Google, Kakao</strong>: OAuth 소셜 로그인 인증</li>
+          </ul>
+          <p class="policy-section__text">
+            회사는 위탁계약 체결 시 개인정보 보호법 제26조에 따라 위탁업무 수행목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁 제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을 계약서 등 문서에 명시하고, 수탁자가 개인정보를 안전하게 처리하는지를 감독하고 있습니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">6. 정보주체의 권리·의무 및 행사 방법</h2>
+          <p class="policy-section__text">
+            이용자는 개인정보주체로서 다음과 같은 권리를 행사할 수 있습니다.
+          </p>
+          <ul class="policy-section__list">
+            <li>개인정보 열람 요구</li>
+            <li>개인정보 정정·삭제 요구</li>
+            <li>개인정보 처리 정지 요구</li>
+            <li>개인정보 이동 요구 (데이터 포터빌리티)</li>
+          </ul>
+          <p class="policy-section__text">
+            권리 행사는 회사에 대해 개인정보 보호법 시행규칙 별지 제8호 서식에 따라 서면, 전자우편, 모사전송(FAX) 등을 통하여 하실 수 있으며, 회사는 이에 대해 지체 없이 조치하겠습니다. 또한, 회원 정보 수정 페이지를 통해 직접 열람 및 정정이 가능합니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">7. 개인정보의 파기</h2>
+          <p class="policy-section__text">
+            회사는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체 없이 해당 개인정보를 파기합니다.
+          </p>
+          <ul class="policy-section__list">
+            <li><strong>파기 절차</strong>: 이용자가 입력한 정보는 목적 달성 후 별도의 DB에 옮겨져(종이의 경우 별도의 서류) 내부 방침 및 기타 관련 법령에 따라 일정기간 저장된 후 혹은 즉시 파기됩니다.</li>
+            <li><strong>파기 방법</strong>: 전자적 파일 형태의 정보는 기록을 재생할 수 없는 기술적 방법을 사용하여 삭제하며, 종이에 출력된 개인정보는 분쇄기로 분쇄하거나 소각하여 파기합니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">8. 개인정보의 안전성 확보 조치</h2>
+          <p class="policy-section__text">
+            회사는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.
+          </p>
+          <ul class="policy-section__list">
+            <li>관리적 조치: 내부관리계획 수립·시행, 정기적 직원 교육</li>
+            <li>기술적 조치: 개인정보처리시스템 등의 접근권한 관리, 접근통제시스템 설치, 고유식별정보 등의 암호화, 보안프로그램 설치</li>
+            <li>물리적 조치: 전산실, 자료보관실 등의 접근통제</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">9. 쿠키(Cookie)의 운영 및 거부</h2>
+          <p class="policy-section__text">
+            회사는 이용자에게 개별적인 맞춤서비스를 제공하기 위해 이용정보를 저장하고 수시로 불러오는 '쿠키(cookie)'를 사용합니다.
+          </p>
+          <ul class="policy-section__list">
+            <li><strong>쿠키의 사용 목적</strong>: 로그인 세션 유지, 이용자 맞춤 서비스 제공, 접속 빈도 파악, 서비스 이용 통계</li>
+            <li><strong>쿠키의 설치·운영 및 거부</strong>: 웹브라우저 상단의 도구 > 인터넷 옵션 > 개인정보 메뉴의 옵션 설정을 통해 쿠키 저장을 거부할 수 있습니다. 단, 쿠키 저장을 거부할 경우 맞춤형 서비스 이용에 어려움이 발생할 수 있습니다.</li>
+          </ul>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">10. 개인정보 보호책임자</h2>
+          <p class="policy-section__text">
+            회사는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
+          </p>
+          <div class="policy-section__contact">
+            <p><strong>개인정보 보호책임자</strong></p>
+            <ul class="policy-section__list">
+              <li>성명: 이삭</li>
+              <li>직책: 대표</li>
+              <li>이메일: contact@issac.design</li>
+              <li>전화번호: 010-1234-5678</li>
+            </ul>
+          </div>
+          <p class="policy-section__text">
+            정보주체는 회사의 서비스를 이용하시면서 발생한 모든 개인정보 보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 개인정보 보호책임자에게 문의하실 수 있습니다. 회사는 정보주체의 문의에 대해 지체 없이 답변 및 처리해드릴 것입니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">11. 개인정보 처리방침의 변경</h2>
+          <p class="policy-section__text">
+            이 개인정보처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.
+          </p>
+        </section>
+
+        <section class="policy-section">
+          <h2 class="policy-section__title">12. 권익침해 구제방법</h2>
+          <p class="policy-section__text">
+            정보주체는 개인정보침해로 인한 구제를 받기 위하여 개인정보분쟁조정위원회, 한국인터넷진흥원 개인정보침해신고센터 등에 분쟁해결이나 상담 등을 신청할 수 있습니다.
+          </p>
+          <ul class="policy-section__list">
+            <li>개인정보분쟁조정위원회: (국번없이) 1833-6972 (www.kopico.go.kr)</li>
+            <li>개인정보침해신고센터: (국번없이) 118 (privacy.kisa.or.kr)</li>
+            <li>대검찰청: (국번없이) 1301 (www.spo.go.kr)</li>
+            <li>경찰청: (국번없이) 182 (ecrm.cyber.go.kr)</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Footer Navigation -->
+      <div class="policy-page__footer">
+        <a href="/terms" class="policy-page__footer-link">이용약관 보기</a>
+        <a href="/shop" class="policy-page__footer-link">쇼핑몰 홈으로</a>
+      </div>
+    </div>
+  </main>
+
+  <ShopFooter />
+</Layout>
+
+<style>
+  .policy-page {
+    min-height: 100vh;
+    padding: calc(var(--header-height) + var(--space-3xl)) var(--container-padding) var(--space-4xl);
+    background: var(--bg-primary);
+  }
+
+  .policy-page__container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .policy-page__header {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+    padding-bottom: var(--space-2xl);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .policy-page__title {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    letter-spacing: var(--letter-spacing-tight);
+  }
+
+  .policy-page__effective {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* Content */
+  .policy-page__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xl);
+  }
+
+  /* Section */
+  .policy-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .policy-section__title {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: var(--line-height-tight);
+    padding-bottom: var(--space-sm);
+    border-bottom: 2px solid var(--primary);
+  }
+
+  .policy-section__subtitle {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-sm);
+  }
+
+  .policy-section__text {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .policy-section__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding-left: var(--space-lg);
+  }
+
+  .policy-section__list li {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+    position: relative;
+    padding-left: var(--space-md);
+  }
+
+  .policy-section__list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .policy-section__subsection {
+    margin-top: var(--space-md);
+    padding-left: var(--space-lg);
+    border-left: 2px solid var(--border);
+  }
+
+  .policy-section__contact {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    margin-top: var(--space-md);
+  }
+
+  .policy-section__contact p {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+  }
+
+  /* Footer */
+  .policy-page__footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xl);
+    margin-top: var(--space-4xl);
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--border);
+  }
+
+  .policy-page__footer-link {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.2);
+    transition: color var(--transition-base);
+  }
+
+  .policy-page__footer-link:hover {
+    color: var(--primary);
+  }
+
+  /* Responsive */
+  @media (max-width: 719px) {
+    .policy-page {
+      padding-top: calc(var(--header-height-mobile) + var(--space-2xl));
+      padding-bottom: var(--space-3xl);
+    }
+
+    .policy-page__header {
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-xl);
+    }
+
+    .policy-page__title {
+      font-size: var(--font-size-2xl);
+    }
+
+    .policy-page__content {
+      gap: var(--space-2xl);
+    }
+
+    .policy-section {
+      gap: var(--space-md);
+    }
+
+    .policy-section__title {
+      font-size: var(--font-size-lg);
+    }
+
+    .policy-section__subtitle {
+      font-size: var(--font-size-base);
+    }
+
+    .policy-section__text,
+    .policy-section__list li {
+      font-size: var(--font-size-sm);
+    }
+
+    .policy-section__subsection {
+      padding-left: var(--space-md);
+    }
+
+    .policy-page__footer {
+      flex-direction: column;
+      gap: var(--space-md);
+      margin-top: var(--space-3xl);
+      padding-top: var(--space-xl);
+    }
+  }
+</style>
