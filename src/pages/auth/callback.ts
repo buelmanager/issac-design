@@ -36,12 +36,17 @@ export const GET: APIRoute = async ({ request, redirect, url }) => {
       description: errorDescription,
       next: safeDest,
     });
-    return redirect(`${errorRedirect}?error=${errorParam}`);
+    const errParams = new URLSearchParams({
+      error: errorParam,
+      ...(errorDescription ? { error_desc: errorDescription } : {}),
+      stage: 'oauth_provider',
+    });
+    return redirect(`${errorRedirect}?${errParams.toString()}`);
   }
 
   if (!code) {
     PaymentLogger.warn('AUTH_CALLBACK_MISSING_CODE', { next: safeDest });
-    return redirect(`${errorRedirect}?error=missing_code`);
+    return redirect(`${errorRedirect}?error=missing_code&stage=callback_no_code`);
   }
 
   const { supabase, response } = createAstroServerClient(request);
@@ -54,7 +59,13 @@ export const GET: APIRoute = async ({ request, redirect, url }) => {
       error_name: error.name,
       next: safeDest,
     });
-    return redirect(`${errorRedirect}?error=auth_failed`);
+    const errParams = new URLSearchParams({
+      error: 'auth_failed',
+      error_desc: error.message,
+      error_code: String(error.status ?? ''),
+      stage: 'code_exchange',
+    });
+    return redirect(`${errorRedirect}?${errParams.toString()}`);
   }
 
   PaymentLogger.info('AUTH_CALLBACK_SUCCESS', {
