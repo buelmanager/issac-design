@@ -27,6 +27,7 @@ const SENSITIVE_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
 function maskSensitiveData(data: string): string {
   let masked = data;
   for (const { pattern, replacement } of SENSITIVE_PATTERNS) {
+    pattern.lastIndex = 0; // 글로벌 플래그 사용 시 lastIndex 리셋
     masked = masked.replace(pattern, replacement);
   }
   return masked;
@@ -77,10 +78,10 @@ export class PaymentLogger {
       stack: context?.error?.stack,
     };
 
-    // 메모리 로그 (관리자 조회용)
+    // 메모리 로그 (관리자 조회용) - 최대 크기 초과 시 가장 오래된 항목 제거
     PaymentLogger.logs.push(entry);
-    if (PaymentLogger.logs.length > PaymentLogger.maxInMemoryLogs) {
-      PaymentLogger.logs = PaymentLogger.logs.slice(-PaymentLogger.maxInMemoryLogs);
+    while (PaymentLogger.logs.length > PaymentLogger.maxInMemoryLogs) {
+      PaymentLogger.logs.shift();
     }
 
     // 콘솔 출력

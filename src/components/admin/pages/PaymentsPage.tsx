@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { DataTable, SearchInput, StatusBadge, Pagination, LoadingSpinner, EmptyState } from '../ui';
 import toast from 'react-hot-toast';
 import {
-  CreditCard, RefreshCw, Eye, X, ArrowLeft,
-  AlertTriangle, CheckCircle, Clock, XCircle, RotateCcw,
-  Activity, FileText, Filter, TrendingUp, ChevronDown,
+  CreditCard, RefreshCw, Eye, ArrowLeft,
+  CheckCircle, Clock, XCircle, RotateCcw,
+  Activity, FileText,
 } from 'lucide-react';
 
 // ─── 타입 ────────────────────────────────────────
@@ -117,15 +117,36 @@ function formatAmount(amount: number, currency = 'KRW'): string {
   }).format(amount);
 }
 
+const relativeFormatter = new Intl.RelativeTimeFormat('ko', { numeric: 'auto' });
+
 function getRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 60) return relativeFormatter.format(-seconds, 'second');
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return relativeFormatter.format(-minutes, 'minute');
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
+  if (hours < 24) return relativeFormatter.format(-hours, 'hour');
   const days = Math.floor(hours / 24);
-  return `${days}일 전`;
+  return relativeFormatter.format(-days, 'day');
+}
+
+// ─── 상태 배지 (컴포넌트 외부 정의 - 불필요한 재생성 방지) ──
+function PaymentStatusBadge({ status }: { status: string }) {
+  const config = PAYMENT_STATUS_CONFIG[status] ?? PAYMENT_STATUS_CONFIG.INIT;
+  const Icon = config.icon;
+  return (
+    <span
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '4px',
+        padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600,
+        color: config.color, backgroundColor: config.bgColor,
+      }}
+    >
+      <Icon size={12} aria-hidden="true" />
+      {config.label}
+    </span>
+  );
 }
 
 // ─── 컴포넌트 ────────────────────────────────────
@@ -200,7 +221,7 @@ export default function PaymentsPage() {
     await fetchLogStats();
   };
 
-  const fetchSystemLogs = async () => {
+  const fetchSystemLogs = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (logFilter.level !== 'all') params.set('level', logFilter.level);
@@ -215,7 +236,7 @@ export default function PaymentsPage() {
     } catch {
       toast.error('시스템 로그 조회 실패');
     }
-  };
+  }, [logFilter]);
 
   const fetchLogStats = async () => {
     try {
@@ -231,25 +252,7 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     if (view === 'logs') fetchSystemLogs();
-  }, [logFilter]);
-
-  // ─── 결제 상태 배지 ─────────────────────────
-  const PaymentStatusBadge = ({ status }: { status: string }) => {
-    const config = PAYMENT_STATUS_CONFIG[status] ?? PAYMENT_STATUS_CONFIG.INIT;
-    const Icon = config.icon;
-    return (
-      <span
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: '4px',
-          padding: '4px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600,
-          color: config.color, backgroundColor: config.bgColor,
-        }}
-      >
-        <Icon size={12} />
-        {config.label}
-      </span>
-    );
-  };
+  }, [logFilter, fetchSystemLogs, view]);
 
   // ═══════════════════════════════════════════════
   // 메인 뷰: 결제 목록
@@ -268,6 +271,7 @@ export default function PaymentsPage() {
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={openLogs}
+              aria-label="결제 시스템 로그 보기"
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '8px 16px', borderRadius: '8px',
@@ -275,11 +279,12 @@ export default function PaymentsPage() {
                 fontSize: '14px', cursor: 'pointer',
               }}
             >
-              <Activity size={16} />
+              <Activity size={16} aria-hidden="true" />
               시스템 로그
             </button>
             <button
               onClick={fetchPayments}
+              aria-label="결제 목록 새로고침"
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '8px 16px', borderRadius: '8px',
@@ -287,7 +292,7 @@ export default function PaymentsPage() {
                 fontSize: '14px', cursor: 'pointer',
               }}
             >
-              <RefreshCw size={16} />
+              <RefreshCw size={16} aria-hidden="true" />
               새로고침
             </button>
           </div>
@@ -350,8 +355,12 @@ export default function PaymentsPage() {
                   {payments.map((p) => (
                     <tr
                       key={p.id}
+                      role="row"
+                      tabIndex={0}
+                      aria-label={`결제 ${p.orders?.order_number ?? ''} - ${formatAmount(p.amount, p.currency)}`}
                       style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                       onClick={() => openDetail(p)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(p); } }}
                     >
                       <td style={{ padding: '12px 8px' }}>
                         <span style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 600 }}>
@@ -362,7 +371,7 @@ export default function PaymentsPage() {
                         <div>{p.orders?.customer_name ?? '-'}</div>
                         <div style={{ fontSize: '12px', color: '#9CA3AF' }}>{p.orders?.business_name ?? ''}</div>
                       </td>
-                      <td style={{ padding: '12px 8px', fontWeight: 600 }}>
+                      <td style={{ padding: '12px 8px', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                         {formatAmount(p.amount, p.currency)}
                       </td>
                       <td style={{ padding: '12px 8px' }}>
@@ -380,6 +389,7 @@ export default function PaymentsPage() {
                       <td style={{ padding: '12px 8px' }}>
                         <button
                           onClick={(e) => { e.stopPropagation(); openDetail(p); }}
+                          aria-label={`${p.orders?.order_number ?? '결제'} 상세 보기`}
                           style={{
                             padding: '4px 8px', borderRadius: '6px',
                             border: '1px solid #E5E7EB', backgroundColor: '#fff',
@@ -387,7 +397,7 @@ export default function PaymentsPage() {
                             display: 'flex', alignItems: 'center', gap: '4px',
                           }}
                         >
-                          <Eye size={14} /> 상세
+                          <Eye size={14} aria-hidden="true" /> 상세
                         </button>
                       </td>
                     </tr>
@@ -420,13 +430,14 @@ export default function PaymentsPage() {
         {/* 헤더 */}
         <button
           onClick={() => setView('list')}
+          aria-label="결제 목록으로 돌아가기"
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
             padding: '8px 0', border: 'none', backgroundColor: 'transparent',
             fontSize: '14px', cursor: 'pointer', color: '#6B7280', marginBottom: '16px',
           }}
         >
-          <ArrowLeft size={16} /> 목록으로
+          <ArrowLeft size={16} aria-hidden="true" /> 목록으로
         </button>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -573,13 +584,14 @@ export default function PaymentsPage() {
         {/* 헤더 */}
         <button
           onClick={() => setView('list')}
+          aria-label="결제 관리 목록으로 돌아가기"
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
             padding: '8px 0', border: 'none', backgroundColor: 'transparent',
             fontSize: '14px', cursor: 'pointer', color: '#6B7280', marginBottom: '16px',
           }}
         >
-          <ArrowLeft size={16} /> 결제 관리로
+          <ArrowLeft size={16} aria-hidden="true" /> 결제 관리로
         </button>
 
         <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '24px' }}>결제 시스템 로그</h1>
@@ -624,6 +636,7 @@ export default function PaymentsPage() {
           </div>
           <button
             onClick={fetchSystemLogs}
+            aria-label="시스템 로그 새로고침"
             style={{
               padding: '6px 12px', borderRadius: '8px',
               border: '1px solid #E5E7EB', backgroundColor: '#fff',
@@ -631,7 +644,7 @@ export default function PaymentsPage() {
               display: 'flex', alignItems: 'center', gap: '4px',
             }}
           >
-            <RefreshCw size={12} /> 새로고침
+            <RefreshCw size={12} aria-hidden="true" /> 새로고침
           </button>
         </div>
 
@@ -659,7 +672,7 @@ export default function PaymentsPage() {
               }>).map((log, i) => {
                 const levelConfig = LOG_LEVEL_CONFIG[log.level] ?? LOG_LEVEL_CONFIG.INFO;
                 return (
-                  <tr key={i} style={{
+                  <tr key={`${log.timestamp}-${log.action}-${i}`} style={{
                     borderBottom: '1px solid #F3F4F6',
                     backgroundColor: log.level === 'CRITICAL' ? '#FEF2F2' : log.level === 'ERROR' ? '#FFFBEB' : 'transparent',
                   }}>
@@ -679,7 +692,7 @@ export default function PaymentsPage() {
                       {log.action}
                     </td>
                     <td style={{ padding: '8px 12px', fontFamily: 'monospace', fontSize: '11px', color: '#6B7280' }}>
-                      {log.payment_id ? log.payment_id.slice(0, 8) + '...' : '-'}
+                      {log.payment_id ? log.payment_id.slice(0, 8) + '\u2026' : '-'}
                     </td>
                     <td style={{ padding: '8px 12px', fontSize: '12px', color: '#6B7280', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {log.error ? (
@@ -744,7 +757,7 @@ function StatCard({ label, value, color, alert }: {
       backgroundColor: alert ? '#FEF2F2' : '#fff',
     }}>
       <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>{label}</div>
-      <div style={{ fontSize: '28px', fontWeight: 700, color }}>
+      <div style={{ fontSize: '28px', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>
         {value.toLocaleString()}
       </div>
     </div>

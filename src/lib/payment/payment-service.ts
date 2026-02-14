@@ -357,6 +357,11 @@ export class PaymentService {
 
     const refundAmount = amount ?? (payment.amount as number);
 
+    if (!payment.pg_payment_id) {
+      PaymentLogger.error('REFUND_NO_PG_PAYMENT_ID', new Error('Missing pg_payment_id'), {}, { payment_id: paymentId });
+      throw new Error(`Cannot refund: payment has no pg_payment_id`);
+    }
+
     PaymentLogger.info('REFUND_REQUEST_START', {
       refund_amount: refundAmount,
       original_amount: payment.amount,
@@ -412,7 +417,8 @@ export class PaymentService {
     }
 
     // 이미 최종 상태면 무시 (멱등성)
-    if (['FAILED', 'CANCELED', 'PAID', 'REFUNDED'].includes(payment.status as string)) {
+    const FINAL_STATUSES: string[] = [PAYMENT_STATUS.FAILED, PAYMENT_STATUS.CANCELED, PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED];
+    if (FINAL_STATUSES.includes(payment.status as string)) {
       PaymentLogger.warn('FAIL_PAYMENT_ALREADY_FINAL', {
         current_status: payment.status,
         pg_payment_id: pgPaymentId,
