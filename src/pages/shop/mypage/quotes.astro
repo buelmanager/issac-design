@@ -949,7 +949,7 @@ function getStepIndex(status: string): number {
         const paymentData = {
           type: 'quote',
           quoteId,
-          totalAmount: Number(price),
+          totalAmount: Math.round(Number(price)),
           products: products.map((p: any) => ({
             productId: p.productId,
             productName: p.productName || '제품',

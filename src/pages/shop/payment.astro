@@ -137,7 +137,8 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
         const pendingRaw = localStorage.getItem('pendingPayment');
         if (pendingRaw) {
           const pending = JSON.parse(pendingRaw);
-          if (pending.type === 'quote' && pending.quoteId && pending.totalAmount > 0) {
+          const totalAmount = Math.round(Number(pending.totalAmount));
+          if (pending.type === 'quote' && pending.quoteId && totalAmount > 0) {
             quoteId = pending.quoteId;
             const products = Array.isArray(pending.products) ? pending.products : [];
             const itemName = products.length > 0
@@ -145,7 +146,7 @@ const clientKey = import.meta.env.PUBLIC_TOSS_CLIENT_KEY || 'test_gck_docs_Ovk5r
                 ? (products[0]?.productName || '견적 제품')
                 : `${products[0]?.productName || '견적 제품'} 외 ${products.length - 1}건`)
               : '견적 결제';
-            cartItems = [{ name: itemName, quantity: 1, unit_price: pending.totalAmount }];
+            cartItems = [{ name: itemName, quantity: 1, unit_price: totalAmount }];
           }
         }
       }
