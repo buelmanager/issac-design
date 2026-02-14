@@ -27,6 +27,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     provider: 'kakao',
     options: {
       redirectTo: callbackUrl.toString(),
+      scopes: 'profile_nickname profile_image',
     },
   });
 
