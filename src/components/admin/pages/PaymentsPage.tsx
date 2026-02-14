@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { SearchInput, Pagination, LoadingSpinner, EmptyState } from '../ui';
 import toast from 'react-hot-toast';
@@ -235,36 +234,32 @@ export default function PaymentsPage() {
   const [detailTab, setDetailTab] = useState<'timeline' | 'systemlogs'>('timeline');
   const [detailSystemLogs, setDetailSystemLogs] = useState<SystemLogEntry[]>([]);
 
-  // ─── 결제 목록 조회 ─────────────────────────
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('payments')
-        .select('*, orders(*)', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+      const params = new URLSearchParams({
+        page: String(page),
+        page_size: String(PAGE_SIZE),
+      });
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (search) params.set('search', search);
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
+      const res = await fetch(`/api/admin/payments?${params.toString()}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
+      const json = await res.json();
 
-      if (search) {
-        query = query.or(`pg_payment_id.ilike.%${search}%,idempotency_key.ilike.%${search}%`);
-      }
+      if (!json.success) throw new Error(json.error?.message ?? 'Unknown error');
 
-      const { data, count, error } = await query;
-      if (error) throw error;
-
-      setPayments((data ?? []) as unknown as PaymentRow[]);
-      setTotalCount(count ?? 0);
+      setPayments(json.data.payments as PaymentRow[]);
+      setTotalCount(json.data.totalCount ?? 0);
     } catch (err) {
       toast.error('결제 목록 조회 실패');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, search]);
+  }, [page, statusFilter, search, accessToken]);
 
   useEffect(() => { fetchPayments(); }, [fetchPayments]);
 
@@ -274,14 +269,18 @@ export default function PaymentsPage() {
     setView('detail');
     setDetailTab('timeline');
 
-    // 상태 변경 로그 조회
-    const { data: logs } = await supabase
-      .from('payment_status_logs')
-      .select('*')
-      .eq('payment_id', payment.id)
-      .order('created_at', { ascending: true });
+    try {
+      const res = await fetch(`/api/admin/payments?payment_id=${payment.id}`, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      });
+      const json = await res.json();
 
-    setStatusLogs((logs ?? []) as unknown as StatusLogRow[]);
+      if (json.success) {
+        setStatusLogs(json.data.statusLogs as StatusLogRow[]);
+      }
+    } catch {
+      toast.error('결제 상세 조회 실패');
+    }
   };
 
   // ─── 결제 상세 - 시스템 로그 탭 ───────────────
