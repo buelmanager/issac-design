@@ -34,14 +34,16 @@ const breadcrumbs = [
 
 // Build gallery images array — multiple views from the available images
 const galleryImages = [
-  { src: item.images.after, label: '완성 모습', type: 'after' as const },
-  { src: item.images.before, label: '시공 전', type: 'before' as const },
-  { src: item.images.process, label: '제작 과정', type: 'process' as const },
-  // Additional angles using different crop/sizing of the same images
-  { src: item.images.after.replace('w=800', 'w=900').replace('q=80', 'q=85'), label: '야간 연출', type: 'after' as const },
-  { src: item.images.process.replace('w=800', 'w=900').replace('q=80', 'q=85'), label: '소재 디테일', type: 'process' as const },
-  { src: item.images.after.replace('w=800', 'w=700').replace('q=80', 'q=75'), label: '설치 완료', type: 'after' as const },
-];
+  item.images?.after && { src: item.images.after, label: '완성 모습', type: 'after' as const },
+  item.images?.before && { src: item.images.before, label: '시공 전', type: 'before' as const },
+  item.images?.process && { src: item.images.process, label: '제작 과정', type: 'process' as const },
+  item.images?.after && { src: item.images.after.replace('w=800', 'w=900').replace('q=80', 'q=85'), label: '야간 연출', type: 'after' as const },
+  item.images?.process && { src: item.images.process.replace('w=800', 'w=900').replace('q=80', 'q=85'), label: '소재 디테일', type: 'process' as const },
+  item.images?.after && { src: item.images.after.replace('w=800', 'w=700').replace('q=80', 'q=75'), label: '설치 완료', type: 'after' as const },
+].filter(Boolean) as { src: string; label: string; type: 'after' | 'before' | 'process' }[];
+
+const hasAfterImage = !!item.images?.after;
+const hasBeforeImage = !!item.images?.before;
 
 const { portfolioItems: allItems } = await getPortfolioItems();
 const otherProjects = allItems
@@ -58,18 +60,24 @@ const otherProjects = allItems
     <!-- Hero: Main Image + Info Overlay -->
     <section class="pd-hero">
       <div class="pd-hero__img-wrap">
-        <Image
-          src={`${item.images.after}&w=1400&q=85`}
-          alt={item.title}
-          class="pd-hero__img"
-          width={1400}
-          height={700}
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-          format="webp"
-          quality={85}
-        />
+        {hasAfterImage ? (
+          <Image
+            src={`${item.images.after}&w=1400&q=85`}
+            alt={item.title}
+            class="pd-hero__img"
+            width={1400}
+            height={700}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            format="webp"
+            quality={85}
+          />
+        ) : (
+          <div class="pd-hero__img" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface)">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+        )}
         <div class="pd-hero__overlay"></div>
       </div>
       <div class="pd-hero__content">
@@ -116,26 +124,15 @@ const otherProjects = allItems
     </section>
 
     <!-- Before/After Compare -->
-    <section class="pd-compare">
-      <div class="pd-compare__container">
-        <h2 class="pd-compare__heading">Before & After</h2>
-        <div class="pd-compare__slider" data-pd-compare>
-          <Image
-            src={`${item.images.after}&w=1200&q=85`}
-            alt="시공 후"
-            class="pd-compare__img pd-compare__img--after"
-            loading="lazy"
-            decoding="async"
-            width={1200}
-            height={675}
-            format="webp"
-            quality={80}
-          />
-          <div class="pd-compare__before-wrap" data-pd-before-wrap>
+    {hasAfterImage && hasBeforeImage && (
+      <section class="pd-compare">
+        <div class="pd-compare__container">
+          <h2 class="pd-compare__heading">Before & After</h2>
+          <div class="pd-compare__slider" data-pd-compare>
             <Image
-              src={`${item.images.before}&w=1200&q=85`}
-              alt="시공 전"
-              class="pd-compare__img pd-compare__img--before"
+              src={`${item.images.after}&w=1200&q=85`}
+              alt="시공 후"
+              class="pd-compare__img pd-compare__img--after"
               loading="lazy"
               decoding="async"
               width={1200}
@@ -143,45 +140,60 @@ const otherProjects = allItems
               format="webp"
               quality={80}
             />
+            <div class="pd-compare__before-wrap" data-pd-before-wrap>
+              <Image
+                src={`${item.images.before}&w=1200&q=85`}
+                alt="시공 전"
+                class="pd-compare__img pd-compare__img--before"
+                loading="lazy"
+                decoding="async"
+                width={1200}
+                height={675}
+                format="webp"
+                quality={80}
+              />
+            </div>
+            <input type="range" min="0" max="100" value="50" class="pd-compare__range" data-pd-range aria-label="Before/After 비교" />
+            <div class="pd-compare__line" data-pd-line></div>
+            <span class="pd-compare__badge pd-compare__badge--before">Before</span>
+            <span class="pd-compare__badge pd-compare__badge--after">After</span>
           </div>
-          <input type="range" min="0" max="100" value="50" class="pd-compare__range" data-pd-range aria-label="Before/After 비교" />
-          <div class="pd-compare__line" data-pd-line></div>
-          <span class="pd-compare__badge pd-compare__badge--before">Before</span>
-          <span class="pd-compare__badge pd-compare__badge--after">After</span>
         </div>
-      </div>
-    </section>
+      </section>
+    )}
 
     <!-- Photo Gallery -->
-    <section class="pd-gallery">
-      <div class="pd-gallery__container">
-        <h2 class="pd-gallery__heading">시공 사진</h2>
-        <div class="pd-gallery__grid">
-          {galleryImages.map((img, idx) => (
-            <figure class="pd-gallery__item" data-pd-gallery-item={idx}>
-              <div class="pd-gallery__img-wrap">
-                <Image
-                  src={`${img.src}&w=640&q=80`}
-                  alt={`${item.title} - ${img.label}`}
-                  class="pd-gallery__img"
-                  loading="lazy"
-                  decoding="async"
-                  width={640}
-                  height={400}
-                  format="webp"
-                  quality={80}
-                />
-                <span class="pd-gallery__index">{String(idx + 1).padStart(2, '0')}</span>
-              </div>
-              <figcaption class="pd-gallery__caption">
-                <span class="pd-gallery__tag">{img.type === 'after' ? 'After' : img.type === 'before' ? 'Before' : 'Process'}</span>
-                <span class="pd-gallery__label">{img.label}</span>
-              </figcaption>
-            </figure>
-          ))}
+    {galleryImages.length > 0 && (
+      <section class="pd-gallery">
+        <div class="pd-gallery__container">
+          <h2 class="pd-gallery__heading">시공 사진</h2>
+          <div class="pd-gallery__grid">
+            {galleryImages.map((img, idx) => (
+              <figure class="pd-gallery__item" data-pd-gallery-item={idx}>
+                <div class="pd-gallery__img-wrap">
+                  <Image
+                    src={`${img.src}&w=640&q=80`}
+                    alt={`${item.title} - ${img.label}`}
+                    class="pd-gallery__img"
+                    loading="lazy"
+                    decoding="async"
+                    width={640}
+                    height={400}
+                    format="webp"
+                    quality={80}
+                  />
+                  <span class="pd-gallery__index">{String(idx + 1).padStart(2, '0')}</span>
+                </div>
+                <figcaption class="pd-gallery__caption">
+                  <span class="pd-gallery__tag">{img.type === 'after' ? 'After' : img.type === 'before' ? 'Before' : 'Process'}</span>
+                  <span class="pd-gallery__label">{img.label}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    )}
 
     <!-- Lightbox -->
     <div class="pd-lightbox" data-pd-lightbox>
@@ -220,17 +232,23 @@ const otherProjects = allItems
           {otherProjects.map((p) => (
             <a href={`/shop/portfolio/${p.id}`} class="pd-others__card">
               <div class="pd-others__img-wrap">
-                <Image
-                  src={`${p.images.after}&w=480&q=80`}
-                  alt={p.title}
-                  class="pd-others__img"
-                  loading="lazy"
-                  decoding="async"
-                  width={480}
-                  height={300}
-                  format="webp"
-                  quality={75}
-                />
+                {p.images?.after ? (
+                  <Image
+                    src={`${p.images.after}&w=480&q=80`}
+                    alt={p.title}
+                    class="pd-others__img"
+                    loading="lazy"
+                    decoding="async"
+                    width={480}
+                    height={300}
+                    format="webp"
+                    quality={75}
+                  />
+                ) : (
+                  <div class="pd-others__img" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface-light)">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                )}
               </div>
               <div class="pd-others__info">
                 <span class="pd-others__category">{categoryMap[p.category]}</span>

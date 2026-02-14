@@ -13,7 +13,8 @@ interface Props {
   }>;
 }
 
-const { gallery } = Astro.props;
+const { gallery: rawGallery } = Astro.props;
+const gallery = rawGallery?.filter((item) => item.before && item.after) ?? [];
 ---
 
 <section class="installation-gallery" data-installation-gallery>

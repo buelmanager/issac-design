@@ -43,17 +43,23 @@ const { product, index = 0 } = Astro.props;
   <!-- Image Container -->
   <a href={`/shop/${product.slug}`} class="product-card__image-link">
     <div class="product-card__image-container">
-      <Image
-        src={product.thumbnail}
-        alt={product.name}
-        class="product-card__image"
-        loading="lazy"
-        decoding="async"
-        width={400}
-        height={300}
-        format="webp"
-        quality={80}
-      />
+      {product.thumbnail ? (
+        <Image
+          src={product.thumbnail}
+          alt={product.name}
+          class="product-card__image"
+          loading="lazy"
+          decoding="async"
+          width={400}
+          height={300}
+          format="webp"
+          quality={80}
+        />
+      ) : (
+        <div class="product-card__image product-card__placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+      )}
       <div class="product-card__overlay">
         <span class="product-card__view-btn">상세보기</span>
       </div>
@@ -163,6 +169,13 @@ const { product, index = 0 } = Astro.props;
     height: 100%;
     object-fit: cover;
     transition: transform var(--transition-slow);
+  }
+
+  .product-card__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-light);
   }
 
   .product-card:hover .product-card__image {

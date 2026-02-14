@@ -28,18 +28,24 @@ const featured = products.filter(p => p.isFeatured);
           data-bento-item
         >
           <!-- Product Image -->
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            class="featured-bento__image"
-            loading={index === 0 ? 'eager' : 'lazy'}
-            decoding="async"
-            fetchpriority={index === 0 ? 'high' : undefined}
-            width={800}
-            height={600}
-            format="webp"
-            quality={80}
-          />
+          {product.images?.[0] ? (
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              class="featured-bento__image"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              fetchpriority={index === 0 ? 'high' : undefined}
+              width={800}
+              height={600}
+              format="webp"
+              quality={80}
+            />
+          ) : (
+            <div class="featured-bento__image featured-bento__placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+          )}
 
           <!-- Glassmorphism Overlay -->
           <div class="featured-bento__overlay">
@@ -127,6 +133,13 @@ const featured = products.filter(p => p.isFeatured);
     height: 100%;
     object-fit: cover;
     transition: transform var(--transition-slow);
+  }
+
+  .featured-bento__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-light);
   }
 
   .featured-bento__item:hover .featured-bento__image {

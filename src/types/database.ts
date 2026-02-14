@@ -326,6 +326,7 @@ export interface Database {
           id: string;
           name: string;
           description: string | null;
+          defaults: Json;
           order_index: number;
           is_visible: boolean;
           is_seed: boolean;
@@ -335,6 +336,7 @@ export interface Database {
           id: string;
           name: string;
           description?: string | null;
+          defaults?: Json;
           order_index: number;
           is_visible?: boolean;
           is_seed?: boolean;
@@ -344,6 +346,7 @@ export interface Database {
           id?: string;
           name?: string;
           description?: string | null;
+          defaults?: Json;
           order_index?: number;
           is_visible?: boolean;
           is_seed?: boolean;

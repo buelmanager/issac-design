@@ -270,3 +270,6 @@ three, @react-three/fiber, @react-three/drei, @types/three
 - [ ] 야간/주간 모드 전환
 - [ ] GLB/GLTF 내보내기 기능
 - [ ] 여러 PNG 레이어 조합 (로고 + 텍스트)
+
+
+                                                                          

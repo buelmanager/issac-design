@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import type { PortfolioItem } from '../../../types/admin';
-import { FormField, Toggle, LoadingSpinner, ConfirmModal } from '../ui';
+import { FormField, Toggle, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
@@ -209,14 +209,14 @@ export default function PortfolioEditPage() {
           <FormField label="완료일" htmlFor="completed_date">
             <input id="completed_date" type="date" className="admin-input" value={form.completed_date} onChange={(e) => updateField('completed_date', e.target.value)} />
           </FormField>
-          <FormField label="Before 이미지 URL" htmlFor="image_before">
-            <input id="image_before" className="admin-input" value={form.image_before} onChange={(e) => updateField('image_before', e.target.value)} />
+          <FormField label="Before 이미지">
+            <ImageUploader value={form.image_before} onChange={(url) => updateField('image_before', url)} folder="portfolio" />
           </FormField>
-          <FormField label="After 이미지 URL" htmlFor="image_after">
-            <input id="image_after" className="admin-input" value={form.image_after} onChange={(e) => updateField('image_after', e.target.value)} />
+          <FormField label="After 이미지">
+            <ImageUploader value={form.image_after} onChange={(url) => updateField('image_after', url)} folder="portfolio" />
           </FormField>
-          <FormField label="과정 이미지 URL" htmlFor="image_process">
-            <input id="image_process" className="admin-input" value={form.image_process} onChange={(e) => updateField('image_process', e.target.value)} />
+          <FormField label="과정 이미지">
+            <ImageUploader value={form.image_process} onChange={(url) => updateField('image_process', url)} folder="portfolio" />
           </FormField>
           <FormField label="사용 제품" htmlFor="product_used">
             <select id="product_used" className="admin-select" value={form.product_used} onChange={(e) => updateField('product_used', e.target.value)}>

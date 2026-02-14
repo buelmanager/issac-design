@@ -30,7 +30,7 @@ export default function ProductListPage() {
   const fetchCategories = useCallback(async () => {
     const { data } = await supabase
       .from('product_categories')
-      .select('id, name, description, order_index, is_visible, is_seed, updated_at')
+      .select('id, name, description, defaults, order_index, is_visible, is_seed, updated_at')
       .order('order_index');
     setCategories(data ?? []);
   }, []);

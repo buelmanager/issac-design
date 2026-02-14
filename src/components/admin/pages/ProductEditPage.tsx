@@ -3,9 +3,23 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import type { Product, ProductCategory } from '../../../types/admin';
 import type { Json } from '../../../types/database';
-import { FormField, Toggle, TabNav, TagInput, LoadingSpinner, ConfirmModal } from '../ui';
+import {
+  FormField,
+  Toggle,
+  TabNav,
+  TagInput,
+  LoadingSpinner,
+  ConfirmModal,
+  ImageUploader,
+  ImageListEditor,
+  KeyValueEditor,
+  OptionGroupEditor,
+  InstallationGalleryEditor,
+  ProductionStepsEditor,
+} from '../ui';
+import type { OptionsData, GalleryItem, StepItem } from '../ui';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Bookmark } from 'lucide-react';
 
 const TABS = [
   { key: 'basic', label: '기본 정보' },
@@ -30,32 +44,26 @@ interface ProductForm {
   is_new: boolean;
   popularity: number;
   thumbnail: string;
-  images: string;
-  material_images: string;
-  lighting_images: string;
-  options: string;
+  images: string[];
+  material_images: Record<string, string>;
+  lighting_images: Record<string, string>;
+  options: OptionsData;
   production_time: string;
   included_services: string[];
   features: string[];
-  specs: string;
-  installation_gallery: string;
+  specs: Record<string, string>;
+  installation_gallery: GalleryItem[];
+  production_steps: StepItem[];
   related_product_ids: string[];
 }
 
-function safeJsonParse(val: string, fallback: Json): Json {
-  try {
-    return JSON.parse(val);
-  } catch {
-    return fallback;
+function safeJsonParse(val: Json, fallback: any): any {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'object') return val;
+  if (typeof val === 'string') {
+    try { return JSON.parse(val); } catch { return fallback; }
   }
-}
-
-function safeJsonStringify(val: Json): string {
-  try {
-    return JSON.stringify(val, null, 2);
-  } catch {
-    return '{}';
-  }
+  return fallback;
 }
 
 function toSlug(name: string): string {
@@ -82,15 +90,16 @@ function createEmptyForm(): ProductForm {
     is_new: false,
     popularity: 0,
     thumbnail: '',
-    images: '[]',
-    material_images: '{}',
-    lighting_images: '{}',
-    options: '{}',
+    images: [],
+    material_images: {},
+    lighting_images: {},
+    options: {},
     production_time: '',
     included_services: [],
     features: [],
-    specs: '{}',
-    installation_gallery: '[]',
+    specs: {},
+    installation_gallery: [],
+    production_steps: [],
     related_product_ids: [],
   };
 }
@@ -110,15 +119,16 @@ function productToForm(p: Product): ProductForm {
     is_new: p.is_new,
     popularity: p.popularity,
     thumbnail: p.thumbnail,
-    images: safeJsonStringify(p.images),
-    material_images: safeJsonStringify(p.material_images),
-    lighting_images: safeJsonStringify(p.lighting_images),
-    options: safeJsonStringify(p.options),
+    images: safeJsonParse(p.images as Json, []),
+    material_images: safeJsonParse(p.material_images as Json, {}),
+    lighting_images: safeJsonParse(p.lighting_images as Json, {}),
+    options: safeJsonParse(p.options as Json, {}),
     production_time: p.production_time ?? '',
     included_services: Array.isArray(p.included_services) ? (p.included_services as string[]) : [],
     features: Array.isArray(p.features) ? (p.features as string[]) : [],
-    specs: safeJsonStringify(p.specs),
-    installation_gallery: safeJsonStringify(p.installation_gallery),
+    specs: safeJsonParse(p.specs as Json, {}),
+    installation_gallery: safeJsonParse(p.installation_gallery as Json, []),
+    production_steps: safeJsonParse(p.production_steps as Json, []),
     related_product_ids: Array.isArray(p.related_product_ids) ? (p.related_product_ids as string[]) : [],
   };
 }
@@ -136,6 +146,7 @@ export default function ProductEditPage() {
   const [activeTab, setActiveTab] = useState('basic');
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [savingDefaults, setSavingDefaults] = useState(false);
 
   const updateField = useCallback(<K extends keyof ProductForm>(key: K, value: ProductForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -145,7 +156,7 @@ export default function ProductEditPage() {
     async function loadCategories() {
       const { data } = await supabase
         .from('product_categories')
-        .select('id, name, description, order_index, is_visible, is_seed, updated_at')
+        .select('id, name, description, defaults, order_index, is_visible, is_seed, updated_at')
         .order('order_index');
       setCategories(data ?? []);
     }
@@ -202,15 +213,16 @@ export default function ProductEditPage() {
       is_new: form.is_new,
       popularity: form.popularity,
       thumbnail: form.thumbnail,
-      images: safeJsonParse(form.images, []),
-      material_images: safeJsonParse(form.material_images, {}),
-      lighting_images: safeJsonParse(form.lighting_images, {}),
-      options: safeJsonParse(form.options, {}),
+      images: form.images as unknown as Json,
+      material_images: form.material_images as unknown as Json,
+      lighting_images: form.lighting_images as unknown as Json,
+      options: form.options as unknown as Json,
       production_time: form.production_time || null,
       included_services: form.included_services as Json,
       features: form.features as Json,
-      specs: safeJsonParse(form.specs, {}),
-      installation_gallery: safeJsonParse(form.installation_gallery, []),
+      specs: form.specs as unknown as Json,
+      installation_gallery: form.installation_gallery as unknown as Json,
+      production_steps: form.production_steps as unknown as Json,
       related_product_ids: form.related_product_ids as Json,
     };
 
@@ -270,6 +282,68 @@ export default function ProductEditPage() {
     });
   }, []);
 
+  const handleCategoryChange = useCallback((categoryId: string) => {
+    setForm((prev) => {
+      const updated = { ...prev, category_id: categoryId };
+      if (!isNew || !categoryId) return updated;
+      const cat = categories.find((c) => c.id === categoryId);
+      const defaults = safeJsonParse(cat?.defaults as Json, {}) as Record<string, unknown>;
+      if (!defaults || Object.keys(defaults).length === 0) return updated;
+      const isEmpty = (v: unknown) =>
+        v === '' || v === null || v === undefined ||
+        (Array.isArray(v) && v.length === 0) ||
+        (typeof v === 'object' && v !== null && !Array.isArray(v) && Object.keys(v).length === 0);
+      const keys = Object.keys(defaults) as (keyof ProductForm)[];
+      for (const key of keys) {
+        if (key in updated && isEmpty(updated[key])) {
+          (updated as any)[key] = defaults[key];
+        }
+      }
+      toast.success('카테고리 기본값이 적용되었습니다');
+      return updated;
+    });
+  }, [isNew, categories]);
+
+  const handleSaveDefaults = useCallback(async (tab: string) => {
+    if (!form.category_id) {
+      toast.error('카테고리를 먼저 선택해 주세요');
+      return;
+    }
+    const cat = categories.find((c) => c.id === form.category_id);
+    if (!cat) return;
+    const existing = safeJsonParse(cat.defaults as Json, {}) as Record<string, unknown>;
+    let tabFields: Record<string, unknown> = {};
+    switch (tab) {
+      case 'images':
+        tabFields = { material_images: form.material_images, lighting_images: form.lighting_images };
+        break;
+      case 'options':
+        tabFields = { options: form.options };
+        break;
+      case 'production':
+        tabFields = { production_time: form.production_time, included_services: form.included_services, features: form.features, specs: form.specs, production_steps: form.production_steps };
+        break;
+      case 'gallery':
+        tabFields = { installation_gallery: form.installation_gallery };
+        break;
+      default:
+        return;
+    }
+    const merged = { ...existing, ...tabFields };
+    setSavingDefaults(true);
+    const { error } = await supabase
+      .from('product_categories')
+      .update({ defaults: merged as unknown as Json })
+      .eq('id', form.category_id);
+    if (error) {
+      toast.error('기본값 저장에 실패했습니다');
+    } else {
+      setCategories((prev) => prev.map((c) => c.id === form.category_id ? { ...c, defaults: merged as Json } : c));
+      toast.success('기본값으로 저장되었습니다');
+    }
+    setSavingDefaults(false);
+  }, [form, categories]);
+
   if (loading) return <LoadingSpinner size="lg" />;
 
   return (
@@ -305,7 +379,7 @@ export default function ProductEditPage() {
               <input id="slug" className="admin-input" value={form.slug} onChange={(e) => updateField('slug', e.target.value)} />
             </FormField>
             <FormField label="카테고리" htmlFor="category_id">
-              <select id="category_id" className="admin-select" value={form.category_id} onChange={(e) => updateField('category_id', e.target.value)}>
+              <select id="category_id" className="admin-select" value={form.category_id} onChange={(e) => handleCategoryChange(e.target.value)}>
                 <option value="">선택 안함</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -340,27 +414,50 @@ export default function ProductEditPage() {
 
         {activeTab === 'images' && (
           <div className="admin-form-grid">
-            <FormField label="썸네일 URL" htmlFor="thumbnail">
-              <input id="thumbnail" className="admin-input" value={form.thumbnail} onChange={(e) => updateField('thumbnail', e.target.value)} />
+            <FormField label="썸네일">
+              <ImageUploader value={form.thumbnail} onChange={(url) => updateField('thumbnail', url)} folder="products" />
             </FormField>
-            {form.thumbnail && <img src={form.thumbnail} alt="미리보기" className="admin-image-preview" />}
-            <FormField label="이미지 목록 (JSON)" htmlFor="images" description="JSON 배열 형식 (예: [&quot;url1&quot;, &quot;url2&quot;])">
-              <textarea id="images" className="admin-textarea admin-textarea-code" value={form.images} onChange={(e) => updateField('images', e.target.value)} rows={6} />
+            <FormField label="이미지 목록" description="드래그로 순서를 변경할 수 있습니다">
+              <ImageListEditor images={form.images} onChange={(imgs) => updateField('images', imgs)} folder="products" />
             </FormField>
-            <FormField label="소재 이미지 (JSON)" htmlFor="material_images" description="키-값 쌍 (예: {&quot;wood&quot;: &quot;url&quot;})">
-              <textarea id="material_images" className="admin-textarea admin-textarea-code" value={form.material_images} onChange={(e) => updateField('material_images', e.target.value)} rows={6} />
+            <FormField label="소재 이미지" description="소재명과 이미지를 등록하세요">
+              <KeyValueEditor
+                entries={form.material_images}
+                onChange={(entries) => updateField('material_images', entries)}
+                keyLabel="소재명"
+                valueLabel="이미지"
+                valueType="image"
+                folder="products"
+              />
             </FormField>
-            <FormField label="조명 이미지 (JSON)" htmlFor="lighting_images" description="off/on URL (예: {&quot;off&quot;: &quot;url&quot;, &quot;on&quot;: &quot;url&quot;})">
-              <textarea id="lighting_images" className="admin-textarea admin-textarea-code" value={form.lighting_images} onChange={(e) => updateField('lighting_images', e.target.value)} rows={4} />
+            <FormField label="조명 이미지" description="조명 상태별 이미지를 등록하세요 (off/on)">
+              <KeyValueEditor
+                entries={form.lighting_images}
+                onChange={(entries) => updateField('lighting_images', entries)}
+                keyLabel="상태"
+                valueLabel="이미지"
+                valueType="image"
+                folder="products"
+              />
             </FormField>
+            <div className="admin-defaults-bar">
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={() => handleSaveDefaults('images')} disabled={savingDefaults}>
+                <Bookmark size={14} /> 기본값으로 저장
+              </button>
+            </div>
           </div>
         )}
 
         {activeTab === 'options' && (
           <div className="admin-form-grid">
-            <FormField label="옵션 데이터 (JSON)" htmlFor="options" description="sizes, materials, finishes, lightingTypes 등을 포함하는 JSON 객체">
-              <textarea id="options" className="admin-textarea admin-textarea-code" value={form.options} onChange={(e) => updateField('options', e.target.value)} rows={16} />
+            <FormField label="제품 옵션" description="사이즈, 소재, 마감, 조명 옵션을 관리합니다">
+              <OptionGroupEditor options={form.options} onChange={(opts) => updateField('options', opts)} />
             </FormField>
+            <div className="admin-defaults-bar">
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={() => handleSaveDefaults('options')} disabled={savingDefaults}>
+                <Bookmark size={14} /> 기본값으로 저장
+              </button>
+            </div>
           </div>
         )}
 
@@ -375,17 +472,35 @@ export default function ProductEditPage() {
             <FormField label="특징">
               <TagInput tags={form.features} onChange={(v) => updateField('features', v)} placeholder="특징 입력..." />
             </FormField>
-            <FormField label="스펙 (JSON)" htmlFor="specs" description="키-값 쌍 (예: {&quot;무게&quot;: &quot;5kg&quot;})">
-              <textarea id="specs" className="admin-textarea admin-textarea-code" value={form.specs} onChange={(e) => updateField('specs', e.target.value)} rows={8} />
+            <FormField label="스펙" description="제품 사양을 입력하세요">
+              <KeyValueEditor
+                entries={form.specs}
+                onChange={(entries) => updateField('specs', entries)}
+                keyLabel="항목"
+                valueLabel="값"
+              />
             </FormField>
+            <FormField label="제작 과정" description="드래그로 순서를 변경할 수 있습니다">
+              <ProductionStepsEditor steps={form.production_steps} onChange={(steps) => updateField('production_steps', steps)} />
+            </FormField>
+            <div className="admin-defaults-bar">
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={() => handleSaveDefaults('production')} disabled={savingDefaults}>
+                <Bookmark size={14} /> 기본값으로 저장
+              </button>
+            </div>
           </div>
         )}
 
         {activeTab === 'gallery' && (
           <div className="admin-form-grid">
-            <FormField label="시공 갤러리 (JSON)" htmlFor="installation_gallery" description="갤러리 이미지 배열 (JSON 형식)">
-              <textarea id="installation_gallery" className="admin-textarea admin-textarea-code" value={form.installation_gallery} onChange={(e) => updateField('installation_gallery', e.target.value)} rows={12} />
+            <FormField label="시공 갤러리" description="시공 전/후 이미지와 위치를 등록하세요">
+              <InstallationGalleryEditor items={form.installation_gallery} onChange={(items) => updateField('installation_gallery', items)} />
             </FormField>
+            <div className="admin-defaults-bar">
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={() => handleSaveDefaults('gallery')} disabled={savingDefaults}>
+                <Bookmark size={14} /> 기본값으로 저장
+              </button>
+            </div>
           </div>
         )}
 

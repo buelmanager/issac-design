@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import type { BlogPost } from '../../../types/admin';
-import { FormField, Toggle, TagInput, LoadingSpinner, ConfirmModal } from '../ui';
+import { FormField, Toggle, TagInput, LoadingSpinner, ConfirmModal, ImageUploader } from '../ui';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
@@ -285,8 +285,8 @@ export default function BlogEditPage() {
             />
           </FormField>
 
-          <FormField label="대표 이미지 URL" htmlFor="image_url">
-            <input id="image_url" type="url" className="admin-input" value={form.image_url} onChange={(e) => updateField('image_url', e.target.value)} placeholder="https://..." />
+          <FormField label="대표 이미지">
+            <ImageUploader value={form.image_url} onChange={(url) => updateField('image_url', url)} folder="blog" />
           </FormField>
 
           <FormField label="이미지 대체 텍스트" htmlFor="image_alt">

@@ -11,12 +11,9 @@ import { getProducts } from '../../lib/data-fetchers';
 
 const { products } = await getProducts();
 const categoryOrder = ['led-channel', 'neon', 'acrylic', 'banner', 'protruding', 'rooftop'];
-const featuredProducts = categoryOrder.map((catId) => {
-  const product = products.find(
-    (p) => p.category === catId && p.isFeatured
-  );
-  return product!;
-});
+const featuredProducts = categoryOrder
+  .map((catId) => products.find((p) => p.category === catId && p.isFeatured))
+  .filter((p): p is NonNullable<typeof p> => !!p && !!p.thumbnail);
 
 // 4개 슬라이드 문구
 const heroSlides = [

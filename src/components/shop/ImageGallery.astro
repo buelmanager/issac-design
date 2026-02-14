@@ -20,7 +20,9 @@ interface Props {
   };
 }
 
-const { images, productName, materialImages, lightingImages } = Astro.props;
+const { images: rawImages, productName, materialImages, lightingImages } = Astro.props;
+const images = rawImages?.filter(Boolean) ?? [];
+const hasImages = images.length > 0;
 ---
 
 <div class="image-gallery" data-image-gallery>
@@ -112,18 +114,29 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
 
   <!-- Main Image -->
   <div class="image-gallery__main" data-gallery-main>
-    <Image
-      src={images[0]}
-      alt={productName}
-      class="image-gallery__main-img"
-      loading="eager"
-      decoding="async"
-      width={800}
-      height={600}
-      data-gallery-main-img
-      format="webp"
-      quality={85}
-    />
+    {hasImages ? (
+      <Image
+        src={images[0]}
+        alt={productName}
+        class="image-gallery__main-img"
+        loading="eager"
+        decoding="async"
+        width={800}
+        height={600}
+        data-gallery-main-img
+        format="webp"
+        quality={85}
+      />
+    ) : (
+      <div class="image-gallery__placeholder" data-gallery-main-img>
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span>이미지 없음</span>
+      </div>
+    )}
   </div>
 
   <!-- Thumbnails -->
@@ -152,24 +165,26 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
   )}
 
   <!-- Lightbox Modal -->
-  <div class="image-gallery__lightbox" data-gallery-lightbox aria-hidden="true">
-    <div class="image-gallery__lightbox-backdrop" data-gallery-lightbox-close></div>
-    <button
-      class="image-gallery__lightbox-close"
-      data-gallery-lightbox-close
-      aria-label="Close lightbox"
-    >
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <img
-      class="image-gallery__lightbox-img"
-      data-gallery-lightbox-img
-      src={images[0]}
-      alt={productName}
-    />
-  </div>
+  {hasImages && (
+    <div class="image-gallery__lightbox" data-gallery-lightbox aria-hidden="true">
+      <div class="image-gallery__lightbox-backdrop" data-gallery-lightbox-close></div>
+      <button
+        class="image-gallery__lightbox-close"
+        data-gallery-lightbox-close
+        aria-label="Close lightbox"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <img
+        class="image-gallery__lightbox-img"
+        data-gallery-lightbox-img
+        src={images[0]}
+        alt={productName}
+      />
+    </div>
+  )}
 </div>
 
 <style>
@@ -292,6 +307,18 @@ const { images, productName, materialImages, lightingImages } = Astro.props;
     border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
+  }
+
+  .image-gallery__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    color: var(--text-tertiary, #666);
+    font-size: var(--font-size-sm);
   }
 
   .image-gallery__main-img {
