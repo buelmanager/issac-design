@@ -36,6 +36,8 @@ interface ProductForm {
   category_id: string;
   price: string;
   price_range: string;
+  is_fixed_price: boolean;
+  fixed_price: number | null;
   description: string;
   full_description: string;
   tags: string[];
@@ -82,6 +84,8 @@ function createEmptyForm(): ProductForm {
     category_id: '',
     price: '',
     price_range: '',
+    is_fixed_price: false,
+    fixed_price: null,
     description: '',
     full_description: '',
     tags: [],
@@ -111,6 +115,8 @@ function productToForm(p: Product): ProductForm {
     category_id: p.category_id ?? '',
     price: p.price,
     price_range: p.price_range ?? '',
+    is_fixed_price: (p as any).is_fixed_price ?? false,
+    fixed_price: (p as any).fixed_price ?? null,
     description: p.description ?? '',
     full_description: p.full_description ?? '',
     tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
@@ -233,6 +239,8 @@ export default function ProductEditPage() {
       category_id: currentForm.category_id || null,
       price: currentForm.price,
       price_range: currentForm.price_range || null,
+      is_fixed_price: currentForm.is_fixed_price,
+      fixed_price: currentForm.is_fixed_price ? (currentForm.fixed_price ?? null) : null,
       description: currentForm.description || null,
       full_description: currentForm.full_description || null,
       tags: currentForm.tags as Json,
@@ -424,6 +432,23 @@ export default function ProductEditPage() {
             <FormField label="가격 범위" htmlFor="price_range">
               <input id="price_range" className="admin-input" value={form.price_range} onChange={(e) => updateField('price_range', e.target.value)} />
             </FormField>
+            <FormField label="고정가격 상품" description="활성화 시 '바로 구매' 버튼이 표시됩니다">
+              <Toggle checked={form.is_fixed_price} onChange={(v) => updateField('is_fixed_price', v)} label="고정가격 사용" />
+            </FormField>
+            {form.is_fixed_price && (
+              <FormField label="판매가 (원)" htmlFor="fixed_price" required description="최소 100원 이상. 예: 150000 → 150,000원">
+                <input
+                  id="fixed_price"
+                  type="number"
+                  className="admin-input"
+                  min={100}
+                  step={1000}
+                  value={form.fixed_price ?? ''}
+                  onChange={(e) => updateField('fixed_price', e.target.value ? Number(e.target.value) : null)}
+                  placeholder="예: 150000"
+                />
+              </FormField>
+            )}
             <FormField label="간단 설명" htmlFor="description">
               <textarea id="description" className="admin-textarea" value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3} />
             </FormField>
