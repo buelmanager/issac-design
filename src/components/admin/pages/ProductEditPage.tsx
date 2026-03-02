@@ -19,15 +19,14 @@ import {
 } from '../ui';
 import type { OptionsData, GalleryItem, StepItem } from '../ui';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, Trash2, Bookmark } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Bookmark, ChevronDown, ChevronRight } from 'lucide-react';
 
 const TABS = [
   { key: 'basic', label: '기본 정보' },
   { key: 'images', label: '이미지' },
   { key: 'options', label: '옵션' },
-  { key: 'production', label: '제작' },
+  { key: 'production', label: '제작 정보' },
   { key: 'gallery', label: '시공 갤러리' },
-  { key: 'related', label: '연관 상품' },
 ];
 
 interface ProductForm {
@@ -153,6 +152,13 @@ export default function ProductEditPage() {
   const [showDelete, setShowDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [savingDefaults, setSavingDefaults] = useState(false);
+
+  // UI 상태
+  const [slugEditing, setSlugEditing] = useState(false);
+  const [showRelated, setShowRelated] = useState(false);
+  const [showMaterialImages, setShowMaterialImages] = useState(false);
+  const [showLightingImages, setShowLightingImages] = useState(false);
+
   const saveLockRef = useRef(false);
   const formRef = useRef(form);
   formRef.current = form;
@@ -168,7 +174,6 @@ export default function ProductEditPage() {
         .select('id, name, description, defaults, order_index, is_visible, is_seed, updated_at')
         .order('order_index');
       if (error) {
-        console.error('카테고리 로딩 실패:', error.message);
         toast.error('카테고리 목록을 불러올 수 없습니다');
         return;
       }
@@ -180,7 +185,6 @@ export default function ProductEditPage() {
         .select('id, name')
         .order('name');
       if (error) {
-        console.error('상품 목록 로딩 실패:', error.message);
         toast.error('상품 목록을 불러올 수 없습니다');
         return;
       }
@@ -205,14 +209,17 @@ export default function ProductEditPage() {
         navigate('/products');
         return;
       }
-      setForm(productToForm(data));
+      const loaded = productToForm(data);
+      setForm(loaded);
+      // 기존 데이터가 있으면 이미지 섹션 열기
+      setShowMaterialImages(Object.keys(safeJsonParse(data.material_images as Json, {})).length > 0);
+      setShowLightingImages(Object.keys(safeJsonParse(data.lighting_images as Json, {})).length > 0);
       setLoading(false);
     }
     loadProduct();
   }, [id, isNew, navigate]);
 
   const handleSave = useCallback(async () => {
-    // 레이스 컨디션 방지: useRef 기반 잠금
     if (saveLockRef.current) return;
 
     const currentForm = formRef.current;
@@ -221,8 +228,6 @@ export default function ProductEditPage() {
       toast.error('제품명을 입력해 주세요');
       return;
     }
-
-    // 썸네일 미설정 경고
     if (!currentForm.thumbnail) {
       toast('썸네일이 설정되지 않았습니다. 쇼핑몰에서 이미지가 표시되지 않을 수 있습니다.', {
         icon: '⚠️',
@@ -233,11 +238,17 @@ export default function ProductEditPage() {
     saveLockRef.current = true;
     setSaving(true);
     const slug = currentForm.slug || toSlug(currentForm.name) || `product-${Date.now()}`;
+
+    // 고정가격 상품은 price 필드를 자동 생성
+    const priceValue = currentForm.is_fixed_price && currentForm.fixed_price
+      ? `${currentForm.fixed_price.toLocaleString('ko-KR')}원`
+      : currentForm.price;
+
     const payload = {
       name: currentForm.name,
       slug,
       category_id: currentForm.category_id || null,
-      price: currentForm.price,
+      price: priceValue,
       price_range: currentForm.price_range || null,
       is_fixed_price: currentForm.is_fixed_price,
       fixed_price: currentForm.is_fixed_price ? (currentForm.fixed_price ?? null) : null,
@@ -410,33 +421,64 @@ export default function ProductEditPage() {
       <TabNav tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 
       <div className="admin-card">
+        {/* ── 기본 정보 탭 ── */}
         {activeTab === 'basic' && (
           <div className="admin-form-grid">
+            {/* 제품명 + 슬러그 인라인 미리보기 */}
             <FormField label="제품명" required htmlFor="name">
-              <input id="name" className="admin-input" value={form.name} onChange={(e) => handleNameChange(e.target.value)} />
+              <input
+                id="name"
+                className="admin-input"
+                value={form.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+              />
+              <div className="admin-slug-preview">
+                <span className="admin-slug-label">슬러그:</span>
+                {slugEditing ? (
+                  <input
+                    autoFocus
+                    className="admin-input admin-input-sm"
+                    value={form.slug}
+                    onChange={(e) => updateField('slug', e.target.value)}
+                    onBlur={() => setSlugEditing(false)}
+                  />
+                ) : (
+                  <>
+                    <code className="admin-slug-value">{form.slug || toSlug(form.name) || '—'}</code>
+                    <button type="button" className="admin-btn-link" onClick={() => setSlugEditing(true)}>
+                      편집
+                    </button>
+                  </>
+                )}
+              </div>
             </FormField>
-            <FormField label="슬러그" htmlFor="slug">
-              <input id="slug" className="admin-input" value={form.slug} onChange={(e) => updateField('slug', e.target.value)} />
-            </FormField>
+
+            {/* 카테고리 */}
             <FormField label="카테고리" htmlFor="category_id">
-              <select id="category_id" className="admin-select" value={form.category_id} onChange={(e) => handleCategoryChange(e.target.value)}>
+              <select
+                id="category_id"
+                className="admin-select"
+                value={form.category_id}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+              >
                 <option value="">선택 안함</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </FormField>
-            <FormField label="가격" htmlFor="price">
-              <input id="price" className="admin-input" value={form.price} onChange={(e) => updateField('price', e.target.value)} />
+
+            {/* 가격 섹션 */}
+            <FormField label="고정가격 상품" description="활성화하면 '바로 구매' 버튼이 표시됩니다">
+              <Toggle
+                checked={form.is_fixed_price}
+                onChange={(v) => updateField('is_fixed_price', v)}
+                label="고정가격 사용"
+              />
             </FormField>
-            <FormField label="가격 범위" htmlFor="price_range">
-              <input id="price_range" className="admin-input" value={form.price_range} onChange={(e) => updateField('price_range', e.target.value)} />
-            </FormField>
-            <FormField label="고정가격 상품" description="활성화 시 '바로 구매' 버튼이 표시됩니다">
-              <Toggle checked={form.is_fixed_price} onChange={(v) => updateField('is_fixed_price', v)} label="고정가격 사용" />
-            </FormField>
-            {form.is_fixed_price && (
-              <FormField label="판매가 (원)" htmlFor="fixed_price" required description="최소 100원 이상">
+
+            {form.is_fixed_price ? (
+              <FormField label="판매가 (원)" htmlFor="fixed_price" required description="실제 결제 금액. 최소 100원 이상">
                 <input
                   id="fixed_price"
                   type="text"
@@ -450,27 +492,113 @@ export default function ProductEditPage() {
                   placeholder="예: 150,000"
                 />
               </FormField>
+            ) : (
+              <>
+                <FormField label="가격 표시" htmlFor="price" description="상품 카드에 표시되는 텍스트">
+                  <input
+                    id="price"
+                    className="admin-input"
+                    value={form.price}
+                    onChange={(e) => updateField('price', e.target.value)}
+                    placeholder="예: 문의, 상담 후 결정"
+                  />
+                </FormField>
+                <FormField label="가격 범위" htmlFor="price_range" description="상세 페이지 가격 안내 (선택)">
+                  <input
+                    id="price_range"
+                    className="admin-input"
+                    value={form.price_range}
+                    onChange={(e) => updateField('price_range', e.target.value)}
+                    placeholder="예: 100만원~300만원"
+                  />
+                </FormField>
+              </>
             )}
-            <FormField label="간단 설명" htmlFor="description">
-              <textarea id="description" className="admin-textarea" value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3} />
+
+            {/* 설명 */}
+            <FormField label="카드 설명" htmlFor="description" description="상품 목록 카드에 표시되는 짧은 소개 (1~2줄 권장)">
+              <textarea
+                id="description"
+                className="admin-textarea"
+                value={form.description}
+                onChange={(e) => updateField('description', e.target.value)}
+                rows={2}
+              />
             </FormField>
-            <FormField label="상세 설명" htmlFor="full_description">
-              <textarea id="full_description" className="admin-textarea" value={form.full_description} onChange={(e) => updateField('full_description', e.target.value)} rows={6} />
+            <FormField label="상세 설명" htmlFor="full_description" description="상품 상세 페이지에 표시되는 전체 설명">
+              <textarea
+                id="full_description"
+                className="admin-textarea"
+                value={form.full_description}
+                onChange={(e) => updateField('full_description', e.target.value)}
+                rows={6}
+              />
             </FormField>
+
+            {/* 태그 */}
             <FormField label="태그">
-              <TagInput tags={form.tags} onChange={(tags) => updateField('tags', tags)} placeholder="태그 입력..." />
+              <TagInput
+                tags={form.tags}
+                onChange={(tags) => updateField('tags', tags)}
+                placeholder="태그 입력..."
+              />
             </FormField>
-            <FormField label="인기도" htmlFor="popularity">
-              <input id="popularity" type="number" className="admin-input" value={form.popularity} onChange={(e) => updateField('popularity', Number(e.target.value))} />
+
+            {/* 인기도 슬라이더 */}
+            <FormField label={`인기도 (${form.popularity})`} htmlFor="popularity">
+              <input
+                id="popularity"
+                type="range"
+                className="admin-range"
+                min={0}
+                max={100}
+                step={1}
+                value={form.popularity}
+                onChange={(e) => updateField('popularity', Number(e.target.value))}
+              />
             </FormField>
+
+            {/* 공개 상태 토글 */}
             <div className="admin-toggle-group">
               <Toggle checked={form.is_visible} onChange={(v) => updateField('is_visible', v)} label="공개" />
               <Toggle checked={form.is_featured} onChange={(v) => updateField('is_featured', v)} label="추천" />
               <Toggle checked={form.is_new} onChange={(v) => updateField('is_new', v)} label="신제품" />
             </div>
+
+            {/* 연관 상품 — 접힘 섹션 */}
+            <div className="admin-collapsible">
+              <button
+                type="button"
+                className="admin-collapsible-header"
+                onClick={() => setShowRelated((v) => !v)}
+              >
+                {showRelated ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                <span>연관 상품</span>
+                {form.related_product_ids.length > 0 && (
+                  <span className="admin-badge admin-badge-info">{form.related_product_ids.length}</span>
+                )}
+              </button>
+              {showRelated && (
+                <div className="admin-checkbox-list admin-collapsible-body">
+                  {allProducts
+                    .filter((p) => p.id !== id)
+                    .map((p) => (
+                      <label key={p.id} className="admin-checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={form.related_product_ids.includes(p.id)}
+                          onChange={() => handleRelatedToggle(p.id)}
+                        />
+                        <span>{p.name}</span>
+                      </label>
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
+        {/* ── 이미지 탭 ── */}
         {activeTab === 'images' && (
           <div className="admin-form-grid">
             <FormField label="썸네일">
@@ -479,26 +607,63 @@ export default function ProductEditPage() {
             <FormField label="이미지 목록" description="드래그로 순서를 변경할 수 있습니다">
               <ImageListEditor images={form.images} onChange={(imgs) => updateField('images', imgs)} folder="products" />
             </FormField>
-            <FormField label="소재 이미지" description="소재명과 이미지를 등록하세요">
-              <KeyValueEditor
-                entries={form.material_images}
-                onChange={(entries) => updateField('material_images', entries)}
-                keyLabel="소재명"
-                valueLabel="이미지"
-                valueType="image"
-                folder="products"
-              />
-            </FormField>
-            <FormField label="조명 이미지" description="조명 상태별 이미지를 등록하세요 (off/on)">
-              <KeyValueEditor
-                entries={form.lighting_images}
-                onChange={(entries) => updateField('lighting_images', entries)}
-                keyLabel="상태"
-                valueLabel="이미지"
-                valueType="image"
-                folder="products"
-              />
-            </FormField>
+
+            {/* 소재 이미지 — 접힘 */}
+            <div className="admin-collapsible">
+              <button
+                type="button"
+                className="admin-collapsible-header"
+                onClick={() => setShowMaterialImages((v) => !v)}
+              >
+                {showMaterialImages ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                <span>소재 이미지</span>
+                {Object.keys(form.material_images).length > 0 && (
+                  <span className="admin-badge">{Object.keys(form.material_images).length}</span>
+                )}
+                <span className="admin-optional-hint">선택 사항</span>
+              </button>
+              {showMaterialImages && (
+                <div className="admin-collapsible-body">
+                  <KeyValueEditor
+                    entries={form.material_images}
+                    onChange={(entries) => updateField('material_images', entries)}
+                    keyLabel="소재명"
+                    valueLabel="이미지"
+                    valueType="image"
+                    folder="products"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 조명 이미지 — 접힘 */}
+            <div className="admin-collapsible">
+              <button
+                type="button"
+                className="admin-collapsible-header"
+                onClick={() => setShowLightingImages((v) => !v)}
+              >
+                {showLightingImages ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                <span>조명 이미지</span>
+                {Object.keys(form.lighting_images).length > 0 && (
+                  <span className="admin-badge">{Object.keys(form.lighting_images).length}</span>
+                )}
+                <span className="admin-optional-hint">선택 사항</span>
+              </button>
+              {showLightingImages && (
+                <div className="admin-collapsible-body">
+                  <KeyValueEditor
+                    entries={form.lighting_images}
+                    onChange={(entries) => updateField('lighting_images', entries)}
+                    keyLabel="상태"
+                    valueLabel="이미지"
+                    valueType="image"
+                    folder="products"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="admin-defaults-bar">
               <button type="button" className="admin-btn admin-btn-secondary" onClick={() => handleSaveDefaults('images')} disabled={savingDefaults}>
                 <Bookmark size={14} /> 기본값으로 저장
@@ -507,6 +672,7 @@ export default function ProductEditPage() {
           </div>
         )}
 
+        {/* ── 옵션 탭 ── */}
         {activeTab === 'options' && (
           <div className="admin-form-grid">
             <FormField label="제품 옵션" description="사이즈, 소재, 마감, 조명 옵션을 관리합니다">
@@ -520,6 +686,7 @@ export default function ProductEditPage() {
           </div>
         )}
 
+        {/* ── 제작 정보 탭 ── */}
         {activeTab === 'production' && (
           <div className="admin-form-grid">
             <FormField label="제작 기간" htmlFor="production_time">
@@ -550,6 +717,7 @@ export default function ProductEditPage() {
           </div>
         )}
 
+        {/* ── 시공 갤러리 탭 ── */}
         {activeTab === 'gallery' && (
           <div className="admin-form-grid">
             <FormField label="시공 갤러리" description="시공 전/후 이미지와 위치를 등록하세요">
@@ -562,30 +730,100 @@ export default function ProductEditPage() {
             </div>
           </div>
         )}
-
-        {activeTab === 'related' && (
-          <div className="admin-form-grid">
-            <FormField label="연관 상품" description="연관 상품을 선택하세요">
-              <div className="admin-checkbox-list">
-                {allProducts
-                  .filter((p) => p.id !== id)
-                  .map((p) => (
-                    <label key={p.id} className="admin-checkbox-item">
-                      <input
-                        type="checkbox"
-                        checked={form.related_product_ids.includes(p.id)}
-                        onChange={() => handleRelatedToggle(p.id)}
-                      />
-                      <span>{p.name}</span>
-                    </label>
-                  ))}
-              </div>
-            </FormField>
-          </div>
-        )}
       </div>
 
-      <ConfirmModal isOpen={showDelete} title="제품 삭제" message="이 제품을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다." confirmLabel="삭제" cancelLabel="취소" variant="danger" onConfirm={handleDelete} onCancel={() => setShowDelete(false)} loading={deleting} />
+      <ConfirmModal
+        isOpen={showDelete}
+        title="제품 삭제"
+        message="이 제품을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        cancelLabel="취소"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDelete(false)}
+        loading={deleting}
+      />
+
+      <style>{`
+        .admin-slug-preview {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 6px;
+          font-size: 12px;
+          color: var(--text-muted, #888);
+        }
+        .admin-slug-label {
+          font-weight: 500;
+          flex-shrink: 0;
+        }
+        .admin-slug-value {
+          background: var(--bg-subtle, #f5f5f5);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 11px;
+          color: var(--text-secondary, #555);
+          max-width: 260px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .admin-btn-link {
+          background: none;
+          border: none;
+          color: var(--primary, #3b82f6);
+          font-size: 12px;
+          cursor: pointer;
+          padding: 0;
+          text-decoration: underline;
+          flex-shrink: 0;
+        }
+        .admin-input-sm {
+          height: 28px;
+          font-size: 12px;
+          padding: 2px 8px;
+          flex: 1;
+        }
+        .admin-range {
+          width: 100%;
+          cursor: pointer;
+          accent-color: var(--primary, #3b82f6);
+        }
+        .admin-collapsible {
+          border: 1px solid var(--border, #e5e7eb);
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .admin-collapsible-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 12px 16px;
+          background: var(--bg-subtle, #f9fafb);
+          border: none;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-primary, #111);
+          text-align: left;
+          transition: background 0.15s;
+        }
+        .admin-collapsible-header:hover {
+          background: var(--bg-hover, #f3f4f6);
+        }
+        .admin-collapsible-body {
+          padding: 16px;
+          border-top: 1px solid var(--border, #e5e7eb);
+        }
+        .admin-optional-hint {
+          margin-left: auto;
+          font-size: 11px;
+          color: var(--text-muted, #9ca3af);
+          font-weight: 400;
+        }
+      `}</style>
     </div>
   );
 }
