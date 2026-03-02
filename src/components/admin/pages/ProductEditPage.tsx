@@ -436,16 +436,18 @@ export default function ProductEditPage() {
               <Toggle checked={form.is_fixed_price} onChange={(v) => updateField('is_fixed_price', v)} label="고정가격 사용" />
             </FormField>
             {form.is_fixed_price && (
-              <FormField label="판매가 (원)" htmlFor="fixed_price" required description="최소 100원 이상. 예: 150000 → 150,000원">
+              <FormField label="판매가 (원)" htmlFor="fixed_price" required description="최소 100원 이상">
                 <input
                   id="fixed_price"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   className="admin-input"
-                  min={100}
-                  step={1000}
-                  value={form.fixed_price ?? ''}
-                  onChange={(e) => updateField('fixed_price', e.target.value ? Number(e.target.value) : null)}
-                  placeholder="예: 150000"
+                  value={form.fixed_price != null ? form.fixed_price.toLocaleString('ko-KR') : ''}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/,/g, '');
+                    updateField('fixed_price', raw ? Number(raw) : null);
+                  }}
+                  placeholder="예: 150,000"
                 />
               </FormField>
             )}
