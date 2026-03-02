@@ -1127,6 +1127,9 @@ try {
     let autoPlayTimer: ReturnType<typeof setTimeout> | null = null;
     let progressTween: gsap.core.Tween | null = null;
     let isTransitioning = false;
+
+    // Astro 페이지 전환 후 autoplay 속성이 재트리거되지 않으므로 명시적으로 재생
+    heroVideos[0]?.play().catch(() => {});
     let initialAnimationDone = false;
 
     // =====================

@@ -42,6 +42,9 @@ export function initShopHero() {
 
   let currentSlide = 0;
 
+  // Astro 페이지 전환 후 autoplay 속성이 재트리거되지 않으므로 명시적으로 재생
+  videos[0]?.play().catch(() => {});
+
   // =====================
   // INIT: Split text on ALL slides, hide ALL slides
   // =====================
