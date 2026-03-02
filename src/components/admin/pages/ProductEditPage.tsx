@@ -191,7 +191,7 @@ export default function ProductEditPage() {
       const productId = id!;
       const { data, error } = await supabase
         .from('products')
-        .select('id, slug, name, category_id, price, price_range, thumbnail, images, description, full_description, features, specs, production_time, included_services, tags, material_images, lighting_images, options, production_steps, installation_gallery, popularity, is_new, is_featured, related_product_ids, is_visible, is_seed, created_at, updated_at')
+        .select('id, slug, name, category_id, price, price_range, thumbnail, images, description, full_description, features, specs, production_time, included_services, tags, material_images, lighting_images, options, production_steps, installation_gallery, popularity, is_new, is_featured, related_product_ids, is_visible, is_seed, is_fixed_price, fixed_price, created_at, updated_at')
         .eq('id', productId)
         .single();
       if (error || !data) {

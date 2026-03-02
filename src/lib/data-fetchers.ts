@@ -37,6 +37,8 @@ interface ProductJSON {
   isFeatured: boolean;
   relatedProducts: string[];
   installationGallery: Array<{ before: string; after: string; location: string }>;
+  isFixedPrice: boolean;
+  fixedPrice: number | null;
 }
 
 interface CategoryJSON {
@@ -79,6 +81,12 @@ interface FaqJSON {
   categoryName: string;
   question: string;
   answer: string;
+}
+
+// ─── Price utilities ──────────────────────────────────────────────
+
+export function formatPrice(price: number): string {
+  return price.toLocaleString('ko-KR') + '원';
 }
 
 // ─── Typed fallback helpers (JSON.parse breaks narrow inferred union types) ──
@@ -183,6 +191,8 @@ export async function getProducts(): Promise<{
         isFeatured: row.is_featured,
         relatedProducts: asStringArray(row.related_product_ids),
         installationGallery: row.installation_gallery as ProductJSON['installationGallery'],
+        isFixedPrice: row.is_fixed_price ?? false,
+        fixedPrice: typeof row.fixed_price === 'number' ? row.fixed_price : null,
       };
     });
 

@@ -382,6 +382,8 @@ export interface Database {
           related_product_ids: Json;
           is_visible: boolean;
           is_seed: boolean;
+          is_fixed_price: boolean;
+          fixed_price: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -412,6 +414,8 @@ export interface Database {
           related_product_ids?: Json;
           is_visible?: boolean;
           is_seed?: boolean;
+          is_fixed_price?: boolean;
+          fixed_price?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -442,6 +446,8 @@ export interface Database {
           related_product_ids?: Json;
           is_visible?: boolean;
           is_seed?: boolean;
+          is_fixed_price?: boolean;
+          fixed_price?: number | null;
           created_at?: string;
           updated_at?: string;
         };

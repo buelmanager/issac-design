@@ -11,6 +11,7 @@ import ImageGallery from '../../components/shop/ImageGallery.astro';
 import ProductDetail from '../../components/shop/ProductDetail.astro';
 import ProductConfigurator from '../../components/shop/ProductConfigurator.astro';
 import AddToQuoteButton from '../../components/shop/AddToQuoteButton.astro';
+import BuyNowButton from '../../components/shop/BuyNowButton.astro';
 import ProductionTimeline from '../../components/shop/ProductionTimeline.astro';
 import RelatedProducts from '../../components/shop/RelatedProducts.astro';
 
@@ -73,12 +74,21 @@ const breadcrumbs = [
           <div class="product-page__info">
             <ProductDetail product={product} />
 
-            <!-- Product Configurator -->
-            {product.options && (
+            <!-- Product Configurator (견적 상품만 표시) -->
+            {!product.isFixedPrice && product.options && (
               <div class="product-page__configurator">
                 <ProductConfigurator product={product} />
               </div>
             )}
+
+            <!-- Action Button -->
+            <div class="product-page__action">
+              {product.isFixedPrice && product.fixedPrice ? (
+                <BuyNowButton product={{ ...product, fixedPrice: product.fixedPrice! }} />
+              ) : (
+                <AddToQuoteButton product={product} />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -114,7 +124,8 @@ const breadcrumbs = [
     <!-- Warranty & Insurance Badges -->
     <WarrantyBadge />
 
-    <!-- Quote CTA -->
+    <!-- Quote CTA (견적 상품에만 표시) -->
+    {!product.isFixedPrice && (
     <section class="product-page__cta" id="quote-form">
       <div class="product-page__cta-container">
         <div class="product-page__cta-content">
@@ -134,6 +145,7 @@ const breadcrumbs = [
         </div>
       </div>
     </section>
+    )}
   </main>
 
   <QuoteCartBadge />
@@ -160,6 +172,11 @@ const breadcrumbs = [
     max-width: var(--container-max);
     margin: 0 auto;
     padding: 0 var(--container-padding);
+  }
+
+  /* Action Button */
+  .product-page__action {
+    margin-top: var(--space-xl);
   }
 
   /* Main Product Section */

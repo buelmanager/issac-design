@@ -19,11 +19,17 @@ interface Props {
     tags: string[];
     popularity?: number;
     isNew?: boolean;
+    isFixedPrice?: boolean;
+    fixedPrice?: number | null;
   };
   index?: number;
 }
 
 const { product, index = 0 } = Astro.props;
+
+function formatPrice(price: number): string {
+  return price.toLocaleString('ko-KR') + '원';
+}
 ---
 
 <article
@@ -92,13 +98,22 @@ const { product, index = 0 } = Astro.props;
     <div class="product-card__footer">
       <!-- Price -->
       <div class="product-card__price">
-        <span class="product-card__price-label">가격</span>
-        <span class="product-card__price-value">{product.priceRange}</span>
+        {product.isFixedPrice && product.fixedPrice ? (
+          <>
+            <span class="product-card__price-label">판매가</span>
+            <span class="product-card__price-value product-card__price-value--fixed">{formatPrice(product.fixedPrice)}</span>
+          </>
+        ) : (
+          <>
+            <span class="product-card__price-label">가격</span>
+            <span class="product-card__price-value">{product.priceRange}</span>
+          </>
+        )}
       </div>
 
       <!-- CTA Button -->
-      <a href={`/shop/${product.slug}`} class="product-card__btn">
-        <span>견적 문의</span>
+      <a href={`/shop/${product.slug}`} class={`product-card__btn${product.isFixedPrice ? ' product-card__btn--buy' : ''}`}>
+        <span>{product.isFixedPrice ? '바로 구매' : '견적 문의'}</span>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -354,6 +369,19 @@ const { product, index = 0 } = Astro.props;
   .product-card__btn:hover {
     background: var(--primary-hover);
     transform: translateX(2px);
+  }
+
+  .product-card__btn--buy {
+    background: #1a1a2e;
+  }
+
+  .product-card__btn--buy:hover {
+    background: #16213e;
+  }
+
+  .product-card__price-value--fixed {
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
   }
 
   .product-card__btn svg {

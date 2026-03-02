@@ -1,0 +1,154 @@
+---
+/**
+ * BuyNowButton Component
+ * 고정가격 상품의 바로 구매 버튼.
+ * 클릭 시 paymentCart localStorage를 세팅하고 /shop/payment 로 이동한다.
+ */
+interface Props {
+  product: {
+    id: string;
+    slug: string;
+    name: string;
+    thumbnail: string;
+    fixedPrice: number;
+  };
+}
+
+const { product } = Astro.props;
+---
+
+<button
+  class="buy-now-btn"
+  data-buy-now
+  data-product-id={product.id}
+  data-product-name={product.name}
+  data-product-price={product.fixedPrice}
+>
+  <svg
+    class="buy-now-btn__icon"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M5 12h14M12 5l7 7-7 7" />
+  </svg>
+  <span class="buy-now-btn__text">바로 구매</span>
+</button>
+
+<style>
+  .buy-now-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm, 8px);
+    padding: var(--space-md, 12px) var(--space-xl, 24px);
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--font-size-base, 16px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .buy-now-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .buy-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 4px 12px rgba(26, 26, 46, 0.4),
+      0 0 20px rgba(26, 26, 46, 0.2);
+  }
+
+  .buy-now-btn:hover::before {
+    opacity: 1;
+  }
+
+  .buy-now-btn:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: none;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+
+  .buy-now-btn:focus-visible {
+    outline: 2px solid #1a1a2e;
+    outline-offset: 2px;
+  }
+
+  .buy-now-btn__icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+  }
+
+  .buy-now-btn__text {
+    display: inline;
+  }
+
+  @media (max-width: 719px) {
+    .buy-now-btn {
+      width: 100%;
+      padding: var(--space-md, 12px) var(--space-lg, 16px);
+    }
+  }
+</style>
+
+<script>
+  function initBuyNowButtons() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('[data-buy-now]');
+
+    buttons.forEach((button) => {
+      if (button.dataset.bound === 'true') return;
+      button.dataset.bound = 'true';
+
+      button.addEventListener('click', () => {
+        const productName = button.dataset.productName || '상품';
+        const fixedPrice = parseInt(button.dataset.productPrice || '0', 10);
+
+        if (!fixedPrice || fixedPrice <= 0) {
+          console.warn('[BuyNow] Invalid fixedPrice:', fixedPrice);
+          return;
+        }
+
+        const cartItem = {
+          name: productName,
+          quantity: 1,
+          unit_price: fixedPrice,
+        };
+
+        try {
+          localStorage.setItem('paymentCart', JSON.stringify([cartItem]));
+        } catch {
+          console.warn('[BuyNow] Failed to set paymentCart in localStorage.');
+          return;
+        }
+
+        window.location.href = '/shop/payment';
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initBuyNowButtons);
+  document.addEventListener('astro:page-load', initBuyNowButtons);
+
+  if (document.readyState !== 'loading') {
+    initBuyNowButtons();
+  }
+</script>

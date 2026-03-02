@@ -35,7 +35,12 @@
         "현장 설치",
         "1년 무상 A/S"
       ],
-      "tags": ["LED", "고급", "레스토랑", "매장"],
+      "tags": [
+        "LED",
+        "고급",
+        "레스토랑",
+        "매장"
+      ],
       "materialImages": {
         "acrylic": "https://images.unsplash.com/photo-1763673263764-4d189ab2f03f?w=800&q=80",
         "stainless": "https://images.unsplash.com/photo-1767488903403-3963f0d370db?w=800&q=80",
@@ -48,35 +53,88 @@
       },
       "options": {
         "sizes": [
-          {"label": "소형 (1m 이하)", "priceModifier": "기본가"},
-          {"label": "중형 (1-2m)", "priceModifier": "+30%"},
-          {"label": "대형 (2-3m)", "priceModifier": "+60%"},
-          {"label": "특대형 (3m 이상)", "priceModifier": "별도 견적"}
+          {
+            "label": "소형 (1m 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (1-2m)",
+            "priceModifier": "+30%"
+          },
+          {
+            "label": "대형 (2-3m)",
+            "priceModifier": "+60%"
+          },
+          {
+            "label": "특대형 (3m 이상)",
+            "priceModifier": "별도 견적"
+          }
         ],
         "materials": [
-          {"label": "프리미엄 아크릴", "description": "고급 투명 아크릴로 선명한 발광"},
-          {"label": "알루미늄 프레임", "description": "견고하고 고급스러운 마감"}
+          {
+            "label": "프리미엄 아크릴",
+            "description": "고급 투명 아크릴로 선명한 발광"
+          },
+          {
+            "label": "알루미늄 프레임",
+            "description": "견고하고 고급스러운 마감"
+          }
         ],
         "finishes": [
-          {"label": "화이트", "colorHex": "#FFFFFF"},
-          {"label": "블랙", "colorHex": "#000000"},
-          {"label": "실버", "colorHex": "#C0C0C0"}
+          {
+            "label": "화이트",
+            "colorHex": "#FFFFFF"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          },
+          {
+            "label": "실버",
+            "colorHex": "#C0C0C0"
+          }
         ],
         "lightingTypes": [
-          {"label": "화이트 LED", "description": "6500K 주광색, 선명한 백색광"},
-          {"label": "웜화이트 LED", "description": "3000K 전구색, 따뜻한 분위기"}
+          {
+            "label": "화이트 LED",
+            "description": "6500K 주광색, 선명한 백색광"
+          },
+          {
+            "label": "웜화이트 LED",
+            "description": "3000K 전구색, 따뜻한 분위기"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2일", "description": "디자인 확정 및 시안 제작"},
-        {"step": 2, "duration": "2-3일", "description": "레이저 커팅 및 조립"},
-        {"step": 3, "duration": "2-3일", "description": "LED 모듈 설치 및 배선"},
-        {"step": 4, "duration": "1-2일", "description": "품질 검사 및 현장 설치"}
+        {
+          "step": 1,
+          "duration": "1-2일",
+          "description": "디자인 확정 및 시안 제작"
+        },
+        {
+          "step": 2,
+          "duration": "2-3일",
+          "description": "레이저 커팅 및 조립"
+        },
+        {
+          "step": 3,
+          "duration": "2-3일",
+          "description": "LED 모듈 설치 및 배선"
+        },
+        {
+          "step": 4,
+          "duration": "1-2일",
+          "description": "품질 검사 및 현장 설치"
+        }
       ],
       "popularity": 95,
       "isNew": false,
       "isFeatured": true,
-      "relatedProducts": ["led-channel-standard", "acrylic-premium", "protruding-premium"],
+      "relatedProducts": [
+        "led-channel-standard",
+        "acrylic-premium",
+        "protruding-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
@@ -88,7 +146,9 @@
           "after": "https://images.unsplash.com/photo-1763673263764-4d189ab2f03f?w=800&q=80",
           "location": "부산 해운대구 명품 매장"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "led-channel-002",
@@ -125,43 +185,97 @@
         "현장 설치",
         "1년 무상 A/S"
       ],
-      "tags": ["LED", "합리적", "매장", "카페"],
+      "tags": [
+        "LED",
+        "합리적",
+        "매장",
+        "카페"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (1m 이하)", "priceModifier": "기본가"},
-          {"label": "중형 (1-2m)", "priceModifier": "+25%"},
-          {"label": "대형 (2-3m)", "priceModifier": "+50%"}
+          {
+            "label": "소형 (1m 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (1-2m)",
+            "priceModifier": "+25%"
+          },
+          {
+            "label": "대형 (2-3m)",
+            "priceModifier": "+50%"
+          }
         ],
         "materials": [
-          {"label": "스탠다드 아크릴", "description": "표준 투명 아크릴"},
-          {"label": "알루미늄 프레임", "description": "견고한 구조"}
+          {
+            "label": "스탠다드 아크릴",
+            "description": "표준 투명 아크릴"
+          },
+          {
+            "label": "알루미늄 프레임",
+            "description": "견고한 구조"
+          }
         ],
         "finishes": [
-          {"label": "화이트", "colorHex": "#FFFFFF"},
-          {"label": "블랙", "colorHex": "#000000"}
+          {
+            "label": "화이트",
+            "colorHex": "#FFFFFF"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          }
         ],
         "lightingTypes": [
-          {"label": "화이트 LED", "description": "밝은 백색광"},
-          {"label": "웜화이트 LED", "description": "따뜻한 분위기"}
+          {
+            "label": "화이트 LED",
+            "description": "밝은 백색광"
+          },
+          {
+            "label": "웜화이트 LED",
+            "description": "따뜻한 분위기"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1일", "description": "디자인 확정 및 시안 제작"},
-        {"step": 2, "duration": "2일", "description": "레이저 커팅 및 조립"},
-        {"step": 3, "duration": "2일", "description": "LED 모듈 설치 및 배선"},
-        {"step": 4, "duration": "1일", "description": "품질 검사 및 현장 설치"}
+        {
+          "step": 1,
+          "duration": "1일",
+          "description": "디자인 확정 및 시안 제작"
+        },
+        {
+          "step": 2,
+          "duration": "2일",
+          "description": "레이저 커팅 및 조립"
+        },
+        {
+          "step": 3,
+          "duration": "2일",
+          "description": "LED 모듈 설치 및 배선"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "품질 검사 및 현장 설치"
+        }
       ],
       "popularity": 88,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["led-channel-premium", "led-channel-mini", "acrylic-standard"],
+      "relatedProducts": [
+        "led-channel-premium",
+        "led-channel-mini",
+        "acrylic-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1763673263764-4d189ab2f03f?w=800&q=80",
           "location": "서울 마포구 카페"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "led-channel-003",
@@ -198,41 +312,89 @@
         "설치 지원",
         "6개월 무상 A/S"
       ],
-      "tags": ["LED", "소형", "저렴", "카페"],
+      "tags": [
+        "LED",
+        "소형",
+        "저렴",
+        "카페"
+      ],
       "options": {
         "sizes": [
-          {"label": "미니 (50cm 이하)", "priceModifier": "기본가"},
-          {"label": "소형 (50cm-1m)", "priceModifier": "+20%"},
-          {"label": "중소형 (1-1.5m)", "priceModifier": "+40%"}
+          {
+            "label": "미니 (50cm 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "소형 (50cm-1m)",
+            "priceModifier": "+20%"
+          },
+          {
+            "label": "중소형 (1-1.5m)",
+            "priceModifier": "+40%"
+          }
         ],
         "materials": [
-          {"label": "아크릴", "description": "경량 아크릴 소재"}
+          {
+            "label": "아크릴",
+            "description": "경량 아크릴 소재"
+          }
         ],
         "finishes": [
-          {"label": "화이트", "colorHex": "#FFFFFF"},
-          {"label": "블랙", "colorHex": "#000000"}
+          {
+            "label": "화이트",
+            "colorHex": "#FFFFFF"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          }
         ],
         "lightingTypes": [
-          {"label": "화이트 LED", "description": "기본 백색광"}
+          {
+            "label": "화이트 LED",
+            "description": "기본 백색광"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1일", "description": "디자인 확정"},
-        {"step": 2, "duration": "2일", "description": "커팅 및 조립"},
-        {"step": 3, "duration": "1일", "description": "LED 설치"},
-        {"step": 4, "duration": "1일", "description": "검사 및 설치"}
+        {
+          "step": 1,
+          "duration": "1일",
+          "description": "디자인 확정"
+        },
+        {
+          "step": 2,
+          "duration": "2일",
+          "description": "커팅 및 조립"
+        },
+        {
+          "step": 3,
+          "duration": "1일",
+          "description": "LED 설치"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "검사 및 설치"
+        }
       ],
       "popularity": 72,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["led-channel-standard", "neon-sign-mini", "acrylic-standard"],
+      "relatedProducts": [
+        "led-channel-standard",
+        "neon-sign-mini",
+        "acrylic-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1763673263764-4d189ab2f03f?w=800&q=80",
           "location": "인천 연수구 소형 카페"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "neon-sign-001",
@@ -269,38 +431,96 @@
         "현장 설치",
         "1년 무상 A/S"
       ],
-      "tags": ["네온", "감성", "카페", "바"],
+      "tags": [
+        "네온",
+        "감성",
+        "카페",
+        "바"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (50cm 이하)", "priceModifier": "기본가"},
-          {"label": "중형 (50cm-1m)", "priceModifier": "+40%"},
-          {"label": "대형 (1-1.5m)", "priceModifier": "+80%"},
-          {"label": "특대형 (1.5m 이상)", "priceModifier": "별도 견적"}
+          {
+            "label": "소형 (50cm 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (50cm-1m)",
+            "priceModifier": "+40%"
+          },
+          {
+            "label": "대형 (1-1.5m)",
+            "priceModifier": "+80%"
+          },
+          {
+            "label": "특대형 (1.5m 이상)",
+            "priceModifier": "별도 견적"
+          }
         ],
         "materials": [
-          {"label": "LED 네온 튜브", "description": "안전하고 밝은 LED 네온"},
-          {"label": "아크릴 백보드", "description": "투명 또는 컬러 백보드 선택 가능"}
+          {
+            "label": "LED 네온 튜브",
+            "description": "안전하고 밝은 LED 네온"
+          },
+          {
+            "label": "아크릴 백보드",
+            "description": "투명 또는 컬러 백보드 선택 가능"
+          }
         ],
         "finishes": [
-          {"label": "핑크", "colorHex": "#FF1493"},
-          {"label": "블루", "colorHex": "#00BFFF"},
-          {"label": "옐로우", "colorHex": "#FFD700"}
+          {
+            "label": "핑크",
+            "colorHex": "#FF1493"
+          },
+          {
+            "label": "블루",
+            "colorHex": "#00BFFF"
+          },
+          {
+            "label": "옐로우",
+            "colorHex": "#FFD700"
+          }
         ],
         "lightingTypes": [
-          {"label": "단색 LED 네온", "description": "선택한 단일 컬러로 발광"},
-          {"label": "RGB LED 네온", "description": "리모컨으로 컬러 변경 가능"}
+          {
+            "label": "단색 LED 네온",
+            "description": "선택한 단일 컬러로 발광"
+          },
+          {
+            "label": "RGB LED 네온",
+            "description": "리모컨으로 컬러 변경 가능"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2일", "description": "맞춤 디자인 제작 및 확정"},
-        {"step": 2, "duration": "2-3일", "description": "네온 튜브 가공 및 성형"},
-        {"step": 3, "duration": "1-2일", "description": "백보드 제작 및 조립"},
-        {"step": 4, "duration": "1일", "description": "점등 테스트 및 현장 설치"}
+        {
+          "step": 1,
+          "duration": "1-2일",
+          "description": "맞춤 디자인 제작 및 확정"
+        },
+        {
+          "step": 2,
+          "duration": "2-3일",
+          "description": "네온 튜브 가공 및 성형"
+        },
+        {
+          "step": 3,
+          "duration": "1-2일",
+          "description": "백보드 제작 및 조립"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "점등 테스트 및 현장 설치"
+        }
       ],
       "popularity": 92,
       "isNew": true,
       "isFeatured": true,
-      "relatedProducts": ["neon-sign-classic", "led-channel-premium", "acrylic-premium"],
+      "relatedProducts": [
+        "neon-sign-classic",
+        "led-channel-premium",
+        "acrylic-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
@@ -312,7 +532,9 @@
           "after": "https://images.unsplash.com/photo-1551560798-b935eb510ab3?w=800&q=80",
           "location": "강남 프리미엄 바"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "neon-sign-002",
@@ -349,42 +571,93 @@
         "설치 지원",
         "1년 무상 A/S"
       ],
-      "tags": ["네온", "클래식", "레트로", "바"],
+      "tags": [
+        "네온",
+        "클래식",
+        "레트로",
+        "바"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (50cm 이하)", "priceModifier": "기본가"},
-          {"label": "중형 (50cm-1m)", "priceModifier": "+35%"},
-          {"label": "대형 (1-1.5m)", "priceModifier": "+70%"}
+          {
+            "label": "소형 (50cm 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (50cm-1m)",
+            "priceModifier": "+35%"
+          },
+          {
+            "label": "대형 (1-1.5m)",
+            "priceModifier": "+70%"
+          }
         ],
         "materials": [
-          {"label": "유리 네온 튜브", "description": "전통 유리 네온 방식"}
+          {
+            "label": "유리 네온 튜브",
+            "description": "전통 유리 네온 방식"
+          }
         ],
         "finishes": [
-          {"label": "레드", "colorHex": "#FF0000"},
-          {"label": "블루", "colorHex": "#0000FF"},
-          {"label": "그린", "colorHex": "#00FF00"}
+          {
+            "label": "레드",
+            "colorHex": "#FF0000"
+          },
+          {
+            "label": "블루",
+            "colorHex": "#0000FF"
+          },
+          {
+            "label": "그린",
+            "colorHex": "#00FF00"
+          }
         ],
         "lightingTypes": [
-          {"label": "전통 네온", "description": "클래식한 유리 네온 발광"}
+          {
+            "label": "전통 네온",
+            "description": "클래식한 유리 네온 발광"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2일", "description": "디자인 확정"},
-        {"step": 2, "duration": "3-4일", "description": "유리 튜브 가공 및 성형"},
-        {"step": 3, "duration": "1-2일", "description": "전극 설치 및 배선"},
-        {"step": 4, "duration": "1일", "description": "테스트 및 설치"}
+        {
+          "step": 1,
+          "duration": "1-2일",
+          "description": "디자인 확정"
+        },
+        {
+          "step": 2,
+          "duration": "3-4일",
+          "description": "유리 튜브 가공 및 성형"
+        },
+        {
+          "step": 3,
+          "duration": "1-2일",
+          "description": "전극 설치 및 배선"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "테스트 및 설치"
+        }
       ],
       "popularity": 76,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["neon-sign-custom", "neon-sign-mini", "led-channel-premium"],
+      "relatedProducts": [
+        "neon-sign-custom",
+        "neon-sign-mini",
+        "led-channel-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1551560798-b935eb510ab3?w=800&q=80",
           "location": "이태원 빈티지 바"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "neon-sign-003",
@@ -421,41 +694,89 @@
         "설치 가이드",
         "6개월 무상 A/S"
       ],
-      "tags": ["네온", "미니", "저렴", "카페"],
+      "tags": [
+        "네온",
+        "미니",
+        "저렴",
+        "카페"
+      ],
       "options": {
         "sizes": [
-          {"label": "미니 (30cm 이하)", "priceModifier": "기본가"},
-          {"label": "소형 (30-50cm)", "priceModifier": "+25%"},
-          {"label": "중소형 (50-80cm)", "priceModifier": "+50%"}
+          {
+            "label": "미니 (30cm 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "소형 (30-50cm)",
+            "priceModifier": "+25%"
+          },
+          {
+            "label": "중소형 (50-80cm)",
+            "priceModifier": "+50%"
+          }
         ],
         "materials": [
-          {"label": "LED 네온", "description": "소형 LED 네온 튜브"}
+          {
+            "label": "LED 네온",
+            "description": "소형 LED 네온 튜브"
+          }
         ],
         "finishes": [
-          {"label": "핑크", "colorHex": "#FF69B4"},
-          {"label": "블루", "colorHex": "#87CEEB"}
+          {
+            "label": "핑크",
+            "colorHex": "#FF69B4"
+          },
+          {
+            "label": "블루",
+            "colorHex": "#87CEEB"
+          }
         ],
         "lightingTypes": [
-          {"label": "LED 네온", "description": "밝고 안전한 LED 네온"}
+          {
+            "label": "LED 네온",
+            "description": "밝고 안전한 LED 네온"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1일", "description": "디자인 확정"},
-        {"step": 2, "duration": "1-2일", "description": "네온 가공"},
-        {"step": 3, "duration": "1일", "description": "조립"},
-        {"step": 4, "duration": "1일", "description": "테스트 및 포장"}
+        {
+          "step": 1,
+          "duration": "1일",
+          "description": "디자인 확정"
+        },
+        {
+          "step": 2,
+          "duration": "1-2일",
+          "description": "네온 가공"
+        },
+        {
+          "step": 3,
+          "duration": "1일",
+          "description": "조립"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "테스트 및 포장"
+        }
       ],
       "popularity": 68,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["neon-sign-custom", "led-channel-mini", "acrylic-standard"],
+      "relatedProducts": [
+        "neon-sign-custom",
+        "led-channel-mini",
+        "acrylic-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1551560798-b935eb510ab3?w=800&q=80",
           "location": "성수동 작은 카페"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "acrylic-001",
@@ -492,34 +813,83 @@
         "현장 설치",
         "1년 무상 A/S"
       ],
-      "tags": ["아크릴", "모던", "사무실", "병원"],
+      "tags": [
+        "아크릴",
+        "모던",
+        "사무실",
+        "병원"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (1m 이하)", "priceModifier": "기본가"},
-          {"label": "중형 (1-2m)", "priceModifier": "+30%"},
-          {"label": "대형 (2-3m)", "priceModifier": "+60%"}
+          {
+            "label": "소형 (1m 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (1-2m)",
+            "priceModifier": "+30%"
+          },
+          {
+            "label": "대형 (2-3m)",
+            "priceModifier": "+60%"
+          }
         ],
         "materials": [
-          {"label": "프리미엄 아크릴", "description": "고급 투명 또는 컬러 아크릴"},
-          {"label": "금속 백판", "description": "알루미늄 또는 스테인리스 백판"}
+          {
+            "label": "프리미엄 아크릴",
+            "description": "고급 투명 또는 컬러 아크릴"
+          },
+          {
+            "label": "금속 백판",
+            "description": "알루미늄 또는 스테인리스 백판"
+          }
         ],
         "finishes": [
-          {"label": "클리어", "colorHex": "#FFFFFF"},
-          {"label": "블랙", "colorHex": "#000000"},
-          {"label": "골드", "colorHex": "#FFD700"}
+          {
+            "label": "클리어",
+            "colorHex": "#FFFFFF"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          },
+          {
+            "label": "골드",
+            "colorHex": "#FFD700"
+          }
         ],
         "lightingTypes": []
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2일", "description": "디자인 시안 제작 및 확정"},
-        {"step": 2, "duration": "2-3일", "description": "레이저 커팅 및 정밀 가공"},
-        {"step": 3, "duration": "1-2일", "description": "표면 마감 처리"},
-        {"step": 4, "duration": "1일", "description": "품질 검사 및 현장 설치"}
+        {
+          "step": 1,
+          "duration": "1-2일",
+          "description": "디자인 시안 제작 및 확정"
+        },
+        {
+          "step": 2,
+          "duration": "2-3일",
+          "description": "레이저 커팅 및 정밀 가공"
+        },
+        {
+          "step": 3,
+          "duration": "1-2일",
+          "description": "표면 마감 처리"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "품질 검사 및 현장 설치"
+        }
       ],
       "popularity": 90,
       "isNew": true,
       "isFeatured": true,
-      "relatedProducts": ["acrylic-standard", "led-channel-premium", "protruding-premium"],
+      "relatedProducts": [
+        "acrylic-standard",
+        "led-channel-premium",
+        "protruding-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
@@ -531,7 +901,9 @@
           "after": "https://images.unsplash.com/photo-1703578438904-b1b83426103c?w=800&q=80",
           "location": "강남구 피부과 클리닉"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "acrylic-002",
@@ -568,39 +940,83 @@
         "설치 지원",
         "6개월 무상 A/S"
       ],
-      "tags": ["아크릴", "합리적", "사무실"],
+      "tags": [
+        "아크릴",
+        "합리적",
+        "사무실"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (1m 이하)", "priceModifier": "기본가"},
-          {"label": "중형 (1-2m)", "priceModifier": "+25%"},
-          {"label": "대형 (2-3m)", "priceModifier": "+50%"}
+          {
+            "label": "소형 (1m 이하)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (1-2m)",
+            "priceModifier": "+25%"
+          },
+          {
+            "label": "대형 (2-3m)",
+            "priceModifier": "+50%"
+          }
         ],
         "materials": [
-          {"label": "스탠다드 아크릴", "description": "표준 아크릴 소재"}
+          {
+            "label": "스탠다드 아크릴",
+            "description": "표준 아크릴 소재"
+          }
         ],
         "finishes": [
-          {"label": "화이트", "colorHex": "#FFFFFF"},
-          {"label": "블랙", "colorHex": "#000000"}
+          {
+            "label": "화이트",
+            "colorHex": "#FFFFFF"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          }
         ],
         "lightingTypes": []
       },
       "productionSteps": [
-        {"step": 1, "duration": "1일", "description": "디자인 확정"},
-        {"step": 2, "duration": "1-2일", "description": "CNC 커팅"},
-        {"step": 3, "duration": "1일", "description": "마감 처리"},
-        {"step": 4, "duration": "1일", "description": "검사 및 설치"}
+        {
+          "step": 1,
+          "duration": "1일",
+          "description": "디자인 확정"
+        },
+        {
+          "step": 2,
+          "duration": "1-2일",
+          "description": "CNC 커팅"
+        },
+        {
+          "step": 3,
+          "duration": "1일",
+          "description": "마감 처리"
+        },
+        {
+          "step": 4,
+          "duration": "1일",
+          "description": "검사 및 설치"
+        }
       ],
       "popularity": 70,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["acrylic-premium", "led-channel-standard", "banner-standard"],
+      "relatedProducts": [
+        "acrylic-premium",
+        "led-channel-standard",
+        "banner-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1703578438904-b1b83426103c?w=800&q=80",
           "location": "수원 영통구 소형 사무실"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "banner-001",
@@ -637,41 +1053,92 @@
         "배송",
         "하자 보증"
       ],
-      "tags": ["현수막", "대형", "행사", "프로모션"],
+      "tags": [
+        "현수막",
+        "대형",
+        "행사",
+        "프로모션"
+      ],
       "options": {
         "sizes": [
-          {"label": "중형 (3x1m)", "priceModifier": "기본가"},
-          {"label": "대형 (5x2m)", "priceModifier": "+50%"},
-          {"label": "특대형 (10x3m)", "priceModifier": "+150%"},
-          {"label": "맞춤 사이즈", "priceModifier": "별도 견적"}
+          {
+            "label": "중형 (3x1m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "대형 (5x2m)",
+            "priceModifier": "+50%"
+          },
+          {
+            "label": "특대형 (10x3m)",
+            "priceModifier": "+150%"
+          },
+          {
+            "label": "맞춤 사이즈",
+            "priceModifier": "별도 견적"
+          }
         ],
         "materials": [
-          {"label": "방수 천막", "description": "방수 처리된 내구성 원단"},
-          {"label": "프리미엄 천막", "description": "고급 방수 원단"}
+          {
+            "label": "방수 천막",
+            "description": "방수 처리된 내구성 원단"
+          },
+          {
+            "label": "프리미엄 천막",
+            "description": "고급 방수 원단"
+          }
         ],
         "finishes": [
-          {"label": "무광", "colorHex": "#F5F5F5"},
-          {"label": "유광", "colorHex": "#FFFFFF"}
+          {
+            "label": "무광",
+            "colorHex": "#F5F5F5"
+          },
+          {
+            "label": "유광",
+            "colorHex": "#FFFFFF"
+          }
         ],
         "lightingTypes": []
       },
       "productionSteps": [
-        {"step": 1, "duration": "2-4시간", "description": "디자인 시안 확정"},
-        {"step": 2, "duration": "4-8시간", "description": "고해상도 출력"},
-        {"step": 3, "duration": "2-4시간", "description": "재단 및 마감 처리"},
-        {"step": 4, "duration": "1-2시간", "description": "검수 및 포장"}
+        {
+          "step": 1,
+          "duration": "2-4시간",
+          "description": "디자인 시안 확정"
+        },
+        {
+          "step": 2,
+          "duration": "4-8시간",
+          "description": "고해상도 출력"
+        },
+        {
+          "step": 3,
+          "duration": "2-4시간",
+          "description": "재단 및 마감 처리"
+        },
+        {
+          "step": 4,
+          "duration": "1-2시간",
+          "description": "검수 및 포장"
+        }
       ],
       "popularity": 85,
       "isNew": false,
       "isFeatured": true,
-      "relatedProducts": ["banner-mesh", "banner-standard", "protruding-premium"],
+      "relatedProducts": [
+        "banner-mesh",
+        "banner-standard",
+        "protruding-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1760510463648-363d4caac5f7?w=800&q=80",
           "location": "서울 광진구 대형 행사장"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "banner-002",
@@ -708,38 +1175,79 @@
         "배송",
         "하자 보증"
       ],
-      "tags": ["현수막", "저렴", "행사"],
+      "tags": [
+        "현수막",
+        "저렴",
+        "행사"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (2x1m)", "priceModifier": "기본가"},
-          {"label": "중형 (3x1.5m)", "priceModifier": "+30%"},
-          {"label": "대형 (4x2m)", "priceModifier": "+60%"}
+          {
+            "label": "소형 (2x1m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (3x1.5m)",
+            "priceModifier": "+30%"
+          },
+          {
+            "label": "대형 (4x2m)",
+            "priceModifier": "+60%"
+          }
         ],
         "materials": [
-          {"label": "기본 천막", "description": "표준 천막 원단"}
+          {
+            "label": "기본 천막",
+            "description": "표준 천막 원단"
+          }
         ],
         "finishes": [
-          {"label": "무광", "colorHex": "#F0F0F0"}
+          {
+            "label": "무광",
+            "colorHex": "#F0F0F0"
+          }
         ],
         "lightingTypes": []
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2시간", "description": "디자인 시안 확정"},
-        {"step": 2, "duration": "2-4시간", "description": "표준 해상도 출력"},
-        {"step": 3, "duration": "1-2시간", "description": "재단 및 마감"},
-        {"step": 4, "duration": "1시간", "description": "검수 및 포장"}
+        {
+          "step": 1,
+          "duration": "1-2시간",
+          "description": "디자인 시안 확정"
+        },
+        {
+          "step": 2,
+          "duration": "2-4시간",
+          "description": "표준 해상도 출력"
+        },
+        {
+          "step": 3,
+          "duration": "1-2시간",
+          "description": "재단 및 마감"
+        },
+        {
+          "step": 4,
+          "duration": "1시간",
+          "description": "검수 및 포장"
+        }
       ],
       "popularity": 65,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["banner-large", "banner-x", "acrylic-standard"],
+      "relatedProducts": [
+        "banner-large",
+        "banner-x",
+        "acrylic-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1760510463648-363d4caac5f7?w=800&q=80",
           "location": "인천 부평구 소형 행사"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "banner-003",
@@ -776,40 +1284,88 @@
         "배송",
         "1년 보증"
       ],
-      "tags": ["현수막", "메쉬", "옥외", "강풍"],
+      "tags": [
+        "현수막",
+        "메쉬",
+        "옥외",
+        "강풍"
+      ],
       "options": {
         "sizes": [
-          {"label": "중형 (5x3m)", "priceModifier": "기본가"},
-          {"label": "대형 (10x5m)", "priceModifier": "+80%"},
-          {"label": "특대형 (15x8m)", "priceModifier": "+200%"},
-          {"label": "맞춤 사이즈", "priceModifier": "별도 견적"}
+          {
+            "label": "중형 (5x3m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "대형 (10x5m)",
+            "priceModifier": "+80%"
+          },
+          {
+            "label": "특대형 (15x8m)",
+            "priceModifier": "+200%"
+          },
+          {
+            "label": "맞춤 사이즈",
+            "priceModifier": "별도 견적"
+          }
         ],
         "materials": [
-          {"label": "메쉬 천막", "description": "바람이 통하는 메쉬 원단"},
-          {"label": "강화 메쉬", "description": "보강된 내구성 메쉬 원단"}
+          {
+            "label": "메쉬 천막",
+            "description": "바람이 통하는 메쉬 원단"
+          },
+          {
+            "label": "강화 메쉬",
+            "description": "보강된 내구성 메쉬 원단"
+          }
         ],
         "finishes": [
-          {"label": "무광", "colorHex": "#E8E8E8"}
+          {
+            "label": "무광",
+            "colorHex": "#E8E8E8"
+          }
         ],
         "lightingTypes": []
       },
       "productionSteps": [
-        {"step": 1, "duration": "4-8시간", "description": "디자인 시안 확정"},
-        {"step": 2, "duration": "1일", "description": "메쉬 원단 고해상도 출력"},
-        {"step": 3, "duration": "4-8시간", "description": "재단 및 테두리 보강"},
-        {"step": 4, "duration": "4시간", "description": "검수 및 포장"}
+        {
+          "step": 1,
+          "duration": "4-8시간",
+          "description": "디자인 시안 확정"
+        },
+        {
+          "step": 2,
+          "duration": "1일",
+          "description": "메쉬 원단 고해상도 출력"
+        },
+        {
+          "step": 3,
+          "duration": "4-8시간",
+          "description": "재단 및 테두리 보강"
+        },
+        {
+          "step": 4,
+          "duration": "4시간",
+          "description": "검수 및 포장"
+        }
       ],
       "popularity": 78,
       "isNew": true,
       "isFeatured": false,
-      "relatedProducts": ["banner-large", "rooftop-premium", "protruding-premium"],
+      "relatedProducts": [
+        "banner-large",
+        "rooftop-premium",
+        "protruding-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1760510463648-363d4caac5f7?w=800&q=80",
           "location": "서울 종로구 건물 외벽"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "banner-004",
@@ -846,38 +1402,80 @@
         "거치대 포함",
         "배송"
       ],
-      "tags": ["배너", "X배너", "실내", "행사"],
+      "tags": [
+        "배너",
+        "X배너",
+        "실내",
+        "행사"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (60x160cm)", "priceModifier": "기본가"},
-          {"label": "중형 (80x180cm)", "priceModifier": "+20%"},
-          {"label": "대형 (100x200cm)", "priceModifier": "+40%"}
+          {
+            "label": "소형 (60x160cm)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (80x180cm)",
+            "priceModifier": "+20%"
+          },
+          {
+            "label": "대형 (100x200cm)",
+            "priceModifier": "+40%"
+          }
         ],
         "materials": [
-          {"label": "PVC", "description": "표준 PVC 원단"}
+          {
+            "label": "PVC",
+            "description": "표준 PVC 원단"
+          }
         ],
         "finishes": [
-          {"label": "유광", "colorHex": "#FFFFFF"}
+          {
+            "label": "유광",
+            "colorHex": "#FFFFFF"
+          }
         ],
         "lightingTypes": []
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2시간", "description": "디자인 시안 확정"},
-        {"step": 2, "duration": "2-3시간", "description": "PVC 출력"},
-        {"step": 3, "duration": "1시간", "description": "재단 및 거치대 조립"},
-        {"step": 4, "duration": "30분", "description": "검수 및 포장"}
+        {
+          "step": 1,
+          "duration": "1-2시간",
+          "description": "디자인 시안 확정"
+        },
+        {
+          "step": 2,
+          "duration": "2-3시간",
+          "description": "PVC 출력"
+        },
+        {
+          "step": 3,
+          "duration": "1시간",
+          "description": "재단 및 거치대 조립"
+        },
+        {
+          "step": 4,
+          "duration": "30분",
+          "description": "검수 및 포장"
+        }
       ],
       "popularity": 60,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["banner-standard", "banner-large", "acrylic-standard"],
+      "relatedProducts": [
+        "banner-standard",
+        "banner-large",
+        "acrylic-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1760510463648-363d4caac5f7?w=800&q=80",
           "location": "일산 킨텍스 전시회"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "protruding-001",
@@ -914,38 +1512,96 @@
         "현장 설치",
         "2년 무상 A/S"
       ],
-      "tags": ["돌출", "양면", "LED", "건물"],
+      "tags": [
+        "돌출",
+        "양면",
+        "LED",
+        "건물"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (1x0.8m)", "priceModifier": "기본가"},
-          {"label": "중형 (1.5x1m)", "priceModifier": "+40%"},
-          {"label": "대형 (2x1.5m)", "priceModifier": "+80%"},
-          {"label": "특대형", "priceModifier": "별도 견적"}
+          {
+            "label": "소형 (1x0.8m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (1.5x1m)",
+            "priceModifier": "+40%"
+          },
+          {
+            "label": "대형 (2x1.5m)",
+            "priceModifier": "+80%"
+          },
+          {
+            "label": "특대형",
+            "priceModifier": "별도 견적"
+          }
         ],
         "materials": [
-          {"label": "알루미늄 프레임", "description": "견고한 알루미늄 프레임"},
-          {"label": "프리미엄 아크릴", "description": "고급 투명 아크릴"}
+          {
+            "label": "알루미늄 프레임",
+            "description": "견고한 알루미늄 프레임"
+          },
+          {
+            "label": "프리미엄 아크릴",
+            "description": "고급 투명 아크릴"
+          }
         ],
         "finishes": [
-          {"label": "실버", "colorHex": "#C0C0C0"},
-          {"label": "블랙", "colorHex": "#000000"},
-          {"label": "화이트", "colorHex": "#FFFFFF"}
+          {
+            "label": "실버",
+            "colorHex": "#C0C0C0"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          },
+          {
+            "label": "화이트",
+            "colorHex": "#FFFFFF"
+          }
         ],
         "lightingTypes": [
-          {"label": "내부 LED", "description": "양면 균일 발광 LED"},
-          {"label": "고휘도 LED", "description": "더 밝은 프리미엄 LED"}
+          {
+            "label": "내부 LED",
+            "description": "양면 균일 발광 LED"
+          },
+          {
+            "label": "고휘도 LED",
+            "description": "더 밝은 프리미엄 LED"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "2-3일", "description": "디자인 확정 및 구조 설계"},
-        {"step": 2, "duration": "3-5일", "description": "프레임 제작 및 아크릴 가공"},
-        {"step": 3, "duration": "2-3일", "description": "LED 모듈 설치 및 배선"},
-        {"step": 4, "duration": "2-3일", "description": "품질 검사 및 현장 설치"}
+        {
+          "step": 1,
+          "duration": "2-3일",
+          "description": "디자인 확정 및 구조 설계"
+        },
+        {
+          "step": 2,
+          "duration": "3-5일",
+          "description": "프레임 제작 및 아크릴 가공"
+        },
+        {
+          "step": 3,
+          "duration": "2-3일",
+          "description": "LED 모듈 설치 및 배선"
+        },
+        {
+          "step": 4,
+          "duration": "2-3일",
+          "description": "품질 검사 및 현장 설치"
+        }
       ],
       "popularity": 87,
       "isNew": false,
       "isFeatured": true,
-      "relatedProducts": ["protruding-standard", "led-channel-premium", "rooftop-premium"],
+      "relatedProducts": [
+        "protruding-standard",
+        "led-channel-premium",
+        "rooftop-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
@@ -957,7 +1613,9 @@
           "after": "https://images.unsplash.com/photo-1713608062698-ad6e34d5c024?w=800&q=80",
           "location": "부산 서면 음식점"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "protruding-002",
@@ -994,42 +1652,92 @@
         "현장 설치",
         "1년 무상 A/S"
       ],
-      "tags": ["돌출", "합리적", "매장"],
+      "tags": [
+        "돌출",
+        "합리적",
+        "매장"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (0.8x0.6m)", "priceModifier": "기본가"},
-          {"label": "중형 (1.2x0.8m)", "priceModifier": "+30%"},
-          {"label": "대형 (1.5x1m)", "priceModifier": "+60%"}
+          {
+            "label": "소형 (0.8x0.6m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (1.2x0.8m)",
+            "priceModifier": "+30%"
+          },
+          {
+            "label": "대형 (1.5x1m)",
+            "priceModifier": "+60%"
+          }
         ],
         "materials": [
-          {"label": "철 프레임", "description": "견고한 철제 프레임"},
-          {"label": "스탠다드 아크릴", "description": "표준 아크릴 패널"}
+          {
+            "label": "철 프레임",
+            "description": "견고한 철제 프레임"
+          },
+          {
+            "label": "스탠다드 아크릴",
+            "description": "표준 아크릴 패널"
+          }
         ],
         "finishes": [
-          {"label": "화이트", "colorHex": "#FFFFFF"},
-          {"label": "블랙", "colorHex": "#000000"}
+          {
+            "label": "화이트",
+            "colorHex": "#FFFFFF"
+          },
+          {
+            "label": "블랙",
+            "colorHex": "#000000"
+          }
         ],
         "lightingTypes": [
-          {"label": "기본 LED", "description": "표준 LED 조명"}
+          {
+            "label": "기본 LED",
+            "description": "표준 LED 조명"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "1-2일", "description": "디자인 확정"},
-        {"step": 2, "duration": "2-3일", "description": "프레임 제작 및 가공"},
-        {"step": 3, "duration": "2-3일", "description": "조명 설치 및 배선"},
-        {"step": 4, "duration": "2일", "description": "검사 및 현장 설치"}
+        {
+          "step": 1,
+          "duration": "1-2일",
+          "description": "디자인 확정"
+        },
+        {
+          "step": 2,
+          "duration": "2-3일",
+          "description": "프레임 제작 및 가공"
+        },
+        {
+          "step": 3,
+          "duration": "2-3일",
+          "description": "조명 설치 및 배선"
+        },
+        {
+          "step": 4,
+          "duration": "2일",
+          "description": "검사 및 현장 설치"
+        }
       ],
       "popularity": 73,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["protruding-premium", "led-channel-standard", "acrylic-premium"],
+      "relatedProducts": [
+        "protruding-premium",
+        "led-channel-standard",
+        "acrylic-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1635176776026-27d4c4a310f3?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1713608062698-ad6e34d5c024?w=800&q=80",
           "location": "대구 중구 소형 음식점"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "rooftop-001",
@@ -1067,36 +1775,88 @@
         "3년 무상 A/S",
         "정기 점검"
       ],
-      "tags": ["옥상", "대형", "빌딩", "브랜드"],
+      "tags": [
+        "옥상",
+        "대형",
+        "빌딩",
+        "브랜드"
+      ],
       "options": {
         "sizes": [
-          {"label": "중형 (5x3m)", "priceModifier": "기본가"},
-          {"label": "대형 (10x5m)", "priceModifier": "+100%"},
-          {"label": "특대형 (15x8m 이상)", "priceModifier": "별도 견적"}
+          {
+            "label": "중형 (5x3m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "대형 (10x5m)",
+            "priceModifier": "+100%"
+          },
+          {
+            "label": "특대형 (15x8m 이상)",
+            "priceModifier": "별도 견적"
+          }
         ],
         "materials": [
-          {"label": "철골 구조", "description": "견고한 철골 프레임"},
-          {"label": "고휘도 LED", "description": "장거리 시인성 LED 모듈"}
+          {
+            "label": "철골 구조",
+            "description": "견고한 철골 프레임"
+          },
+          {
+            "label": "고휘도 LED",
+            "description": "장거리 시인성 LED 모듈"
+          }
         ],
         "finishes": [
-          {"label": "도장 마감", "colorHex": "#808080"},
-          {"label": "스테인리스", "colorHex": "#C0C0C0"}
+          {
+            "label": "도장 마감",
+            "colorHex": "#808080"
+          },
+          {
+            "label": "스테인리스",
+            "colorHex": "#C0C0C0"
+          }
         ],
         "lightingTypes": [
-          {"label": "고휘도 LED", "description": "멀리서도 보이는 강력한 LED"},
-          {"label": "RGB LED", "description": "컬러 변경 가능한 LED"}
+          {
+            "label": "고휘도 LED",
+            "description": "멀리서도 보이는 강력한 LED"
+          },
+          {
+            "label": "RGB LED",
+            "description": "컬러 변경 가능한 LED"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "5-10일", "description": "디자인 확정 및 구조 설계"},
-        {"step": 2, "duration": "15-30일", "description": "철골 구조 제작 및 LED 조립"},
-        {"step": 3, "duration": "5-10일", "description": "제어 시스템 설치 및 배선"},
-        {"step": 4, "duration": "5-10일", "description": "현장 설치 및 안전 검사"}
+        {
+          "step": 1,
+          "duration": "5-10일",
+          "description": "디자인 확정 및 구조 설계"
+        },
+        {
+          "step": 2,
+          "duration": "15-30일",
+          "description": "철골 구조 제작 및 LED 조립"
+        },
+        {
+          "step": 3,
+          "duration": "5-10일",
+          "description": "제어 시스템 설치 및 배선"
+        },
+        {
+          "step": 4,
+          "duration": "5-10일",
+          "description": "현장 설치 및 안전 검사"
+        }
       ],
       "popularity": 94,
       "isNew": false,
       "isFeatured": true,
-      "relatedProducts": ["rooftop-standard", "protruding-premium", "led-channel-premium"],
+      "relatedProducts": [
+        "rooftop-standard",
+        "protruding-premium",
+        "led-channel-premium"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
@@ -1108,7 +1868,9 @@
           "after": "https://images.unsplash.com/photo-1706720045042-24942be8c166?w=800&q=80",
           "location": "부산 해운대구 상업 빌딩"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     },
     {
       "id": "rooftop-002",
@@ -1145,41 +1907,88 @@
         "현장 설치",
         "2년 무상 A/S"
       ],
-      "tags": ["옥상", "빌딩", "LED"],
+      "tags": [
+        "옥상",
+        "빌딩",
+        "LED"
+      ],
       "options": {
         "sizes": [
-          {"label": "소형 (3x2m)", "priceModifier": "기본가"},
-          {"label": "중형 (5x3m)", "priceModifier": "+50%"},
-          {"label": "대형 (8x4m)", "priceModifier": "+100%"}
+          {
+            "label": "소형 (3x2m)",
+            "priceModifier": "기본가"
+          },
+          {
+            "label": "중형 (5x3m)",
+            "priceModifier": "+50%"
+          },
+          {
+            "label": "대형 (8x4m)",
+            "priceModifier": "+100%"
+          }
         ],
         "materials": [
-          {"label": "철골 구조", "description": "표준 철골 프레임"},
-          {"label": "LED 모듈", "description": "표준 LED 조명"}
+          {
+            "label": "철골 구조",
+            "description": "표준 철골 프레임"
+          },
+          {
+            "label": "LED 모듈",
+            "description": "표준 LED 조명"
+          }
         ],
         "finishes": [
-          {"label": "도장 마감", "colorHex": "#696969"}
+          {
+            "label": "도장 마감",
+            "colorHex": "#696969"
+          }
         ],
         "lightingTypes": [
-          {"label": "LED 조명", "description": "표준 LED 발광"}
+          {
+            "label": "LED 조명",
+            "description": "표준 LED 발광"
+          }
         ]
       },
       "productionSteps": [
-        {"step": 1, "duration": "3-5일", "description": "디자인 확정 및 구조 설계"},
-        {"step": 2, "duration": "10-20일", "description": "철골 제작 및 LED 조립"},
-        {"step": 3, "duration": "3-5일", "description": "배선 및 조명 설치"},
-        {"step": 4, "duration": "4-10일", "description": "현장 설치 및 검사"}
+        {
+          "step": 1,
+          "duration": "3-5일",
+          "description": "디자인 확정 및 구조 설계"
+        },
+        {
+          "step": 2,
+          "duration": "10-20일",
+          "description": "철골 제작 및 LED 조립"
+        },
+        {
+          "step": 3,
+          "duration": "3-5일",
+          "description": "배선 및 조명 설치"
+        },
+        {
+          "step": 4,
+          "duration": "4-10일",
+          "description": "현장 설치 및 검사"
+        }
       ],
       "popularity": 69,
       "isNew": false,
       "isFeatured": false,
-      "relatedProducts": ["rooftop-premium", "protruding-standard", "led-channel-standard"],
+      "relatedProducts": [
+        "rooftop-premium",
+        "protruding-standard",
+        "led-channel-standard"
+      ],
       "installationGallery": [
         {
           "before": "https://images.unsplash.com/photo-1642222197378-14d9fa160203?w=800&q=80",
           "after": "https://images.unsplash.com/photo-1706720045042-24942be8c166?w=800&q=80",
           "location": "인천 남동구 중소형 빌딩"
         }
-      ]
+      ],
+      "isFixedPrice": false,
+      "fixedPrice": null
     }
   ],
   "categories": [
